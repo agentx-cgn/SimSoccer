@@ -86,6 +86,7 @@ IFC = (function(){
       $('#btnStep').onclick   = self.step;
 
       cvs = self.cvs = document.createElement('canvas');
+      cvs.setAttribute('moz-opaque', 'moz-opaque');
       ctx = self.ctx = cvs.getContext('2d');
       $playground.appendChild(cvs);
 

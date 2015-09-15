@@ -14,11 +14,11 @@ PHY = (function(){
 
   var 
     self, 
-    world, renderer, sandbox, integrator, attractorPlayer,
+    world, renderer, sandbox, integrator, attractor,
     player, 
     collisions = [],
 
-    // used in findat()
+    // lifted, used in findat()
     vector = Physics.vector(),
 
     behaviors = {},
@@ -107,7 +107,7 @@ PHY = (function(){
       // max: The maximum distance in which to apply the attraction (default: Infinity)
       // min: The minimum distance above which to apply the attraction (default: very small non-zero)
 
-      attractorPlayer  = Physics.behavior('marked-player-attractor', {
+      attractor  = Physics.behavior('marked-player-attractor', {
         strength: 0.0015,
         order: 0,
         min: 1
@@ -148,6 +148,11 @@ PHY = (function(){
 
     }, listen:   function(){
 
+      // lifted
+      var 
+        coll = null,
+        options = {pos: null};
+
       world.on(
 
         {'interact:poke': function( e ){
@@ -155,18 +160,18 @@ PHY = (function(){
           // patched behavior
           if (!IFC.mouseOverBody && e.button === 0){
             world.wakeUpAll();
-            attractorPlayer.options({pos: REN.toField(e)});
-            world.add( attractorPlayer );
+            attractor.options({pos: REN.toField(e)});
+            world.add( attractor );
           }
 
         }, 'interact:move': function( pos ){
           
-          attractorPlayer.options({pos: REN.toField(pos)});
+          attractor.options({pos: REN.toField(pos)});
         
         }, 'interact:release': function(){
           
           world.wakeUpAll();
-          world.remove( attractorPlayer );
+          world.remove( attractor );
         
         }, 'edge-collisions:detected': function(data){
 
@@ -183,17 +188,17 @@ PHY = (function(){
 
         }, 'collisions:detected': function(data){
 
-          var i, c;
+          var i;
           
-          for (i=0; (c = data.collisions[i]); i++){
+          for (i=0; (coll = data.collisions[i]); i++){
 
             collisions.push({
-              x: c.bodyA.state.pos._[0] + c.pos.x,
-              y: c.bodyA.state.pos._[1] + c.pos.y,
+              x: coll.bodyA.state.pos._[0] + coll.pos.x,
+              y: coll.bodyA.state.pos._[1] + coll.pos.y,
             });
 
             if (collisions.length > CFG.Debug.maxCollisions){
-              collisions.shift();
+              collisions.shift(); // consider splice
             }
 
           }
@@ -230,7 +235,7 @@ PHY = (function(){
     }, prepareBodies: function(){
 
       // add balls
-      H.each(H.range(1), function (i){
+      H.each(H.range(1), i => {
         bodies.balls.push(Physics.body('ball', {
           x:   55, 
           y:   35 + 2*i, 
@@ -240,7 +245,7 @@ PHY = (function(){
       });
 
       // add posts
-      H.each(H.range(4), function (i, post){
+      H.each(H.range(4), (i, post) => {
         bodies.posts.push(Physics.body('post', {
           x: CFG.Posts.xcoords[post], 
           y: CFG.Posts.ycoords[post], 
@@ -353,8 +358,7 @@ PHY = (function(){
       var 
         vector,
         options,
-        position,
-        acceleration;
+        position;
 
       defaults0 = {
         amount:  0.00001, 
@@ -363,16 +367,16 @@ PHY = (function(){
         listen:  {
           'key:space': function(){this.accel = 0; this.turn = 0;},
           'key:up':    function(){
-            this.accel = Math.round(Math.min(this.accel === undefined? 0 : this.accel + 1, 5));
+            this.accel = Math.round(Math.min(this.accel === undefined ? +0.5 : this.accel + 0.5, 5));
           },
           'key:down':  function(){
-            this.accel = Math.round(Math.max(this.accel === undefined ? 0 : this.accel - 1, -5));
+            this.accel = Math.round(Math.max(this.accel === undefined ? -0.5 : this.accel - 0.5, -5));
           },
           'key:right': function(){
-            this.turn = Math.round(Math.min(this.turn === undefined ? 0 : this.turn + 0.05, 0.4));
+            this.turn = Math.min(this.turn === undefined ? +0.1 : this.turn + 0.1, 0.4);
           },
           'key:left':  function(){
-            this.turn = Math.round(Math.max(this.turn === undefined ? 0 : this.turn - 0.05, -0.4));
+            this.turn = Math.max(this.turn === undefined ? -0.1 : this.turn - 0.1, -0.4);
           },
         }
       };
@@ -381,14 +385,16 @@ PHY = (function(){
 
         var angle  = body.state.angular.pos;
 
+        options = this.options,
+
         REN.info.acce = this.accel;
         REN.info.turn = this.turn;
 
         if (this.accel !== undefined){
           vector = this.scratch.vector();
           vector.set(
-            this.accel * config.amount * Math.cos( angle ), 
-            this.accel * config.amount * Math.sin( angle ) 
+            this.accel * options.amount * Math.cos( angle ), 
+            this.accel * options.amount * Math.sin( angle ) 
           );
           body.accelerate( vector );
         }

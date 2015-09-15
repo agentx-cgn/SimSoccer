@@ -19,6 +19,8 @@ REN = (function(){
     
     info = {}, meta = {fps: 0, ipf: 0},
 
+    infobody = null,
+
     draw = {
       info:       CFG.Debug.draw.info,
       speed:      CFG.Debug.draw.speed,
@@ -31,7 +33,7 @@ REN = (function(){
 
     transform = {field: [0, 0, 0, 0], scale: 1},
 
-    tweenWhistle,
+    tweenWhistle = null,
 
     imgWhistle;
 
@@ -379,14 +381,14 @@ REN = (function(){
 
     }, drawDebug: function(){
 
-      var body = PHY.findAt(self.toField(IFC.mouse));
+      infobody = PHY.findAt(self.toField(IFC.mouse));
 
       function toFieldInt(point){var p = self.toField(point); return {x: ~~p.x, y: ~~p.y };}
-      function bodyShort (body){
-        return ( !body ? 'none' :
-          body.name === 'player' ? H.format('%s, %s [%s]', body.name, body.sign, body.team) :
-          body.name === 'ball'   ? 'ball' :
-          body.name === 'post'   ? 'post' :
+      function bodyShort (infobody){
+        return ( !infobody ? 'none' :
+          infobody.name === 'player' ? H.format('%s, %s [%s]', infobody.name, infobody.sign, infobody.team) :
+          infobody.name === 'ball'   ? 'ball' :
+          infobody.name === 'post'   ? 'post' :
             'wtf'
         );
       }
@@ -397,8 +399,8 @@ REN = (function(){
 
       ctx.fillText('meter :  ' + JSON.stringify(toFieldInt(IFC.mouse)) , 30,  40);
       ctx.fillText('mouse :  ' + JSON.stringify(IFC.mouse)             , 30,  70);
-      ctx.fillText('body  :  ' + bodyShort(body)                       , 30, 100);
-      ctx.fillText('info  :  ' + JSON.stringify(info)                  , 30, 130);
+      ctx.fillText('body  :  ' + bodyShort(infobody)                   , 30, 100);
+      ctx.fillText('info  :  ' + JSON.stringify(info, null, 2)         , 30, 160);
     
 
     }, drawCollisions: function(colls){
