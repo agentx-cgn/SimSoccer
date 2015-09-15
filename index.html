@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+
+<head>
+
+  <title>SIMSOCCER</title>
+  <meta charset='utf-8'>
+
+  <script type="text/javascript">
+
+    if (typeof console === "undefined") {
+      console = { log:function(){}, warn:function(){}, error:function(){} };
+    }
+
+    window.performance = window.performance || {};
+    // window.performance.timing = window.performance.timing || {};
+
+    window.performance.now = 
+      window.performance.now ||
+      window.performance.webkitNow || 
+      (function(){var t = Date.now(); return function(){return Date.now() - t;};})();
+
+    window.performance.timing.navigationStart = 
+      window.performance.timing.navigationStart || 
+      Date.now();
+
+    window.local = !window.location.host;
+
+    var TIM = (function(){
+      
+      var 
+        t0   = window.performance.timing.navigationStart, // || Date.now()||+new Date(), 
+        fill = new Array(18).join(" "), 
+        pad  = function(s){return (s+fill).substr(0, fill.length);},
+        now  = function( ){return parseInt(window.performance.now()*10, 10)/10000;}
+
+      return {
+        // Now:  now,
+        step: function(key, com){
+          console.log (pad(key), "-", now() + " sec", (com) ? com : "-");
+        }
+      };
+      
+    }());
+
+    TIM.step(window.location.host || "Local", 
+      (navigator.online ? "online" : "offline") + 
+      " - " + document.location.href
+    );
+
+  </script>
+
+  <link rel="stylesheet" type="text/css" media="screen" href="styles/soccer.css" />
+
+<body>
+  
+  <div class="barContainer">
+    <div id="barHeader">
+      <h1><a href="/">SIMSOCCER</a></h1><h2>-&nbsp;&nbsp;let some frogs kick</h2>
+    </div>
+    <div class="barButtons">
+      <button id="btnStop"   class="button" name="btnStop"    type="button" value="Stop">Stop</button>
+      <button id="btnPlay"   class="button" name="btnPlay"    type="button" value="Play">Play</button>
+      <button id="btnPause"  class="button" name="btnPause"   type="button" value="Pause">Pause</button>
+      <button id="btnStep"   class="button" name="btnStep"    type="button" value="Step">Step</button>
+      <!-- <button id="btnCode"   class="button" name="btnCode"    type="button" value="Code">Code</button> -->
+      <!-- <button id="btnEval"   class="button" name="btnEval"    type="button" value="Eval">Eval</button> -->
+      <!-- <button id="btnStats"  class="button" name="btnStats"   type="button" value="Save">Statistics</button> -->
+      <button id="btnToggle" class="button" name="btnToggle"  type="button" value="Toggle">&gt;&gt;</button>
+    </div>
+  </div>
+
+
+  <div class="content" style="display:none">
+    
+    <!-- menu also in fullscreen -->
+    <div class="menu">
+      <ul class="menu-list"></ul>
+    </div>
+
+    <div class="tab playground"></div>
+
+    <div class="tab images">
+      <img class="img-whistle" src="images/whistle.png" />
+    </div>
+
+    <div class="tab errors">
+      <div class="">
+        This is an error!
+      </div>
+    </div>
+
+    <div class="tab messages">
+      <div class="center">
+        <ul class="messages-list">
+          <li class="messages-item">messages-item</li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="tab ticker">
+      <div class="center">
+        <ul class="ticker-list">
+          <li class="ticker-item">ticker-item</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="tab code">
+      <textarea class="textCode">
+  (function(){
+    console.log(CFG.Version);
+  })()
+      </textarea>
+    </div>
+
+
+  </div>
+  
+
+  <div style="display: none">
+    
+      <script src="extern/tween.js"></script>
+      <script src="extern/physicsjs-full.js"></script>
+      <script src="extern/state-machine.js"></script>
+      <script src="extern/mousetrap.js"></script>
+      <script src="code/ssc-main.js"></script>
+      <script src="code/ssc-helper.js"></script>
+      <script src="code/ssc-tools.js"></script>
+      <script src="code/ssc-config.js"></script>
+      <script src="code/ssc-interface.js"></script>
+      <script src="code/ssc-simulation.js"></script>
+      <script src="code/ssc-renderer.js"></script>
+      <script src="code/ssc-physics.js"></script>
+      <script type="text/javascript">
+        TIM.step("loaded");
+      </script>
+      
+  </div>
+
+</body>
