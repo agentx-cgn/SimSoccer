@@ -20,6 +20,7 @@ PHY = (function(){
 
     // lifted, used in findat()
     vector = Physics.vector(),
+    point  = {x: 0, y: 0},
 
     behaviors = {},
 

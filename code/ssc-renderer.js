@@ -19,6 +19,8 @@ REN = (function(){
     
     info = {}, meta = {fps: 0, ipf: 0},
 
+    point = {},
+
     infobody = null,
 
     draw = {
@@ -36,6 +38,22 @@ REN = (function(){
     tweenWhistle = null,
 
     imgWhistle;
+
+
+    // function toFieldInt(p){
+    //   point = self.toField(p); 
+    //   point.x = ~~point.x;
+    //   point.x = ~~point.x;
+    //   return point;
+    // }
+    function bodyShort (infobody){
+      return ( !infobody ? 'none' :
+        infobody.name === 'player' ? H.format('%s, %s [%s]', infobody.name, infobody.sign, infobody.team) :
+        infobody.name === 'ball'   ? 'ball' :
+        infobody.name === 'post'   ? 'post' :
+          'wtf'
+      );
+    }
 
   return {
 
@@ -69,7 +87,17 @@ REN = (function(){
         y: (point.y - transform.field[1]) / transform.scale
       };
 
-    
+      // point.x = (point.x - transform.field[0]) / transform.scale;
+      // point.y = (point.y - transform.field[1]) / transform.scale;
+      // return point;
+
+    }, toFieldInt : function (p) {
+
+      point.x = ~~((p.x - transform.field[0]) / transform.scale);
+      point.y = ~~((p.y - transform.field[1]) / transform.scale);
+
+      return point;
+
     }, whistle:  function(data){
 
       if (tweenWhistle){tweenWhistle.stop();}
@@ -383,21 +411,11 @@ REN = (function(){
 
       infobody = PHY.findAt(self.toField(IFC.mouse));
 
-      function toFieldInt(point){var p = self.toField(point); return {x: ~~p.x, y: ~~p.y };}
-      function bodyShort (infobody){
-        return ( !infobody ? 'none' :
-          infobody.name === 'player' ? H.format('%s, %s [%s]', infobody.name, infobody.sign, infobody.team) :
-          infobody.name === 'ball'   ? 'ball' :
-          infobody.name === 'post'   ? 'post' :
-            'wtf'
-        );
-      }
-
       ctx.font      = '24px Courier New';
       ctx.fillStyle = 'rgba(33, 33, 33, 0.2)';
       ctx.textAlign = 'left';
 
-      ctx.fillText('meter :  ' + JSON.stringify(toFieldInt(IFC.mouse)) , 30,  40);
+      ctx.fillText('meter :  ' + JSON.stringify(self.toFieldInt(IFC.mouse)) , 30,  40);
       ctx.fillText('mouse :  ' + JSON.stringify(IFC.mouse)             , 30,  70);
       ctx.fillText('body  :  ' + bodyShort(infobody)                   , 30, 100);
       ctx.fillText('info  :  ' + JSON.stringify(info, null, 2)         , 30, 160);
