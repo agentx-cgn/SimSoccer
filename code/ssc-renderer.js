@@ -531,7 +531,7 @@ REN = (function(){
 
       // tor stroke
       ctx.fillRect(x - gw + lw + l2, y + h2 - gw + l2, gw - lw + l2, gl - lw);
-      ctx.fillRect(x + w,            y + h2 - gw + l2, gw - lw + l2, gl - lw);
+      ctx.fillRect(x + w - lw,       y + h2 - gw + l2, gw - lw + l2, gl - lw);
 
 
  
