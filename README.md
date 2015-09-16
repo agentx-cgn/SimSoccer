@@ -7,10 +7,11 @@ A simple JavaScript Soccer Simulation with an Player AI
 
 ### Status
 
- * 2015-09-16:  
+ * _2015-09-16:_  
    Physicsjs integrated  
    Garbage collections mostly eliminated  
    User interface allows to debug  
+   Events work  
    Basic behaviors work  
 
 ### ToDo
