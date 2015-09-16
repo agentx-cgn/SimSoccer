@@ -56,30 +56,26 @@ IFC = (function(){
 
     boot:   function () { return (self = this);
 
-    }, stop:  function (){SIM.reset(); self.animate('stop');
-    }, play:  function (){self.animate('play');
-    }, pause: function (){self.animate('pause');
-    }, step:  function (){self.animate('step');
-    }, error: function (error) {console.log(error);
-    }, show:  function () { $content.style.display = 'block';
-    }, init:  function () {
+    }, stop:  function ( ){SIM.reset(); self.animate('stop');
+    }, play:  function ( ){self.animate('play');
+    }, pause: function ( ){self.animate('pause');
+    }, step:  function ( ){self.animate('step');
+    }, error: function (e){console.log(e);
+    }, show:  function ( ){ $content.style.display = 'block';
+    }, init:  function ( ){
 
-      $content    = $('.content');
-
-      $playground = $('.playground');
-      $messages   = $('.messages');
-      $ticker     = $('.ticker');
-      $errors     = $('.errors');
-      $code       = $('.code');
-      $images     = $('.images');
-
-      $menu       = $('.menu');
-      $menuList   = $('.menu-list');
-
+      $content      = $('.content');
+      $playground   = $('.playground');
+      $messages     = $('.messages');
+      $ticker       = $('.ticker');
+      $errors       = $('.errors');
+      $code         = $('.code');
+      $images       = $('.images');
+      $menu         = $('.menu');
+      $menuList     = $('.menu-list');
       $messagesList = $('.messages-list');
 
-
-      $('#btnToggle').onclick = function () {self.toggleTab();};
+      $('#btnToggle').onclick = self.toggleTab;
       $('#btnStop').onclick   = self.stop;
       $('#btnPause').onclick  = self.pause;
       $('#btnPlay').onclick   = self.play;
@@ -114,7 +110,7 @@ IFC = (function(){
         if (e.button === 0){
           if (mouseOverBody){
             selected = mouseOverBody.selected;
-            H.each(PHY.find({selected: true}), (i, body) => {
+            H.each(PHY.find('selected'), (i, body) => {
               body.selected = false;
             });
             mouseOverBody.selected = !selected;
@@ -130,10 +126,10 @@ IFC = (function(){
 
         // middle removes mark and select
         if (e.button === 1){
-          H.each(PHY.find({selected: true}), (i, body) => {
+          H.each(PHY.find('selected'), (i, body) => {
             body.selected = false;
           });
-          H.each(PHY.find({marked: true}), (i, body) => {
+          H.each(PHY.find('marked'), (i, body) => {
             body.marked = false;
           });
         }

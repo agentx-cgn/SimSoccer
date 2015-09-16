@@ -335,6 +335,18 @@ SIM = (function(){
 
           }
 
+        }, 'sandbox-collision:detected': function(data){
+
+          H.each(data.collisions, (i, coll) => {
+
+            if (coll.bodyA.treatment !== 'static'){
+              PHY.stopBodies([coll.bodyA]);
+            }
+            if (coll.bodyB.treatment !== 'static'){
+              PHY.stopBodies([coll.bodyB]);
+            }
+
+          });
 
         }
 

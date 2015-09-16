@@ -30,6 +30,11 @@ PHY = (function(){
       team0:   [],
       team1:   [],
       posts:   [],
+    },
+
+    filters = {
+      selected: {selected: true},
+      marked:   {marked:   true},
     };
 
   return {
@@ -59,8 +64,15 @@ PHY = (function(){
       return this;
 
     }, tick:   function(time){world.step(time);
-    }, resize: function( /* transform */ ){self.updateSandbox();
-    }, find:   function(conds){return world.find(conds);
+    }, resize: function(){self.updateSandbox();
+    }, find:   function(conds){
+
+      return (
+        conds === 'selected' ? world.find(filters.selected) :
+        conds === 'marked'   ? world.find(filters.marked)   :
+          world.find(conds)
+      );
+
     }, add:    function(thing, options){
 
       behaviors[thing] =  Physics.behavior(thing, options || {}),
@@ -107,10 +119,10 @@ PHY = (function(){
       // max: The maximum distance in which to apply the attraction (default: Infinity)
       // min: The minimum distance above which to apply the attraction (default: very small non-zero)
 
-      attractor  = Physics.behavior('marked-player-attractor', {
+      attractor  = Physics.behavior('player-marked-attractor', {
         strength: 0.0015,
-        order: 0,
-        min: 1
+        order:    0,
+        min:      1
       });
 
       // add things to the world
@@ -119,7 +131,7 @@ PHY = (function(){
       world.add(bodies.players);
       world.add(bodies.posts);
 
-      // make some filters
+      // prepare some queries
       H.extend(bodies, {
         ball:    world.find({name: 'ball'})[0],
         team0:   world.find({team: 0}),
@@ -138,7 +150,7 @@ PHY = (function(){
         Physics.behavior('body-impulse-response'),      // applies impulses
 
         // custom
-        Physics.behavior('player-focus-ball', {bodies: bodies.team0}),
+        Physics.behavior('players-focus-ball', {bodies: bodies.team0}),
         Physics.behavior('balls-basic', {bodies: bodies.balls}),
         
       ]);
@@ -173,19 +185,6 @@ PHY = (function(){
           world.wakeUpAll();
           world.remove( attractor );
         
-        }, 'edge-collisions:detected': function(data){
-
-          H.each(data.collisions, (i, coll) => {
-
-            if (coll.bodyA.treatment !== 'static'){
-              self.stopBodies([coll.bodyA]);
-            }
-            if (coll.bodyB.treatment !== 'static'){
-              self.stopBodies([coll.bodyB]);
-            }
-
-          });
-
         }, 'collisions:detected': function(data){
 
           var i;
@@ -226,7 +225,7 @@ PHY = (function(){
         aabb: Physics.aabb(-m, -m, l + m, w + m), 
         restitution: 0.99, 
         cof:1,
-        channel: 'edge-collisions:detected'
+        channel: 'sandbox-collision:detected'
       });
 
       world && world.addBehavior(sandbox);
@@ -405,7 +404,7 @@ PHY = (function(){
 
       });
 
-      self.createBehaviour('player-focus-ball', {scratch: true}, function (player) {
+      self.createBehaviour('players-focus-ball', {scratch: true}, function (player) {
 
         position = this.scratch.vector().set(player.state.pos._[0], player.state.pos._[1]); 
         position.vsub( bodies.ball.state.pos );
@@ -445,7 +444,7 @@ PHY = (function(){
         min:      1
       };
 
-      self.createBehaviour('marked-player-attractor', defaults1, function (body) {
+      self.createBehaviour('player-marked-attractor', defaults1, function (body) {
 
         var norm, options = this.options;
         
