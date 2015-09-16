@@ -42,9 +42,9 @@ CFG = {
         width  :         70,  // meter
         length :        110,
 
-        middleCircle:     9.15,
-        penaltyCircle:    9.15,
+        radiuscircle:     9.15,
         strafraum:       16.5,
+        torraum:          5.5,
         cornerRadius:     1.0
     },
 
@@ -112,9 +112,9 @@ CFG = {
             name:     'Hunters', 
             styles:   {fill: '#66F', stroke: '#FFF', angleIndicator: '#00F'},
             players : {
-                 '1': {sign: 'Sam', role: 'TW', mass: 60, x:  5.5, y: 35, angle: 0, styles: {stroke: '#000'}},
-                 '2': {sign: 'Sun', role: 'LV', mass: 60, x: 15.5, y: 30, angle: 0, styles: {}},
-                 '3': {sign: 'Son', role: 'RV', mass: 60, x: 15.5, y: 40, angle: 0, styles: {}},
+                 '1': {sign: 'Sam', role: 'TW', mass: 60, x:  2.0, y: 35, angle: 0, styles: {stroke: '#000'}},
+                 '2': {sign: 'Sun', role: 'LV', mass: 60, x: 12.0, y: 30, angle: 0, styles: {}},
+                 '3': {sign: 'Son', role: 'RV', mass: 60, x: 12.0, y: 40, angle: 0, styles: {}},
             }
 
         }, {
@@ -122,9 +122,9 @@ CFG = {
             name:     'Predators', 
             styles:   {fill: '#0F0', stroke: '#FFF', angleIndicator: '#0F0'},
             players : {
-                 '1': {sign: 'Yam', role: 'TW', mass: 70, x: 110 -  5.5, y: 35, angle: Math.PI, styles: {stroke: '#000'}},
-                 '2': {sign: 'Yun', role: 'LV', mass: 70, x: 110 - 15.5, y: 30, angle: Math.PI, styles: {}},
-                 '3': {sign: 'Yon', role: 'RV', mass: 70, x: 110 - 15.5, y: 40, angle: Math.PI, styles: {}},
+                 '1': {sign: 'Yam', role: 'TW', mass: 70, x: 110 -  2.0, y: 35, angle: Math.PI, styles: {stroke: '#000'}},
+                 '2': {sign: 'Yun', role: 'LV', mass: 70, x: 110 - 12.0, y: 30, angle: Math.PI, styles: {}},
+                 '3': {sign: 'Yon', role: 'RV', mass: 70, x: 110 - 12.0, y: 40, angle: Math.PI, styles: {}},
             }
 
         }

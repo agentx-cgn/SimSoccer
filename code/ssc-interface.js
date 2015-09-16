@@ -75,7 +75,7 @@ IFC = (function(){
       $menuList     = $('.menu-list');
       $messagesList = $('.messages-list');
 
-      $('#btnToggle').onclick = self.toggleTab;
+      $('#btnToggle').onclick = function(){self.toggleTab();},
       $('#btnStop').onclick   = self.stop;
       $('#btnPause').onclick  = self.pause;
       $('#btnPlay').onclick   = self.play;

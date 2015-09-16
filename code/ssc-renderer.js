@@ -433,68 +433,88 @@ REN = (function(){
 
     }, drawField: function(){
 
-      var 
-        scale        = transform.scale,
-        [x, y, w, h] = transform.field,
-        lineWidth = CFG.Field.lineWidth * scale,
-        l2 = lineWidth / 2,
-        rc = CFG.Field.cornerRadius * scale - l2,
-        rm = CFG.Field.middleCircle * scale - l2,
-        ls = CFG.Field.strafraum    * scale,
-        gw = CFG.Goal.width         * scale,
-        gl = CFG.Goal.length        * scale,
-        pr = lineWidth * 0.6;
-
       // x, y, w, h include lines
 
-      ctx.lineWidth   = lineWidth;
+      var 
+        i, c, r,
+        scale        = transform.scale,
+        [x, y, w, h] = transform.field,
+        lw = CFG.Field.lineWidth * scale,
+        h2 = h  / 2,
+        w2 = w  / 2,
+        l2 = lw / 2,
+        rc = CFG.Field.cornerRadius * scale - l2,
+        rb = CFG.Field.radiuscircle * scale - l2,
+        sb = CFG.Field.strafraum    * scale,
+        ss = sb + sb,
+        tb = CFG.Field.torraum      * scale,
+        tt = tb + tb,
+        gw = CFG.Goal.width         * scale,
+        gl = CFG.Goal.length        * scale,
+        pr = lw * 0.6,
+        el = 11 * scale,
+        pe = 0.92,
+
+        circles = [
+          
+          // corners
+          [x + l2,     y + l2,      rc, 0,        PI2],
+          [x + w - l2, y + l2,      rc, PI2,      PI],
+          [x + w - l2, y + h - l2,  rc, PI,       PI + PI2],
+          [x + l2,     y + h - l2,  rc, PI + PI2, TAU],
+          
+          // center
+          [x + w2,     y + h2,      rb, 0,        TAU],
+          [x + w2,     y + h2,      pr, 0,        TAU],
+          
+          // elfer klein
+          [x + el,     y + h2,      pr, 0,        TAU],
+          [x + w - el, y + h2,      pr, 0,        TAU],
+          
+          // elfer groß
+          [x + el,     y + h2,      rb, -pe,      pe],
+          [x + w - el, y + h2,      rb, PI - pe,  PI + pe],
+
+        ],
+
+        recs = [
+
+          // outer, middle
+          [x + l2,           y + l2,           w - lw,  h - lw],
+          [x + w2,           y + lw,           0,       h - lw + lw],
+
+          // strafraum
+          [x + l2,           y + h2 - sb + l2, sb - lw, ss - lw],
+          [x + w - sb + l2,  y + h2 - sb + l2, sb - lw, ss - lw],
+
+          // torraum
+          [x + l2,           y + h2 - tb + l2, tb - lw, tt - lw],
+          [x + w - tb + l2,  y + h2 - tb + l2, tb - lw, tt - lw],
+
+          // tore
+          [x - gw + lw + l2, y + h2 - gw + l2, gw - lw, gl - lw],
+          [x + w - l2,       y + h2 - gw + l2, gw - lw, gl - lw],
+
+        ];
+
+      ctx.lineWidth   = lw;
       ctx.strokeStyle = CFG.Field.lineColor;
+      ctx.fillStyle   = CFG.Goal.fillColor;
 
-      // outer, middle
-      ctx.strokeRect(x + l2,  y + l2,        w - lineWidth, h - lineWidth);
-      ctx.strokeRect(x + w/2, y + lineWidth, 0,             h - 2 * lineWidth);
-      
-      // corners
-      ctx.beginPath();
-      ctx.arc(x + l2, y + l2,         rc, 0, PI2);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(x + w - l2, y + l2,     rc, PI2, PI);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(x + w - l2, y + h - l2, rc, PI, PI + PI2);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(x + l2, y + h - l2,     rc, PI + PI2, TAU);
-      ctx.stroke();
+      for (i=0; (c = circles[i]); i++){
+        ctx.beginPath();
+        ctx.arc(c[0], c[1], c[2], c[3], c[4]);
+        ctx.stroke();
+      }
 
-      // center
-      ctx.beginPath();
-      ctx.arc(x + w / 2, y + h / 2,     rm, 0, TAU);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(x + w / 2, y + h / 2,     pr, 0, TAU);
-      ctx.stroke();
+      for (i=0; (r = recs[i]); i++){
+        ctx.strokeRect(r[0], r[1], r[2], r[3]);
+      }
 
-      // strafraum
-      ctx.strokeRect(x + l2, y + h / 2 - ls + l2, ls - lineWidth, 2 * ls - lineWidth);
+      // tor stroke
+      ctx.fillRect(x - gw + lw + l2, y + h2 - gw + l2, gw - lw + l2, gl - lw);
+      ctx.fillRect(x + w,            y + h2 - gw + l2, gw - lw + l2, gl - lw);
 
-      // elfer
-      ctx.beginPath();
-      ctx.arc(x + 11 * scale, y + h / 2,     pr, 0, TAU);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(x + w - 11 * scale, y + h / 2, pr, 0, TAU);
-      ctx.stroke();
-
-      // tor
-      ctx.fillStyle = CFG.Goal.fillColor;
-
-      ctx.strokeRect(x - gw + 3 * l2, y + h / 2 - gw + l2, gw - 2 * l2, gl - 2 * l2);
-      ctx.fillRect  (x - gw + 3 * l2, y + h / 2 - gw + l2, gw - 3 * l2, gl - 2 * l2);
-
-      ctx.strokeRect(x + w - l2,      y + h / 2 - gw + l2, gw - 2 * l2, gl - 2 * l2);
-      ctx.fillRect(  x + w,           y + h / 2 - gw + l2, gw - 3 * l2, gl - 2 * l2);
 
  
     }, drawPlayer:  function(body){

@@ -18,4 +18,5 @@ A simple JavaScript Soccer Simulation with an Player AI
     
   * Bigger sandbox?
   * Behaviors: 
-    * Calibaration for players
+    * Calibration for players
+  * Distances  
