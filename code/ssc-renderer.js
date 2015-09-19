@@ -107,7 +107,7 @@ REN = (function(){
 
     }, render: function(bodies, worldmeta){
 
-      var i, body, name;
+      var i, body;
 
       PHY.world.emit('beforeRender', {
         renderer: this,
@@ -127,11 +127,9 @@ REN = (function(){
       draw.mouse       && self.drawMouse(IFC.mouse);
       draw.messages    && self.drawMessages(SIM.game.messages);
 
-
       ctx.save();
       self.translate();
 
-      // translate 0,0
       draw.corner      && self.drawCorner();
       draw.spotkick    && self.drawSpotkick();
 
@@ -139,19 +137,15 @@ REN = (function(){
 
       draw.collisions  && self.drawCollisions(PHY.collisions);
 
-      // w/ translate x,y
       TWEEN.update();  // whistle
       self.drawTeamsResult(0.4);
       self.drawSimState(0.3);
 
       for (i = 0; (body = bodies[i]); i++){
 
-        name = body.name;
-
-        // transform w/ angle
-        (name === 'ball')   && self.drawBall(body);
-        (name === 'player') && self.drawPlayer(body);
-        (name === 'post')   && self.drawPost(body);
+        (body.name === 'ball')   && self.drawBall(body);
+        (body.name === 'player') && self.drawPlayer(body);
+        (body.name === 'post')   && self.drawPost(body);
 
       }
 
@@ -314,7 +308,6 @@ REN = (function(){
 
       ctx.globalAlpha = alpha;
       ctx.drawImage(imgWhistle, 0, 0, size, size);
-
       ctx.globalAlpha = keep;
 
 
@@ -335,9 +328,8 @@ REN = (function(){
       ctx.lineTo(x, y+l);
       ctx.stroke();
 
-      ctx.setLineDash([0.4, 0.8]);
       ctx.strokeStyle = 'rgba(200, 200, 200, 0.8)';
-
+      ctx.setLineDash([0.4, 0.8]);
       self.strokeCircle(x, y, 9.15, 'rgba(200, 200, 200, 0.8)');
       ctx.setLineDash([]);
 
@@ -357,10 +349,9 @@ REN = (function(){
       if (x === 0 && y === h){ start = PI + PI2; end = TAU; }
 
       ctx.lineWidth = 3 / transform.scale;
+
       ctx.setLineDash([0.4, 0.8]);
-
       self.strokeCircle(x, y, 9.15, 'rgba(220, 220, 220, 0.8)', start, end);
-
       ctx.setLineDash([]);
       
 
@@ -550,8 +541,6 @@ REN = (function(){
         x      = body.state.pos._[0]    + t * body.state.vel._[0], 
         y      = body.state.pos._[1]    + t * body.state.vel._[1],
         angle  = body.state.angular.pos + t * body.state.angular.vel,
-        fill   = body.styles.fill,
-        stroke = body.styles.stroke,
         radius = body.width +1.5;
 
       self.translate(x, y, angle);
@@ -566,8 +555,8 @@ REN = (function(){
         self.fillCircle(0, 0, radius, body.styles.select);
       }
 
-      ctx.fillStyle   = fill;
-      ctx.strokeStyle = stroke;
+      ctx.fillStyle   = body.styles.fill;
+      ctx.strokeStyle = body.styles.stroke;
 
       ctx.lineWidth = 1 / transform.scale;
       ctx.fillRect(-body.width/2, -body.height/2, body.width, body.height);
@@ -604,26 +593,23 @@ REN = (function(){
         y      = body.state.pos._[1] +    t * body.state.vel._[1],
         r      = CFG.Ball.radius,
         angle  = body.state.angular.pos + t * body.state.angular.vel,
-        fill   = body.styles.fill,
-        stroke = body.styles.stroke,
-        radius = r + 1.5,
         playerColor = body.player ? body.player.styles.fill : undefined;
 
-      self.translate(x, y, 0);
+      self.translate(x, y, angle);
 
       if (body.selected){
         ctx.lineWidth = 3 / transform.scale;
-        self.strokeCircle(0, 0, radius, body.styles.mark);
+        self.strokeCircle(0, 0, r + 1.5, body.styles.mark);
       }
 
       if (body.marked){
-        self.fillCircle(0, 0, radius, body.styles.select);
+        self.fillCircle(0, 0, r + 1.5, body.styles.select);
       }
 
       ctx.lineWidth = 1 / transform.scale;
       ctx.beginPath();
-      ctx.fillStyle = fill;
-      ctx.strokeStyle = stroke;
+      ctx.fillStyle   = body.styles.fill;
+      ctx.strokeStyle = body.styles.stroke;
       ctx.arc(0, 0, r, 0, TAU, false);
       ctx.stroke();
       ctx.fill();
