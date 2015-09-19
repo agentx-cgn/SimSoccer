@@ -513,9 +513,9 @@ REN = (function(){
 
     }, drawField: function(){
 
-      var r, c, i, lw = CFG.Field.lineWidth;
+      var r, c, i;
 
-      ctx.lineWidth   = lw;
+      ctx.lineWidth   = CFG.Field.lineWidth;
       ctx.strokeStyle = CFG.Field.lineColor;
       ctx.fillStyle   = CFG.Goal.fillColor;
 
@@ -540,19 +540,18 @@ REN = (function(){
         t      = meta.interpolateTime,
         x      = body.state.pos._[0]    + t * body.state.vel._[0], 
         y      = body.state.pos._[1]    + t * body.state.vel._[1],
-        angle  = body.state.angular.pos + t * body.state.angular.vel,
-        radius = body.width +1.5;
+        angle  = body.state.angular.pos + t * body.state.angular.vel;
 
       self.translate(x, y, angle);
 
       ctx.lineWidth = 3 / transform.scale;
 
       if (body.selected){
-        self.strokeCircle(0, 0, radius, body.styles.mark);
+        self.strokeCircle(0, 0, body.width + 1.5, body.styles.mark);
       }
 
       if (body.marked){
-        self.fillCircle(0, 0, radius, body.styles.select);
+        self.fillCircle(0, 0, body.width + 1.5, body.styles.select);
       }
 
       ctx.fillStyle   = body.styles.fill;
@@ -565,7 +564,7 @@ REN = (function(){
       ctx.beginPath();
       ctx.strokeStyle = body.styles.angleIndicator;
       ctx.moveTo(0, 0);
-      ctx.lineTo(body.width *2, 0);
+      ctx.lineTo(body.width * 2, 0);
       ctx.stroke();
 
 
@@ -607,9 +606,9 @@ REN = (function(){
       }
 
       ctx.lineWidth = 1 / transform.scale;
-      ctx.beginPath();
       ctx.fillStyle   = body.styles.fill;
       ctx.strokeStyle = body.styles.stroke;
+      ctx.beginPath();
       ctx.arc(0, 0, r, 0, TAU, false);
       ctx.stroke();
       ctx.fill();
@@ -618,8 +617,8 @@ REN = (function(){
         self.fillCircle(0, 0, r/2, playerColor);
       }
 
-      ctx.beginPath();
       ctx.strokeStyle = body.styles.angleIndicator;
+      ctx.beginPath();
       ctx.moveTo(0, 0);
       ctx.lineTo(r + r, 0);
       ctx.stroke();

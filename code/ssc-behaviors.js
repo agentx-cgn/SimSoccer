@@ -41,45 +41,17 @@ BHV = (function(){
       self.add('players-focus-ball', {bodies: PHY.bodies.team0});
       self.add('balls-basic');      
 
-      self.listen();
 
     }, add:    function(name, options){
 
       behaviors[name] =  Physics.behavior(name, options || {}),
       world.add(behaviors[name]);
 
+
     }, sub:    function(name){
 
       world.remove(behaviors[name]);    
       behaviors[name] = null;  
-
-
-    }, 'listen': function(){
-
-      world.on(
-
-        { 'interact:poke': function( e ){
-          
-          // patched behavior
-          if (!IFC.mouseOverBody && e.button === 0){
-            // world.wakeUpAll();
-            // behaviors['interactive'].options({pos: REN.toField(e)});
-            // self.add( behaviors['interactive'] );
-          }
-
-        }, 'interact:move': function( e ){
-          
-          // behaviors['interactive'].options({pos: REN.toField(e)});
-        
-        }, 'interact:release': function(){
-          
-          // world.wakeUpAll();
-          // self.sub( behaviors['interactive'] );
-
-        }
-
-      });
-
 
 
     }, 'players-selected-targeting': function(body){
@@ -118,8 +90,14 @@ BHV = (function(){
 
     }, 'players-focus-ball' : function (body) {
 
-        position = this.scratch.vector().set(body.state.pos._[0], body.state.pos._[1]); 
-        position.vsub( PHY.bodies.ball.state.pos );
+        position = this.scratch.vector()
+          .set(
+            body.state.pos._[0], 
+            body.state.pos._[1]
+          )
+          .vsub( PHY.bodies.ball.state.pos )
+        ;
+
         body.state.angular.pos = (position.angle() + PI) % TAU;
 
 
@@ -135,14 +113,12 @@ BHV = (function(){
           y - body.radius > CFG.Field.width
         );
 
-      if ( isOff ){
-        if (SIM.game.state === 'running'){
-          world.emit('game:ball-off-field', {x, y, player: body.player});
-          PHY.stopBodies([ body ]);
-        }
+      if ( isOff && SIM.game.state === 'running'){
+        world.emit('game:ball-off-field', {x, y, player: body.player});
+        PHY.stopBodies([ body ]);
       }
 
-      // slow rotation down
+      // slowdown rotation
       body.state.angular.vel *= CFG.Physics.angularFriction; 
 
 
