@@ -23,6 +23,8 @@ IFC = (function(){
 
     $messagesList,
 
+    cmd, // animation
+
     $menu,
     $menuList,
     menuItems = [
@@ -82,7 +84,8 @@ IFC = (function(){
       $('#btnStep').onclick   = self.step;
 
       cvs = self.cvs = document.createElement('canvas');
-      cvs.setAttribute('moz-opaque', 'moz-opaque');
+      // cvs.setAttribute('moz-opaque', 'moz-opaque');
+      cvs.style.backgroundColor = CFG.Screen.backcolor;
       ctx = self.ctx = cvs.getContext('2d');
       $playground.appendChild(cvs);
 
@@ -183,8 +186,6 @@ IFC = (function(){
 
 
     }, animate: function (command){
-
-      var cmd;
 
       if (command === 'stop')  { cmd = command; SIM.reset(); return;}
       if (command === 'play')  { cmd = command; animate(); }

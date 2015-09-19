@@ -33,19 +33,15 @@ REN = (function(){
       spotkick:   false,
     },
 
+    transX, transY, transA,
     transform = {field: [0, 0, 0, 0], scale: 1},
+
+    strokeCircles, strokeRecs, fillRecs,
 
     tweenWhistle = null,
 
     imgWhistle;
 
-
-    // function toFieldInt(p){
-    //   point = self.toField(p); 
-    //   point.x = ~~point.x;
-    //   point.x = ~~point.x;
-    //   return point;
-    // }
     function bodyShort (infobody){
       return ( !infobody ? 'none' :
         infobody.name === 'player' ? H.format('%s, %s [%s]', infobody.name, infobody.sign, infobody.team) :
@@ -77,6 +73,7 @@ REN = (function(){
       height = winHeight;
 
       self.calcTransform();
+      self.calcField();
       PHY.resize(transform);
 
 
@@ -87,9 +84,6 @@ REN = (function(){
         y: (point.y - transform.field[1]) / transform.scale
       };
 
-      // point.x = (point.x - transform.field[0]) / transform.scale;
-      // point.y = (point.y - transform.field[1]) / transform.scale;
-      // return point;
 
     }, toFieldInt : function (p) {
 
@@ -127,16 +121,15 @@ REN = (function(){
       ctx.fillStyle = CFG.Screen.backcolor;
       ctx.fillRect(0, 0, cvs.width, cvs.height);
 
-      // ctx.globalAlpha = SIM.gameruns ? 1.0 : 0.3;
-      // ctx.strokeStyle = 'white';
-      // ctx.strokeRect(10, 10, cvs.width -20, cvs.height -20);
-      // ctx.drawImage(imgWhistle, 0, 0, 30, 30);
-
       // no transform
       draw.info        && self.drawDebug();
       draw.speed       && self.drawSpeed();
       draw.mouse       && self.drawMouse(IFC.mouse);
       draw.messages    && self.drawMessages(SIM.game.messages);
+
+
+      ctx.save();
+      self.translate();
 
       // translate 0,0
       draw.corner      && self.drawCorner();
@@ -162,6 +155,29 @@ REN = (function(){
 
       }
 
+      ctx.restore();
+
+
+    }, translate: function(x, y, angle){
+
+      if (x !== undefined){
+        ctx.rotate(-transA);
+        ctx.translate(-transX, -transY);
+        ctx.translate(x, y);
+        ctx.rotate(angle || 0);
+        transX = x;
+        transY = y;
+        transA = angle || 0;
+
+      } else {
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.translate(transform.field[0], transform.field[1]);
+        ctx.scale(transform.scale, transform.scale);
+        transX = 0;
+        transY = 0;
+        transA = 0;
+
+      }
 
     }, calcTransform: function(){
 
@@ -191,6 +207,100 @@ REN = (function(){
       transform.field = [x, y, w, h];
 
 
+    }, calcField: function(){
+
+        var 
+          w  = CFG.Field.length,
+          h  = CFG.Field.width,
+          lw = CFG.Field.lineWidth,
+          h2 = h  / 2,
+          w2 = w  / 2,
+          l2 = lw / 2,
+          rc = CFG.Field.cornerRadius  - l2,
+          rb = CFG.Field.radiuscircle  - l2,
+          sb = CFG.Field.strafraum,
+          ss = sb + sb,
+          tb = CFG.Field.torraum,
+          tt = tb + tb,
+          gw = CFG.Goal.width,
+          gl = CFG.Goal.length,
+          pr = lw * 0.6,
+          el = 11,
+          pe = 0.92;        
+
+        strokeCircles = [
+          
+          // corners
+          [l2,     l2,      rc, 0,        PI2],
+          [w - l2, l2,      rc, PI2,      PI],
+          [w - l2, h - l2,  rc, PI,       PI + PI2],
+          [l2,     h - l2,  rc, PI + PI2, TAU],
+          
+          // center
+          [w2,     h2,      rb, 0,        TAU],
+          [w2,     h2,      pr, 0,        TAU],
+          
+          // elfer klein
+          [el,     h2,      pr, 0,        TAU],
+          [w - el, h2,      pr, 0,        TAU],
+          
+          // elfer groß
+          [el,     h2,      rb, -pe,      pe],
+          [w - el, h2,      rb, PI - pe,  PI + pe],
+
+        ];
+
+        strokeRecs = [
+
+          // outer, middle
+          [l2,            l2,           w - lw,  h - lw],
+          [w2,            lw,           0,       h - lw + lw],
+
+          // strafraum
+          [l2,            h2 - sb + l2, sb - lw, ss - lw],
+          [w - sb + l2,   h2 - sb + l2, sb - lw, ss - lw],
+
+          // torraum
+          [l2,            h2 - tb + l2, tb - lw, tt - lw],
+          [w - tb + l2,   h2 - tb + l2, tb - lw, tt - lw],
+
+          // tore
+          [-gw + lw + l2, h2 - gw + l2, gw - lw, gl - lw],
+          [w - l2,        h2 - gw + l2, gw - lw, gl - lw],
+
+        ];
+
+        fillRecs = [
+
+          // tor stroke
+          [-gw + lw + l2, h2 - gw + l2, gw - lw + l2, gl - lw],
+          [w - lw,        h2 - gw + l2, gw - lw + l2, gl - lw]
+
+        ];
+
+
+    }, fillCircle:  function(x, y, radius, style, start, end){
+
+      start = start || 0;
+      end   = end   || TAU;
+
+      ctx.beginPath();
+      ctx.fillStyle = style;
+      ctx.arc(x, y, radius, start, end, false);
+      ctx.fill();
+      
+
+    }, strokeCircle:  function(x, y, radius, style, start, end){
+
+      start = start || 0;
+      end   = end   || TAU;
+
+      ctx.beginPath();
+      ctx.strokeStyle = style;
+      ctx.arc(x, y, radius, start, end, false);
+      ctx.stroke();
+
+
     }, drawWhistle: function(alpha, team){
 
       var 
@@ -200,17 +310,12 @@ REN = (function(){
         w2   = CFG.Field.length / 2,
         left = team === 0 ? w2 - size/2 : w2 + size/2;
 
-      ctx.save();
-      ctx.translate(transform.field[0], transform.field[1]);
-      ctx.scale(transform.scale, transform.scale);
-      ctx.translate(left, top);
+      self.translate(left, top, 0);
 
       ctx.globalAlpha = alpha;
       ctx.drawImage(imgWhistle, 0, 0, size, size);
 
       ctx.globalAlpha = keep;
-
-      ctx.restore();
 
 
     }, drawSpotkick: function(){
@@ -219,10 +324,6 @@ REN = (function(){
         x = draw.spotkick.x,
         y = draw.spotkick.y,
         l = 0.5;
-
-      ctx.save();
-      ctx.translate(transform.field[0], transform.field[1]);
-      ctx.scale(transform.scale, transform.scale);
 
       ctx.lineWidth = 3 / transform.scale;
       ctx.strokeStyle = 'rgba(250, 250, 250, 0.9)';
@@ -237,11 +338,8 @@ REN = (function(){
       ctx.setLineDash([0.4, 0.8]);
       ctx.strokeStyle = 'rgba(200, 200, 200, 0.8)';
 
-      ctx.beginPath();
-      ctx.arc(x, y, 9.15, 0, TAU, false);
-      ctx.stroke();
-
-      ctx.restore();
+      self.strokeCircle(x, y, 9.15, 'rgba(200, 200, 200, 0.8)');
+      ctx.setLineDash([]);
 
 
     }, drawCorner: function(){
@@ -258,19 +356,12 @@ REN = (function(){
       if (x === w && y === h){ start = PI;       end = PI + PI2; }
       if (x === 0 && y === h){ start = PI + PI2; end = TAU; }
 
-      ctx.save();
-      ctx.translate(transform.field[0], transform.field[1]);
-      ctx.scale(transform.scale, transform.scale);
-
       ctx.lineWidth = 3 / transform.scale;
       ctx.setLineDash([0.4, 0.8]);
 
-      ctx.beginPath();
-      ctx.strokeStyle = 'rgba(220, 220, 220, 0.8)';
-      ctx.arc(x, y, 9.15, start, end, false);
-      ctx.stroke();
+      self.strokeCircle(x, y, 9.15, 'rgba(220, 220, 220, 0.8)', start, end);
 
-      ctx.restore();
+      ctx.setLineDash([]);
       
 
     }, drawSimState: function(alpha){
@@ -283,10 +374,7 @@ REN = (function(){
         topState = 64,
         diff = 2;
 
-      ctx.save();
-      ctx.translate(transform.field[0], transform.field[1]);
-      ctx.scale(transform.scale, transform.scale);
-      ctx.translate(w2, top);
+      self.translate(w2, top, 0);
 
       ctx.textBaseline = 'top';
       ctx.fillStyle = fill;
@@ -297,8 +385,6 @@ REN = (function(){
 
       ctx.textAlign = 'left';
       ctx.fillText(H.format('%s (%s)', T.fmtTime(SIM.game.time), SIM.game.state), diff, topState);
-
-      ctx.restore();
 
 
     }, drawTeamsResult: function(alpha){
@@ -316,10 +402,7 @@ REN = (function(){
         fontTeams   = '6px Cantarell',
         fontResults = '4px Cantarell';
 
-      ctx.save();
-      ctx.translate(transform.field[0], transform.field[1]);
-      ctx.scale(transform.scale, transform.scale);
-      ctx.translate(w2, top);
+      self.translate(w2, top, 0);
 
       ctx.textBaseline = 'top';
       ctx.fillStyle = fill;
@@ -364,8 +447,6 @@ REN = (function(){
         cardsLeft += diff;
       }
 
-      ctx.restore();
-
 
     }, drawMessages: function(msgs){
 
@@ -387,11 +468,7 @@ REN = (function(){
 
     }, drawMouse: function(mouse){
 
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
-      ctx.beginPath();
-      ctx.arc(mouse.x, mouse.y, 20, 0, Math.PI*2, true);
-      // ctx.closePath();
-      ctx.stroke();
+      self.strokeCircle(mouse.x, mouse.y, 20, 'rgba(0, 0, 0, 0.5)');
     
 
     }, drawSpeed: function(){
@@ -437,102 +514,33 @@ REN = (function(){
         alphaDiff = 1 / CFG.Debug.maxCollisions,
         size = 0.5;
 
-      ctx.save();
-      ctx.translate(transform.field[0], transform.field[1]);
-      ctx.scale(transform.scale, transform.scale);
-
       while((coll = colls[--i])){
         ctx.fillStyle = H.format('rgba(250, 0, 0, %s)', alpha -= alphaDiff);
         ctx.fillRect(coll.x - size/2, coll.y - size/2, size, size);
       }
 
-      ctx.restore();
-
 
     }, drawField: function(){
 
-      // x, y, w, h include lines
-
-      var 
-        i, c, r,
-        scale        = transform.scale,
-        [x, y, w, h] = transform.field,
-        lw = CFG.Field.lineWidth * scale,
-        h2 = h  / 2,
-        w2 = w  / 2,
-        l2 = lw / 2,
-        rc = CFG.Field.cornerRadius * scale - l2,
-        rb = CFG.Field.radiuscircle * scale - l2,
-        sb = CFG.Field.strafraum    * scale,
-        ss = sb + sb,
-        tb = CFG.Field.torraum      * scale,
-        tt = tb + tb,
-        gw = CFG.Goal.width         * scale,
-        gl = CFG.Goal.length        * scale,
-        pr = lw * 0.6,
-        el = 11 * scale,
-        pe = 0.92,
-
-        circles = [
-          
-          // corners
-          [x + l2,     y + l2,      rc, 0,        PI2],
-          [x + w - l2, y + l2,      rc, PI2,      PI],
-          [x + w - l2, y + h - l2,  rc, PI,       PI + PI2],
-          [x + l2,     y + h - l2,  rc, PI + PI2, TAU],
-          
-          // center
-          [x + w2,     y + h2,      rb, 0,        TAU],
-          [x + w2,     y + h2,      pr, 0,        TAU],
-          
-          // elfer klein
-          [x + el,     y + h2,      pr, 0,        TAU],
-          [x + w - el, y + h2,      pr, 0,        TAU],
-          
-          // elfer groß
-          [x + el,     y + h2,      rb, -pe,      pe],
-          [x + w - el, y + h2,      rb, PI - pe,  PI + pe],
-
-        ],
-
-        recs = [
-
-          // outer, middle
-          [x + l2,           y + l2,           w - lw,  h - lw],
-          [x + w2,           y + lw,           0,       h - lw + lw],
-
-          // strafraum
-          [x + l2,           y + h2 - sb + l2, sb - lw, ss - lw],
-          [x + w - sb + l2,  y + h2 - sb + l2, sb - lw, ss - lw],
-
-          // torraum
-          [x + l2,           y + h2 - tb + l2, tb - lw, tt - lw],
-          [x + w - tb + l2,  y + h2 - tb + l2, tb - lw, tt - lw],
-
-          // tore
-          [x - gw + lw + l2, y + h2 - gw + l2, gw - lw, gl - lw],
-          [x + w - l2,       y + h2 - gw + l2, gw - lw, gl - lw],
-
-        ];
+      var r, c, i, lw = CFG.Field.lineWidth;
 
       ctx.lineWidth   = lw;
       ctx.strokeStyle = CFG.Field.lineColor;
       ctx.fillStyle   = CFG.Goal.fillColor;
 
-      for (i=0; (c = circles[i]); i++){
+      for (i=0; (c = strokeCircles[i]); i++){
         ctx.beginPath();
         ctx.arc(c[0], c[1], c[2], c[3], c[4]);
         ctx.stroke();
       }
 
-      for (i=0; (r = recs[i]); i++){
+      for (i=0; (r = strokeRecs[i]); i++){
         ctx.strokeRect(r[0], r[1], r[2], r[3]);
       }
 
-      // tor stroke
-      ctx.fillRect(x - gw + lw + l2, y + h2 - gw + l2, gw - lw + l2, gl - lw);
-      ctx.fillRect(x + w - lw,       y + h2 - gw + l2, gw - lw + l2, gl - lw);
-
+      for (i=0; (r = fillRecs[i]); i++){
+        ctx.fillRect(r[0], r[1], r[2], r[3]);
+      }
 
  
     }, drawPlayer:  function(body){
@@ -546,27 +554,16 @@ REN = (function(){
         stroke = body.styles.stroke,
         radius = body.width +1.5;
 
-      ctx.save();
-      ctx.translate(transform.field[0], transform.field[1]);
-      ctx.scale(transform.scale, transform.scale);
-      ctx.translate(x, y);
-      ctx.rotate(angle);
+      self.translate(x, y, angle);
+
+      ctx.lineWidth = 3 / transform.scale;
 
       if (body.selected){
-        ctx.lineWidth = 3 / transform.scale;
-        ctx.beginPath();
-        ctx.strokeStyle = body.styles.mark;
-        ctx.arc(0, 0, radius, 0, TAU, false);
-        // ctx.closePath();
-        ctx.stroke();
+        self.strokeCircle(0, 0, radius, body.styles.mark);
       }
 
       if (body.marked){
-        ctx.beginPath();
-        ctx.fillStyle = body.styles.select;
-        ctx.arc(0, 0, radius, 0, TAU, false);
-        // ctx.closePath();
-        ctx.fill();
+        self.fillCircle(0, 0, radius, body.styles.select);
       }
 
       ctx.fillStyle   = fill;
@@ -582,31 +579,21 @@ REN = (function(){
       ctx.lineTo(body.width *2, 0);
       ctx.stroke();
 
-      ctx.restore();
-
 
     }, drawPost:  function(body){
 
       var
-        x      = body.state.pos._[0], 
-        y      = body.state.pos._[1],
-        angle  = body.state.angular.pos;
+        x = body.state.pos._[0], 
+        y = body.state.pos._[1];
 
-      ctx.save();
-      ctx.translate(transform.field[0], transform.field[1]);
-      ctx.scale(transform.scale, transform.scale);
-      ctx.translate(x, y);
+      self.translate(x, y, 0);
       
-      // ctx.rotate(angle);
-
       ctx.fillStyle   = body.styles.fill;
       ctx.strokeStyle = body.styles.stroke;
 
       ctx.lineWidth = 1 / transform.scale;
       ctx.fillRect(0, 0, body.width, body.height);
       ctx.strokeRect(0, 0, body.width, body.height);
-
-      ctx.restore();
 
 
     }, drawBall:  function(body){
@@ -622,27 +609,15 @@ REN = (function(){
         radius = r + 1.5,
         playerColor = body.player ? body.player.styles.fill : undefined;
 
-      ctx.save();
-      ctx.translate(transform.field[0], transform.field[1]);
-      ctx.scale(transform.scale, transform.scale);
-      ctx.translate(x, y);
-      ctx.rotate(angle);
+      self.translate(x, y, 0);
 
       if (body.selected){
         ctx.lineWidth = 3 / transform.scale;
-        ctx.beginPath();
-        ctx.strokeStyle = body.styles.mark;
-        ctx.arc(0, 0, radius, 0, TAU, false);
-        // ctx.closePath();
-        ctx.stroke();
+        self.strokeCircle(0, 0, radius, body.styles.mark);
       }
 
       if (body.marked){
-        ctx.beginPath();
-        ctx.fillStyle = body.styles.select;
-        ctx.arc(0, 0, radius, 0, TAU, false);
-        // ctx.closePath();
-        ctx.fill();
+        self.fillCircle(0, 0, radius, body.styles.select);
       }
 
       ctx.lineWidth = 1 / transform.scale;
@@ -650,16 +625,11 @@ REN = (function(){
       ctx.fillStyle = fill;
       ctx.strokeStyle = stroke;
       ctx.arc(0, 0, r, 0, TAU, false);
-      // ctx.closePath();
       ctx.stroke();
       ctx.fill();
 
       if (playerColor){
-        ctx.beginPath();
-        ctx.fillStyle = playerColor;
-        ctx.arc(0, 0, r/2, 0, TAU, false);
-        // ctx.closePath();
-        ctx.fill();
+        self.fillCircle(0, 0, r/2, playerColor);
       }
 
       ctx.beginPath();
@@ -667,8 +637,6 @@ REN = (function(){
       ctx.moveTo(0, 0);
       ctx.lineTo(r + r, 0);
       ctx.stroke();
-
-      ctx.restore();
 
 
     }, drawClock: function(){
