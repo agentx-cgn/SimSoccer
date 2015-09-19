@@ -14,7 +14,7 @@ PHY = (function(){
 
   var 
     self, 
-    world, renderer, sandbox, integrator, attractor,
+    world, renderer, sandbox, integrator,
     player, 
     collisions = [],
 
@@ -94,8 +94,6 @@ PHY = (function(){
       self.prepareBodies();
       self.updateSandbox();
 
-      BHV.createBehaviors();
-
       renderer = Physics.renderer('soccer', {
         el:     IFC.cvs,
         width:  CFG.Field.length,
@@ -111,19 +109,23 @@ PHY = (function(){
       // max: The maximum distance in which to apply the attraction (default: Infinity)
       // min: The minimum distance above which to apply the attraction (default: very small non-zero)
 
-      attractor  = Physics.behavior('player-marked-attractor', {
-        strength: 0.0015,
-        order:    0,
-        min:      1
-      });
+      // attractor  = Physics.behavior('player-marked-attractor', {
+      //   strength: 0.0015,
+      //   order:    0,
+      //   min:      1
+      // });
 
       // add things to the world
-      world.add([renderer, integrator, sandbox]);
-      world.add(bodies.balls);
-      world.add(bodies.players);
-      world.add(bodies.posts);
+      self.add([
+        renderer, 
+        integrator, 
+        sandbox,
+        bodies.balls,
+        bodies.players,
+        bodies.posts,
+      ]);
 
-      // prepare some queries
+      // prepare body queries for behaviors
       H.extend(bodies, {
         ball:    world.find({name: 'ball'})[0],
         team0:   world.find({team: 0}),
@@ -131,67 +133,78 @@ PHY = (function(){
       });
 
       // add behaviors
-      world.add([
-
-        // enable mouse interaction
-        Physics.behavior('interactive', { el: renderer.el }),
+      self.add([
 
         // basic physics
         Physics.behavior('sweep-prune'),                // broad phase
         Physics.behavior('body-collision-detection'),   // narrow phase
         Physics.behavior('body-impulse-response'),      // applies impulses
-
-        // custom
-        Physics.behavior('players-focus-ball', {bodies: bodies.team0}),
-        Physics.behavior('balls-basic', {bodies: bodies.balls}),
         
       ]);
 
       self.listen();
 
 
+    }, add:   function(list){
+
+      H.each(list, (i, item) => {
+
+        if (Array.isArray(item)){
+          self.add(item)
+        
+        } else {
+          world.add(item);
+
+        }
+
+      });
+
+
     }, listen:   function(){
 
       // lifted
       var 
-        coll = null;
+        i, coll = null;
 
       world.on(
 
         {'interact:poke': function( e ){
           
           // patched behavior
-          if (!IFC.mouseOverBody && e.button === 0){
-            world.wakeUpAll();
-            attractor.options({pos: REN.toField(e)});
-            world.add( attractor );
-          }
+          // if (!IFC.mouseOverBody && e.button === 0){
+            // world.wakeUpAll();
+            // attractor.options({pos: REN.toField(e)});
+            // world.add( attractor );
+          // }
 
         }, 'interact:move': function( pos ){
           
-          attractor.options({pos: REN.toField(pos)});
+          // attractor.options({pos: REN.toField(pos)});
         
         }, 'interact:release': function(){
           
-          world.wakeUpAll();
-          world.remove( attractor );
+          // world.wakeUpAll();
+          // world.remove( attractor );
         
         }, 'collisions:detected': function(data){
 
-          var i;
-          
-          for (i=0; (coll = data.collisions[i]); i++){
+          if (CFG.Debug.collectCollisions){
 
-            collisions.push({
-              x: coll.bodyA.state.pos._[0] + coll.pos.x,
-              y: coll.bodyA.state.pos._[1] + coll.pos.y,
-            });
+            for (i=0; (coll = data.collisions[i]); i++){
 
-            if (collisions.length > CFG.Debug.maxCollisions){
-              collisions.shift(); // consider splice
+              collisions.push({
+                x: coll.bodyA.state.pos._[0] + coll.pos.x,
+                y: coll.bodyA.state.pos._[1] + coll.pos.y,
+              });
+
+              if (collisions.length > CFG.Debug.maxCollisions){
+                collisions.shift(); // consider splice
+              }
+
             }
 
           }
+
         }
 
       });

@@ -117,13 +117,6 @@ IFC = (function(){
               body.selected = false;
             });
             mouseOverBody.selected = !selected;
-
-            if (mouseOverBody.selected){
-              BHV.add('player-selected-interactive');
-            } else {
-              BHV.sub('player-selected-interactive');
-            }
-
           }
         }
 

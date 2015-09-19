@@ -1,5 +1,6 @@
 /*jslint bitwise: true, browser: true, evil:true, devel: true, todo: true, debug: true, nomen: true, plusplus: true, sloppy: true, vars: true, white: true, indent: 2 */
 /*jshint -W030 */
+/*jshint -W069 */
 /*globals IFC, BHV, CFG, H, REN, PHY, Physics */
 
 'use strict';
@@ -29,18 +30,68 @@ BHV = (function(){
     }, init: function(){
 
       world = PHY.world;
+      self.createBehaviors();
 
-    }, add:    function(thing, options){
+      // enable mouse interaction
+      world.add(Physics.behavior('interactive', { el: IFC.cvs }));
 
-      behaviors[thing] =  Physics.behavior(thing, options || {}),
-      world.add(behaviors[thing]);
+      self.add('players-marked-attractor');
+      self.add('players-selected-steering');
+      self.add('players-selected-targeting');
+      self.add('players-focus-ball', {bodies: PHY.bodies.team0});
+      self.add('balls-basic');      
 
-    }, sub:    function(thing){
+      self.listen();
 
-      world.remove(behaviors[thing]);      
+    }, add:    function(name, options){
+
+      behaviors[name] =  Physics.behavior(name, options || {}),
+      world.add(behaviors[name]);
+
+    }, sub:    function(name){
+
+      world.remove(behaviors[name]);    
+      behaviors[name] = null;  
 
 
-    }, 'player-selected-interactive': function(body){
+    }, 'listen': function(){
+
+      world.on(
+
+        { 'interact:poke': function( e ){
+          
+          // patched behavior
+          if (!IFC.mouseOverBody && e.button === 0){
+            // world.wakeUpAll();
+            // behaviors['interactive'].options({pos: REN.toField(e)});
+            // self.add( behaviors['interactive'] );
+          }
+
+        }, 'interact:move': function( e ){
+          
+          // behaviors['interactive'].options({pos: REN.toField(e)});
+        
+        }, 'interact:release': function(){
+          
+          // world.wakeUpAll();
+          // self.sub( behaviors['interactive'] );
+
+        }
+
+      });
+
+
+
+    }, 'players-selected-targeting': function(body){
+
+      if (this.pos){
+
+
+      }
+
+
+
+    }, 'players-selected-steering': function(body){
 
       var angle  = body.state.angular.pos;
 
@@ -83,47 +134,86 @@ BHV = (function(){
         );
 
       if ( isOff ){
-        world.emit('game:ball-off-field', {x, y, player: body.player});
-        PHY.stopBodies([ body ]);
+        if (SIM.game.state === 'running'){
+          world.emit('game:ball-off-field', {x, y, player: body.player});
+          PHY.stopBodies([ body ]);
+        }
       }
 
       // slow rotation down
       body.state.angular.vel *= CFG.Physics.angularFriction; 
 
 
-    }, 'player-marked-attractor': function (body) {
+    }, 'players-marked-attractor': function (body) {
 
       var norm, options = this.options;
+
+      if (options.pos){
+
+        body.sleep(false);
       
-      vector = this.scratch.vector()
-        .clone( options.pos )
-        .vsub( body.state.pos )
-      ;
+        vector = this.scratch.vector()
+          .clone( options.pos )
+          .vsub( body.state.pos )
+        ;
 
-      norm = vector.norm();  // get the distance
+        norm = vector.norm();  // get the distance
 
-      if (norm > options.min && norm < options.max){
-        body.accelerate( vector.normalize().mult( options.strength / Math.pow(norm, options.order) ) );
+        if (norm > options.min && norm < options.max){
+          body.accelerate( vector.normalize().mult( options.strength / Math.pow(norm, options.order) ) );
+        }
+
       }
 
 
     }, createBehaviors: function(){
 
-      self.create('balls-basic', {});
+      self.create('balls-basic', {bodies: PHY.bodies.balls});
 
       self.create('players-focus-ball', {scratch: true});
 
-      self.create('player-marked-attractor', {
-        filter:   {marked: true},
-        scratch:  true,
-        pos:      Physics.vector(),
-        strength: 0.0015,
-        order:    0,
-        max:      200, // across whole field
-        min:      1
+      self.create('players-selected-targeting', {
+        pos:     Physics.vector(),
+        filter:  {selected: true},
+        listen: {
+          'interact:poke': function( e ){
+            if (e.button === 0){
+              this.options.pos = REN.toField(e);
+            }
+          }, 
+          'interact:release': function(){
+            this.options.pos = null;
+          }
+        }
       });
 
-      self.create('player-selected-interactive', {
+      self.create('players-marked-attractor', {
+        pos:     null, //Physics.vector(),
+        filter:  {marked: true},
+        scratch:  true,
+        strength: 0.0015,
+        order:    0,
+        min:      1,
+        max:    200,
+        listen: {
+          'interact:poke': function( e ){
+            if (e.button === 0){
+              this.options.pos = REN.toField(e);
+            }
+          }, 
+          'interact:move': function(e){
+            if (this.options.pos){
+              this.options.pos = REN.toField(e);
+            }
+          },
+          'interact:release': function(){
+            this.options.pos = null;
+          }
+        }
+      });
+
+
+      self.create('players-selected-steering', {
         amount:  0.00001, 
         scratch: true,
         filter:  {selected: true},
@@ -171,18 +261,13 @@ BHV = (function(){
               });
             }
           },
-          behave: function ( /* data(bodies, dt) */ ) {
-
-            bodies = config.bodies || world.find(config.filter);
-
+          behave: function ( data ) {
+            bodies = config.bodies || world.find(config.filter) || data.bodies;
             config.scratch && (this.scratch = Physics.scratchpad());
-
             for (i = 0; (body = bodies[i]); i++){
               behave.call(this, body);
             }
-
             config.scratch && this.scratch.done();
-
           }
 
         };

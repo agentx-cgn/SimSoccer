@@ -13,6 +13,7 @@ CFG = {
         maxMessages:       10,     // max SIM Messages
         collectMessages:   false,
         maxCollisions:     10,     // remember at least X collisions
+        collectCollisions: false,
         draw: {
             info:          true,   // draw Deb info
             speed:         true,   // draw Deb render info
