@@ -1,16 +1,10 @@
 /*jslint bitwise: true, browser: true, evil:true, devel: true, todo: true, debug: true, nomen: true, plusplus: true, sloppy: true, vars: true, white: true, indent: 2 */
 /*jshint -W030 */
-/*globals IFC, BHV, CFG, H, REN, PHY, Physics */
+/*globals IFC, CFG, H, REN, PHY, Physics */
 
 'use strict';
 
 PHY = (function(){
-
-  const 
-    // FACTOR = 1;
-    TAU = Math.PI * 2,
-    PI  = Math.PI,
-    DEGRAD = Math.PI/180;
 
   var 
     self, 
@@ -20,7 +14,6 @@ PHY = (function(){
 
     // lifted, used in findat()
     vector = Physics.vector(),
-    point  = {x: 0, y: 0},
 
     bodies = {
       ball:    [],
@@ -48,7 +41,7 @@ PHY = (function(){
 
       world = self.world = new Physics.world({
         timestep:      6,  // 6
-        maxIPF:        4, // 4
+        maxIPF:        4,  // 4
         sleepDisabled: true,
       });
 
@@ -104,17 +97,6 @@ PHY = (function(){
         drag: CFG.Physics.drag
       });
 
-      // strength: How strong the attraction is (default: `1`)
-      // order: The power of the inverse distance (default: `2` because that is newtonian gravity... inverse square)
-      // max: The maximum distance in which to apply the attraction (default: Infinity)
-      // min: The minimum distance above which to apply the attraction (default: very small non-zero)
-
-      // attractor  = Physics.behavior('player-marked-attractor', {
-      //   strength: 0.0015,
-      //   order:    0,
-      //   min:      1
-      // });
-
       // add things to the world
       self.add([
         renderer, 
@@ -132,14 +114,11 @@ PHY = (function(){
         team1:   world.find({team: 1})
       });
 
-      // add behaviors
+      // add physical behaviors
       self.add([
-
-        // basic physics
         Physics.behavior('sweep-prune'),                // broad phase
         Physics.behavior('body-collision-detection'),   // narrow phase
-        Physics.behavior('body-impulse-response'),      // applies impulses
-        
+        Physics.behavior('body-impulse-response'),      // applies impulses on collision
       ]);
 
       self.listen();
@@ -150,7 +129,7 @@ PHY = (function(){
       H.each(list, (i, item) => {
 
         if (Array.isArray(item)){
-          self.add(item)
+          self.add(item);
         
         } else {
           world.add(item);
@@ -162,31 +141,11 @@ PHY = (function(){
 
     }, listen:   function(){
 
-      // lifted
-      var 
-        i, coll = null;
+      var i, coll = null;
 
-      world.on(
+      world.on({
 
-        {'interact:poke': function( e ){
-          
-          // patched behavior
-          // if (!IFC.mouseOverBody && e.button === 0){
-            // world.wakeUpAll();
-            // attractor.options({pos: REN.toField(e)});
-            // world.add( attractor );
-          // }
-
-        }, 'interact:move': function( pos ){
-          
-          // attractor.options({pos: REN.toField(pos)});
-        
-        }, 'interact:release': function(){
-          
-          // world.wakeUpAll();
-          // world.remove( attractor );
-        
-        }, 'collisions:detected': function(data){
+        'collisions:detected': function(data){
 
           if (CFG.Debug.collectCollisions){
 
@@ -198,7 +157,7 @@ PHY = (function(){
               });
 
               if (collisions.length > CFG.Debug.maxCollisions){
-                collisions.shift(); // consider splice
+                collisions.shift(); //TODO: consider splice
               }
 
             }
@@ -227,8 +186,8 @@ PHY = (function(){
 
       sandbox = Physics.behavior('edge-collision-detection', {
         aabb: Physics.aabb(-m, -m, l + m, w + m), 
-        restitution: 0.99, 
-        cof:1,
+        cof:  1.0,         // no slide
+        restitution: 0.0,  // not bouncy
         channel: 'sandbox-collision:detected'
       });
 

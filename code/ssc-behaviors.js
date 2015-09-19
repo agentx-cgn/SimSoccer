@@ -1,7 +1,7 @@
 /*jslint bitwise: true, browser: true, evil:true, devel: true, todo: true, debug: true, nomen: true, plusplus: true, sloppy: true, vars: true, white: true, indent: 2 */
 /*jshint -W030 */
 /*jshint -W069 */
-/*globals IFC, BHV, CFG, H, REN, PHY, Physics */
+/*globals IFC, SIM, BHV, CFG, H, REN, PHY, Physics */
 
 'use strict';
 
@@ -93,24 +93,26 @@ BHV = (function(){
 
     }, 'players-selected-steering': function(body){
 
-      var angle  = body.state.angular.pos;
+      var 
+        angle  = body.state.angular.pos,
+        accel  = this.options.accel,
+        turn   = this.options.turn,
+        amount = this.options.amount;
 
-      options = this.options,
+      REN.info.acce = accel;
+      REN.info.turn = turn;
 
-      REN.info.acce = this.accel;
-      REN.info.turn = this.turn;
-
-      if (this.accel !== undefined){
+      if (accel !== 0){
         vector = this.scratch.vector();
         vector.set(
-          this.accel * options.amount * Math.cos( angle ), 
-          this.accel * options.amount * Math.sin( angle ) 
+          accel * amount * Math.cos( angle ), 
+          accel * amount * Math.sin( angle ) 
         );
         body.accelerate( vector );
       }
 
-      if (this.turn !== undefined){
-        body.state.angular.vel = 0.3 * this.turn * DEGRAD;
+      if (turn !== 0){
+        body.state.angular.vel = 0.3 * turn * DEGRAD;
       }
 
 
@@ -177,7 +179,7 @@ BHV = (function(){
         filter:  {selected: true},
         listen: {
           'interact:poke': function( e ){
-            if (e.button === 0){
+            if (e.button === 0 && !IFC.mouseOverBody){
               this.options.pos = REN.toField(e);
             }
           }, 
@@ -187,8 +189,14 @@ BHV = (function(){
         }
       });
 
+
+      // strength: How strong the attraction is (default: `1`)
+      // order: The power of the inverse distance (default: `2` because that is newtonian gravity... inverse square)
+      // max: The maximum distance in which to apply the attraction (default: Infinity)
+      // min: The minimum distance above which to apply the attraction (default: very small non-zero)
+
       self.create('players-marked-attractor', {
-        pos:     null, //Physics.vector(),
+        pos:     null,
         filter:  {marked: true},
         scratch:  true,
         strength: 0.0015,
@@ -197,14 +205,10 @@ BHV = (function(){
         max:    200,
         listen: {
           'interact:poke': function( e ){
-            if (e.button === 0){
-              this.options.pos = REN.toField(e);
-            }
+            this.options.pos = e.button === 0 ? REN.toField(e) : null;
           }, 
           'interact:move': function(e){
-            if (this.options.pos){
-              this.options.pos = REN.toField(e);
-            }
+            this.options.pos = this.options.pos ? REN.toField(e) : null;
           },
           'interact:release': function(){
             this.options.pos = null;
@@ -214,22 +218,26 @@ BHV = (function(){
 
 
       self.create('players-selected-steering', {
+        accel:   0.0,
+        turn:    0.0,
         amount:  0.00001, 
         scratch: true,
         filter:  {selected: true},
         listen:  {
-          'key:space': function(){this.accel = 0; this.turn = 0;},
+          'key:space': function(){
+            this.options.accel = 0.0; this.options.turn = 0.0;
+          },
           'key:up':    function(){
-            this.accel = Math.round(Math.min(this.accel === undefined ? +0.5 : this.accel + 0.5, 5));
+            this.accel = Math.round(Math.min(this.options.accel + 0.5, 5));
           },
           'key:down':  function(){
-            this.accel = Math.round(Math.max(this.accel === undefined ? -0.5 : this.accel - 0.5, -5));
+            this.accel = Math.round(Math.max(this.options.accel - 0.5, -5));
           },
           'key:right': function(){
-            this.turn = Math.min(this.turn === undefined ? +0.1 : this.turn + 0.1, 0.4);
+            this.turn = Math.min(this.options.turn + 0.1, 0.4);
           },
           'key:left':  function(){
-            this.turn = Math.max(this.turn === undefined ? -0.1 : this.turn - 0.1, -0.4);
+            this.turn = Math.max(this.options.turn - 0.1, -0.4);
           },
         }
       });
@@ -262,7 +270,7 @@ BHV = (function(){
             }
           },
           behave: function ( data ) {
-            bodies = config.bodies || world.find(config.filter) || data.bodies;
+            bodies = config.bodies || (config.filter ? world.find(config.filter) : data.bodies);
             config.scratch && (this.scratch = Physics.scratchpad());
             for (i = 0; (body = bodies[i]); i++){
               behave.call(this, body);
