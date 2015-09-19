@@ -42,6 +42,7 @@ SIM = (function(){
       game.frame = game.time = 0;
 
       PHY.init();
+      BHV.init();
       self.listen();
 
 

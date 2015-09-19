@@ -119,9 +119,9 @@ IFC = (function(){
             mouseOverBody.selected = !selected;
 
             if (mouseOverBody.selected){
-              PHY.add('player-selected-interactive');
+              BHV.add('player-selected-interactive');
             } else {
-              PHY.sub('player-selected-interactive');
+              BHV.sub('player-selected-interactive');
             }
 
           }
