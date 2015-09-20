@@ -15,6 +15,7 @@ CFG = {
         maxCollisions:     10,     // remember at least X collisions
         collectCollisions: false,
         draw: {
+            fps:           true,   // draw FPS 
             info:          true,   // draw Deb info
             speed:         true,   // draw Deb render info
             mouse:         false,  // draw mouse circle

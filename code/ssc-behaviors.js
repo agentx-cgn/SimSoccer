@@ -65,8 +65,8 @@ BHV = (function(){
         accel = this.options.accel / 10 * this.options.facAccel,
         turn  = this.options.turn  / 10 * this.options.facTurn * DEGRAD;
 
-      REN.info.acce = accel;
-      REN.info.turn = turn;
+      // REN.info.acce = accel;
+      // REN.info.turn = turn;
 
       vector = this.scratch.vector()
         .set(
@@ -152,6 +152,16 @@ BHV = (function(){
         body.applyForce(force, offset);
 
         this.options.active = false;
+
+      } else {
+
+        var distance = this.scratch.vector()
+          .clone(this.options.target)
+          .vsub(body.state.pos)
+          .norm()
+        ;
+
+        REN.info.dist = distance;          
 
       }
 

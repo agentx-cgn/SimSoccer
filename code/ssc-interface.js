@@ -1,5 +1,6 @@
 /*jslint bitwise: true, browser: true, evil:true, devel: true, todo: true, debug: true, nomen: true, plusplus: true, sloppy: true, vars: true, white: true, indent: 2 */
 /*globals H, T, IFC, REN, SIM, PHY, Mousetrap, CFG */
+/*jshint -W030 */
 
 'use strict';
 
@@ -8,9 +9,9 @@ IFC = (function(){
   var 
     self, width, height, w2, h2, 
     $content, $playground, $messages, $ticker, $errors, $code, $images, 
-    cvs, ctx,
+    cvs, ctx, 
 
-    msecTick = 0, msecRend = 0, lasttime = 0.0, fps = 0.0, msecFrame = 0,
+    msecTick = 0, msecRend = 0, lasttime = 0.0,
 
     $ = document.querySelector.bind(document),
 
@@ -24,6 +25,7 @@ IFC = (function(){
     $messagesList,
 
     cmd, // animation
+    cvsFps, ctxFps, fps = 0, drawFps = CFG.Debug.draw.fps, msecFrame = 0,
 
     $menu,
     $menuList,
@@ -77,7 +79,7 @@ IFC = (function(){
       $menuList     = $('.menu-list');
       $messagesList = $('.messages-list');
 
-      $('#btnToggle').onclick = function(){self.toggleTab();},
+      $('#btnToggle').onclick = function(){self.toggleTab();};
       $('#btnStop').onclick   = self.stop;
       $('#btnPause').onclick  = self.pause;
       $('#btnPlay').onclick   = self.play;
@@ -88,6 +90,9 @@ IFC = (function(){
       cvs.style.backgroundColor = CFG.Screen.backcolor;
       ctx = self.ctx = cvs.getContext('2d');
       $playground.appendChild(cvs);
+
+      cvsFps = $('.barFps');
+      ctxFps = cvsFps.getContext('2d');
 
       IFC.toggleTab(curTab);
 
@@ -188,7 +193,7 @@ IFC = (function(){
 
       function animate (newtime){
 
-        REN.info.fps = (1 / (newtime - lasttime) * 1000).toFixed(1);
+        fps = ~~(1 / (newtime - lasttime) * 1000);
         lasttime = newtime;
 
         msecTick = window.performance.now();
@@ -200,6 +205,9 @@ IFC = (function(){
           REN.tick();
         self.msecRend = window.performance.now() - msecRend;
 
+        REN.info.fps = fps;
+        drawFps && self.drawFps(fps);
+
         if (cmd === 'play'){
           window.requestAnimationFrame(animate);
         }
@@ -207,7 +215,17 @@ IFC = (function(){
       }
 
 
-    }, message: function( /* message */ ){
+    }, drawFps: function( fps ){
+
+      var h = fps/2;
+      ctxFps.fillStyle = h > 25 ? 'white' : 'red';
+      ctxFps.fillRect(0, 32 - h, 1, h > 25 ? 1 : h);
+      ctxFps.drawImage(cvsFps, 1, 0);
+      ctxFps.fillStyle = '#AAA';
+      ctxFps.fillRect(0, 0, 1, 32);
+
+
+    }, message: function(message){
 
       var el;
 
