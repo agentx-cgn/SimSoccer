@@ -233,9 +233,6 @@ SIM = (function(){
             gs = CFG.Goal.space,
             team = data.player.team;
 
-          // suppress until game restarted
-          // if (game.state !== 'running'){return;}
-
           SIM.message(H.format('Ball off: team [%s] {%s, %s}', team, x.toFixed(1), y.toFixed(1)));
 
           // checks for goal

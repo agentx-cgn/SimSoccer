@@ -67,25 +67,20 @@ BHV = (function(){
 
       var 
         angle  = body.state.angular.pos,
-        accel  = this.options.accel,
-        turn   = this.options.turn,
-        amount = this.options.amount;
+        accel  = this.options.accel / 10 * this.options.facAccel,
+        turn   = this.options.turn  / 10 * this.options.facTurn * DEGRAD;
 
       REN.info.acce = accel;
       REN.info.turn = turn;
 
-      if (accel !== 0){
-        vector = this.scratch.vector();
-        vector.set(
-          accel * amount * Math.cos( angle ), 
-          accel * amount * Math.sin( angle ) 
-        );
-        body.accelerate( vector );
-      }
+      vector = this.scratch.vector()
+      .set(
+        accel * Math.cos( angle ), 
+        accel * Math.sin( angle ) 
+      );
 
-      if (turn !== 0){
-        body.state.angular.vel = 0.3 * turn * DEGRAD;
-      }
+      body.accelerate( vector );
+      body.state.angular.vel = turn;
 
 
     }, 'players-focus-ball' : function (body) {
@@ -172,8 +167,8 @@ BHV = (function(){
       // min: The minimum distance above which to apply the attraction (default: very small non-zero)
 
       self.create('players-marked-attractor', {
-        pos:     null,
-        filter:  {marked: true},
+        pos:      null,
+        filter:   {marked: true},
         scratch:  true,
         strength: 0.0015,
         order:    0,
@@ -181,7 +176,9 @@ BHV = (function(){
         max:    200,
         listen: {
           'interact:poke': function( e ){
-            this.options.pos = e.button === 0 ? REN.toField(e) : null;
+            if (!IFC.mouseOverBody){
+              this.options.pos = e.button === 0 ? REN.toField(e) : null;
+            }
           }, 
           'interact:move': function(e){
             this.options.pos = this.options.pos ? REN.toField(e) : null;
@@ -196,7 +193,8 @@ BHV = (function(){
       self.create('players-selected-steering', {
         accel:   0.0,
         turn:    0.0,
-        amount:  0.00001, 
+        facAccel:  0.00001, 
+        facTurn:   0.3, 
         scratch: true,
         filter:  {selected: true},
         listen:  {
@@ -204,16 +202,16 @@ BHV = (function(){
             this.options.accel = 0.0; this.options.turn = 0.0;
           },
           'key:up':    function(){
-            this.accel = Math.round(Math.min(this.options.accel + 0.5, 5));
+            this.options.accel = Math.min(this.options.accel + 5, +50);
           },
           'key:down':  function(){
-            this.accel = Math.round(Math.max(this.options.accel - 0.5, -5));
+            this.options.accel = Math.max(this.options.accel - 5, -50);
           },
           'key:right': function(){
-            this.turn = Math.min(this.options.turn + 0.1, 0.4);
+            this.options.turn = Math.min(this.options.turn + 1, +4);
           },
           'key:left':  function(){
-            this.turn = Math.max(this.options.turn - 0.1, -0.4);
+            this.options.turn = Math.max(this.options.turn - 1, -4);
           },
         }
       });

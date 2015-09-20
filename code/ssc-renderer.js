@@ -275,12 +275,9 @@ REN = (function(){
 
     }, fillCircle:  function(x, y, radius, style, start, end){
 
-      start = start || 0;
-      end   = end   || TAU;
-
       ctx.beginPath();
       ctx.fillStyle = style;
-      ctx.arc(x, y, radius, start, end, false);
+      ctx.arc(x, y, radius, start || 0, end   || TAU, false);
       ctx.fill();
       
 
@@ -484,19 +481,12 @@ REN = (function(){
       ctx.textAlign = 'left';
 
       ctx.fillText('meter :  ' + JSON.stringify(self.toFieldInt(IFC.mouse)) , 30,  40);
-      ctx.fillText('mouse :  ' + JSON.stringify(IFC.mouse)             , 30,  70);
-      ctx.fillText('body  :  ' + bodyShort(infobody)                   , 30, 100);
-      ctx.fillText('info  :  ' + JSON.stringify(info, null, 2)         , 30, 160);
+      ctx.fillText('mouse :  ' + JSON.stringify(IFC.mouse)                  , 30,  70);
+      ctx.fillText('body  :  ' + bodyShort(infobody)                        , 30, 100);
+      ctx.fillText('info  :  ' + JSON.stringify(info)                       , 30, 210);
     
 
     }, drawCollisions: function(colls){
-
-      // bodyA: // the first body
-      // bodyB: // the second body
-      // norm: // the normal vector (Vectorish)
-      // mtv: // the minimum transit vector. (the direction and length needed to extract bodyB from bodyA)
-      // pos: // the collision point relative to bodyA
-      // overlap: // the amount bodyA overlaps bodyB
 
       var 
         coll, 

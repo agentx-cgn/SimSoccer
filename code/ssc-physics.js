@@ -146,6 +146,13 @@ PHY = (function(){
       world.on({
 
         'collisions:detected': function(data){
+          
+          // bodyA: // the first body
+          // bodyB: // the second body
+          // norm: // the normal vector (Vectorish)
+          // mtv: // the minimum transit vector. (the direction and length needed to extract bodyB from bodyA)
+          // pos: // the collision point relative to bodyA
+          // overlap: // the amount bodyA overlaps bodyB
 
           if (CFG.Debug.collectCollisions){
 
