@@ -19,7 +19,11 @@ BHV = (function(){
 
     // lifted objects
     vector,
-    options,
+    vector1,
+    vector2,
+    target,
+    force,
+    offset,
     position;
 
 
@@ -54,30 +58,22 @@ BHV = (function(){
       behaviors[name] = null;  
 
 
-    }, 'players-selected-targeting': function(body){
-
-      if (this.pos){
-
-
-      }
-
-
-
     }, 'players-selected-steering': function(body){
 
       var 
-        angle  = body.state.angular.pos,
-        accel  = this.options.accel / 10 * this.options.facAccel,
-        turn   = this.options.turn  / 10 * this.options.facTurn * DEGRAD;
+        angle = body.state.angular.pos,
+        accel = this.options.accel / 10 * this.options.facAccel,
+        turn  = this.options.turn  / 10 * this.options.facTurn * DEGRAD;
 
       REN.info.acce = accel;
       REN.info.turn = turn;
 
       vector = this.scratch.vector()
-      .set(
-        accel * Math.cos( angle ), 
-        accel * Math.sin( angle ) 
-      );
+        .set(
+          accel * Math.cos( angle ), 
+          accel * Math.sin( angle ) 
+        )
+      ;
 
       body.accelerate( vector );
       body.state.angular.vel = turn;
@@ -85,7 +81,7 @@ BHV = (function(){
 
     }, 'players-focus-ball' : function (body) {
 
-        position = this.scratch.vector()
+        vector = this.scratch.vector()
           .set(
             body.state.pos._[0], 
             body.state.pos._[1]
@@ -93,7 +89,7 @@ BHV = (function(){
           .vsub( PHY.bodies.ball.state.pos )
         ;
 
-        body.state.angular.pos = (position.angle() + PI) % TAU;
+        body.state.angular.pos = (vector.angle() + PI) % TAU;
 
 
     }, 'balls-basic': function (body) {
@@ -139,23 +135,54 @@ BHV = (function(){
       }
 
 
+    }, 'players-selected-targeting': function(body){
+
+      if (this.options.active){
+
+        offset = this.scratch.vector()
+          .set(10, 0)
+        ;
+
+        force = this.scratch.vector()
+          .clone(this.options.target)
+          .vsub(body.state.pos)
+          .mult(0.02)
+        ;
+
+        body.applyForce(force, offset);
+
+        this.options.active = false;
+
+      }
+
+
+
     }, createBehaviors: function(){
+
+      function setVector (pos, vector){
+        vector.set(pos.x, pos.y);
+      }
 
       self.create('balls-basic', {bodies: PHY.bodies.balls});
 
       self.create('players-focus-ball', {scratch: true});
 
       self.create('players-selected-targeting', {
-        pos:     Physics.vector(),
+        scratch: true,
+        active:  false,
         filter:  {selected: true},
+        target:  Physics.vector(),
+        force:   Physics.vector(),
+        offset:  Physics.vector(),
         listen: {
           'interact:poke': function( e ){
             if (e.button === 0 && !IFC.mouseOverBody){
-              this.options.pos = REN.toField(e);
+              this.options.active = true;
+              setVector(REN.toField(e), this.options.target);
             }
           }, 
           'interact:release': function(){
-            this.options.pos = null;
+            this.options.active = false;
           }
         }
       });

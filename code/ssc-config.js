@@ -61,8 +61,8 @@ CFG = {
         styles:           {fill: '#F00', stroke: '#DDD', angleIndicator: '#E33', mark: '#FF0', select: 'rgba(255, 255, 0, 0.4)'},
         mass:             0.43,  // 0.41 < 0.45
         radius:           0.7,   // Umfang: 0.68 < 0.70
-        cof:              0.5,   // A cof of 1 has no slide.
-        restitution:      0.5,   // A restitution of 0 is not bouncy.
+        cof:              1.0,   // A cof of 1 has no slide.
+        restitution:      1.0,   // A restitution of 0 is not bouncy.
     },
 
     Posts: {
@@ -93,8 +93,8 @@ CFG = {
         accel:            5,        // ms²
         width:            1,
         height:           3,
-        cof:              0.9,
-        restitution:      0.5,
+        cof:              1.0,
+        restitution:      1.0,
         angle:            0.0,       //  positive is clockwise starting along the x axis
         marked:        false,
         selected:      false,
