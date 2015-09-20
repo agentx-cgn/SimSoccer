@@ -232,7 +232,10 @@ PHY = (function(){
             x:       player.x,
             y:       player.y, 
             angle:   player.angle,
-            styles:  H.extend({}, CFG.Player.styles, CFG.Teams[team].styles, player.styles)
+            styles:  H.extend({}, CFG.Player.styles, CFG.Teams[team].styles, player.styles),
+            kine:    function(){
+              return this.mass * 0.5 * this.state.vel.normSq();
+            }
           }));
         });
       });

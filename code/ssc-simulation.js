@@ -1,5 +1,5 @@
 /*jslint bitwise: true, browser: true, evil:true, devel: true, todo: true, debug: true, nomen: true, plusplus: true, sloppy: true, vars: true, white: true, indent: 2 */
-/*globals SIM, REN, IFC, CFG, H, PHY, StateMachine */
+/*globals SIM, REN, BHV, IFC, CFG, H, PHY, StateMachine */
 
 'use strict';
 
@@ -193,28 +193,28 @@ SIM = (function(){
           var 
             p1   = data.player1,
             p2   = data.player2,
-            m1   = p1.mass * p1.state.vel.norm(), 
-            m2   = p2.mass * p2.state.vel.norm(),
-            off  = m1 > m2 ? p1 : p2, // offender
-            vic  = m1 > m2 ? p2 : p1, // victim
-            mOff = off === p1 ? m1 : m2,
-            mVic = vic === p1 ? m1 : m2,
+            ke1  = 0.5 * p1.mass * p1.state.vel.norm() * p1.state.vel.norm(), 
+            ke2  = 0.5 * p2.mass * p2.state.vel.norm() * p2.state.vel.norm(), 
+            off  = ke1 > ke2 ? p1 : p2, // offender
+            vic  = ke1 > ke2 ? p2 : p1, // victim
+            keOff = off === p1 ? ke1 : ke2,
+            keVic = vic === p1 ? ke1 : ke2,
             x    = off.state.pos._[0],
             y    = off.state.pos._[1];
 
-          SIM.message(H.format('Contact: %s (%s) -> %s (%s)', off.sign, mOff.toFixed(1), vic.sign, mVic.toFixed(1)));
+          SIM.message(H.format('Contact: %s (%s) -> %s (%s)', off.sign, keOff.toFixed(1), vic.sign, keVic.toFixed(1)));
 
-          if (mOff > CFG.Rules.momFoulRed) {
+          if (keOff > CFG.Rules.momFoulRed) {
             PHY.world.emit('game:foul',     {x, y, vic, off});
             PHY.world.emit('game:red',      {player: off, team: off.team});
             PHY.world.emit('game:spotkick', {team: vic.team, x, y});
 
-          } else if ( mOff > CFG.Rules.momFoulYellow) {
+          } else if ( keOff > CFG.Rules.momFoulYellow) {
             PHY.world.emit('game:foul',     {x, y, vic, off});
             PHY.world.emit('game:yellow',   {player: off, team: off.team});
             PHY.world.emit('game:spotkick', {team: vic.team, x, y});
 
-          } else if ( m1 + m2 > CFG.Rules.momFoul){
+          } else if ( ke1 + ke2 > CFG.Rules.momFoul){
             PHY.world.emit('game:foul',     {x, y, vic, off});
             PHY.world.emit('game:spotkick', {team: vic.team, x, y});
 

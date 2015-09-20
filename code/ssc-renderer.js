@@ -248,7 +248,7 @@ REN = (function(){
 
           // outer, middle
           [l2,            l2,           w - lw,  h - lw],
-          [w2,            lw,           0,       h - lw + lw],
+          [w2,            lw,           0,       h - lw - lw],
 
           // strafraum
           [l2,            h2 - sb + l2, sb - lw, ss - lw],

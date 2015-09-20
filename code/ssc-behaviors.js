@@ -23,6 +23,7 @@ BHV = (function(){
     vector2,
     target,
     force,
+    force1,
     offset,
     position;
 
@@ -140,16 +141,25 @@ BHV = (function(){
       if (this.options.active){
 
         offset = this.scratch.vector()
-          .set(10, 0)
+          .set(100, 0)
         ;
 
         force = this.scratch.vector()
           .clone(this.options.target)
           .vsub(body.state.pos)
-          .mult(0.02)
+          .mult(0.028)
         ;
 
+        force1 = this.scratch.vector()
+          .clone(body.state.vel)
+          .vsub(body.state.pos)
+          .mult(0.028)
+        ;
+
+
+
         body.applyForce(force, offset);
+        REN.info.force = force.norm().toFixed(1);          
 
         this.options.active = false;
 
@@ -161,7 +171,7 @@ BHV = (function(){
           .norm()
         ;
 
-        REN.info.dist = distance;          
+        REN.info.dist = distance.toFixed(2);          
 
       }
 
