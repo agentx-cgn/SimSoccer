@@ -17,6 +17,7 @@ var      // globals
   SIM,   // Simulation
   PHY,   // Physics
   BHV,   // Behaviors
+  SVC,   // Services
   IFC;   // Interface
 
 window.onload = function(){
@@ -63,6 +64,7 @@ window.onload = function(){
   REN.init(IFC.cvs, IFC.ctx);
 
   SIM.reset();
+  SVC.init();
   IFC.show();
   IFC.play();
   PHY.world.emit('game:start');
