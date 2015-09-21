@@ -74,11 +74,11 @@ SVC = (function(){
 
             for (i=0; (b1 = bodies[i]); i++){
 
-              !distances[b1.uid] && (distances[b1.uid] = {});
+              distances[b1.uid] === undefined && (distances[b1.uid] = {});
 
               for (j=i; (b2 = bodies[j]); j++){
 
-                !distances[b2.uid] && (distances[b2.uid] = {});
+                distances[b2.uid] === undefined && (distances[b2.uid] = {});
 
                 dist = Math.hypot(
                   b1.state.pos._[0] - b2.state.pos._[0],
