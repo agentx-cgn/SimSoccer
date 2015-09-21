@@ -53,14 +53,14 @@ SVC = (function(){
       }, toTeam : function(body){
 
         return PHY.bodies['team' + body.team].sort((a, b) => {
-          return SVC.Distance(body, a) < SVC.Distance(body, b) ? 1 : -1;
+          return SVC.Distance.between(body, a) < SVC.Distance.between(body, b) ? 1 : -1;
         });
 
       // returns array
       }, toOpponent : function(body){
 
         return PHY.bodies['team' + (body.team === 0 ? 1 :0)].sort((a, b) => {
-          return SVC.Distance(body, a) < SVC.Distance(body, b) ? 1 : -1;
+          return SVC.Distance.between(body, a) < SVC.Distance.between(body, b) ? 1 : -1;
         });
 
 
