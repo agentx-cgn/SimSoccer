@@ -88,7 +88,7 @@ var H = (function(){
     prettify:   function (o){return JSON.stringify(o).split('"').join("");},
     map:        function (o,fn){var a,r={};for(a in o){if(o.hasOwnProperty(a)){r[a]=(typeof fn==='function')?fn(a,o[a]):fn;}}return r;},
     transform:  function (o, fn){
-      var r={}; H.each(o,function(k,v){var [ra,rv]=fn(k,v);r[ra]=rv;});return r;
+      // var r={}; H.each(o,function(k,v){var [ra,rv]=fn(k,v);r[ra]=rv;});return r;
     },
 
     // Arrays

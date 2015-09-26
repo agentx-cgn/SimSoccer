@@ -48,7 +48,6 @@ SVC = (function(){
 
         return SVC.Distance.between(body, keepers[0]);
 
-
       // returns array
       }, toTeam : function(body){
 

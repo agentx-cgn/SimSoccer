@@ -141,7 +141,7 @@ BHV = (function(){
       if (this.options.active){
 
         offset = this.scratch.vector()
-          .set(100, 0)
+          .set(3, 0)
         ;
 
         force = this.scratch.vector()
