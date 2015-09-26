@@ -7,7 +7,8 @@ SIM = (function(){
 
   var 
     self, 
-    fsm,
+    fsmSimu,
+    fsmGame,
 
     frame = 0,
     time  = 0,
@@ -26,7 +27,8 @@ SIM = (function(){
 
   return {
 
-    fsm,
+    FsmSimu: fsmGame,
+    FsmGame: fsmSimu,
     game,
 
     time,
@@ -41,6 +43,7 @@ SIM = (function(){
       frame = time = 0;
       game.frame = game.time = 0;
 
+      self.init();
       PHY.init();
       BHV.init();
       self.listen();
@@ -59,14 +62,26 @@ SIM = (function(){
 
     }, init: function(){
 
-      fsm = self.fsm = StateMachine.create({
-        initial: 'green',
+      fsm = self.Fsm = StateMachine.create({
+        initial: 'None',
         events: [
-          { name: 'warn',  from: 'green',  to: 'yellow' },
-          { name: 'panic', from: 'yellow', to: 'red'    },
-          { name: 'calm',  from: 'red',    to: 'yellow' },
-          { name: 'clear', from: 'yellow', to: 'green'  }
-      ]});
+          { name: 'setup',  from: 'None',     to: 'Setup'    },
+          { name: 'train',  from: 'None',     to: 'Training' },
+          { name: 'play',   from: 'None',     to: 'Play'     },
+          { name: 'setup',  from: 'Training', to: 'Setup'    },
+          { name: 'setup',  from: 'Play',     to: 'Setup'    },
+          { name: 'train',  from: 'Setup',    to: 'Training' },
+          { name: 'train',  from: 'Play',     to: 'Training' },
+          { name: 'play',   from: 'Setup',    to: 'Play'     },
+          { name: 'play',   from: 'Training', to: 'Play'     },
+        ],
+        callbacks: {
+          onsetup: function(name, from, to, data){console.log('ev: onsetup', arguments);},
+          ontrain: function(name, from, to, data){console.log('ev: ontrain', arguments);},
+          onplay:  function(name, from, to, data){console.log('ev: onplay',  arguments);},
+        }
+
+      });
 
 
     }, message : function (message) {

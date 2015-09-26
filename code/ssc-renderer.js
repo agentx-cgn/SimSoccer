@@ -467,9 +467,11 @@ REN = (function(){
       ctx.fillStyle = 'rgba(240, 240, 240, 0.8)';
       ctx.textAlign = 'left';
 
-      ctx.fillText('fps/ipf    :  ' + ~~(meta.fps)              + '/' + meta.ipf, left, 20);
-      ctx.fillText('frame/secs :  ' + SIM.game.frame            + '/' + SIM.game.time.toFixed(1), left, 40);
-      ctx.fillText('tick/rend  :  ' + IFC.msecTick.toFixed(2)   + '/' + IFC.msecRend.toFixed(2), left, 60);
+      ctx.fillText('fps/ipf    :  ' + ~~(meta.fps)              + '/' + meta.ipf                 , left, 20);
+      ctx.fillText('frame/secs :  ' + SIM.game.frame            + '/' + SIM.game.time.toFixed(1) , left, 40);
+      ctx.fillText('tick/rend  :  ' + IFC.msecTick.toFixed(2)   + '/' + IFC.msecRend.toFixed(2)  , left, 60);
+      ctx.fillText('simulation :  ' + SIM.Fsm.current                                            , left, 80);
+
 
 
     }, drawDebug: function(){

@@ -30,14 +30,15 @@ IFC = (function(){
     $menu,
     $menuList,
     menuItems = [
+      {label: 'Reload',     action: () => window.location.reload()},
       {label: 'Back',       action: () => window.history.back()},
       {label: 'Fullscreen', action: () => self.toggleFullScreen()},
-      {label: 'Reload',     action: () => window.location.reload()},
       {label: 'Screenshot', action: () => self.shootScreen()},
       {label: 'Reset',      action: () => SIM.reset()},
       {label: 'Run',        action: () => PHY.world.emit('game:run')},
-      {label: 'Training',   action: () => console.log(this.innerHTML), items: []},
-      {label: 'Game',       action: () => console.log(this.innerHTML), items: []},
+      {label: 'Setup',      action: () => SIM.FsmSimu.setup({test:1})},
+      {label: 'Training',   action: () => SIM.FsmSimu.train({test:2})},
+      {label: 'Game',       action: () => SIM.FsmSimu.play({test:3})},
     ];
 
 
