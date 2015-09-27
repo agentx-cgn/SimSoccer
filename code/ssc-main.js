@@ -14,6 +14,7 @@ var      // globals
   T,     // Domain Tools
   CFG,   // Configuration
   REN,   // Rendering
+  GAM,   // Game
   SIM,   // Simulation
   PHY,   // Physics
   BHV,   // Behaviors
@@ -58,21 +59,28 @@ window.onload = function(){
 
   };
 
-  IFC.init();
-  IFC.resize(window.innerWidth, window.innerHeight);
-  
-  REN.init(IFC.cvs, IFC.ctx);
+  window.reset = function(){
 
-  SIM.reset();
-  SVC.init();
-  IFC.show();
-  IFC.play();
-  PHY.world.emit('game:start');
+    IFC.init();
+    IFC.resize(window.innerWidth, window.innerHeight);
+    
+    REN.reset(); // IFC.cvs
+    SIM.reset();
+    SVC.init();  // needs PHY.world
+    IFC.show();  // go visible
+    IFC.play();  // runs animate
 
-  SIM.message('fullscreen: ' + IFC.isFullScreen());
+    GAM.run();
 
+    // SIM.startup();
+    // PHY.world.emit('game:start');
+
+
+  }
+
+  window.reset();
   bInitializes = false;
-
+  SIM.message('fullscreen: ' + IFC.isFullScreen());
   TIM.step('ready');
 
 };

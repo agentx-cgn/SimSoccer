@@ -39,12 +39,6 @@ PHY = (function(){
 
       self = this;
 
-      world = self.world = new Physics.world({
-        timestep:      6,  // 6
-        maxIPF:        4,  // 4
-        sleepDisabled: true,
-      });
-
       Physics.renderer('soccer', function( parent ){
         return {
           init: function( options ){
@@ -52,7 +46,7 @@ PHY = (function(){
           },
           render: REN.render
         };
-      });
+      });   
 
       return this;
 
@@ -72,7 +66,22 @@ PHY = (function(){
         $at: vector.set(pos.x, pos.y)
       });
     
+    }, reset:   function(){
+
+      self.cleanup();
+      self.init();
+
+    }, cleanup:   function(){
+
+      world && world.destroy();
+
     }, init:   function(){
+
+      world = self.world = new Physics.world({
+        timestep:      6,  // 6
+        maxIPF:        4,  // 4
+        sleepDisabled: true,
+      });
 
       H.extend(bodies, {
         ball:    [],

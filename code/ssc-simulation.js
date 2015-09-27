@@ -7,45 +7,36 @@ SIM = (function(){
 
   var 
     self, 
-    fsmSimu,
-    fsmGame,
+    fsm,
 
     frame = 0,
-    time  = 0,
-
-    game = {
-      start:     0,
-      time:      0,
-      frame:     0,
-      stage:     '1st Half',
-      state:     '',          // started, runs, paused, finished
-      goals:     [0, 0],
-      yellows:   [0, 0],
-      reds:      [0, 0],     
-      messages:  [],
-    };
+    time  = 0;
 
   return {
 
-    FsmSimu: fsmGame,
-    FsmGame: fsmSimu,
-    game,
-
+    fsm,
     time,
     frame,
 
+    name: 'sim',
+
     boot:   function(){return (self = this);
+
+    }, cleanup: function () {
 
     }, reset: function () {
 
-      SIM.message('Reset');
+      // SIM.message('Reset');
 
       frame = time = 0;
-      game.frame = game.time = 0;
+
+      self.cleanup();
+
+      GAM.reset();
+      PHY.reset();
+      BHV.reset();
 
       self.init();
-      PHY.init();
-      BHV.init();
       self.listen();
 
 
@@ -54,46 +45,48 @@ SIM = (function(){
         frame = self.frame += 1;
         time  = self.time  += 1 / CFG.fps;
 
-      if (game.state === 'running'){
-        game.frame += 1;
-        game.time  += 1 / CFG.fps;
-      }
-
-
     }, init: function(){
 
-      fsm = self.Fsm = StateMachine.create({
+      fsm = self.fsm = StateMachine.create({
+        target:  self,
         initial: 'None',
-        events: [
-          { name: 'setup',  from: 'None',     to: 'Setup'    },
-          { name: 'train',  from: 'None',     to: 'Training' },
-          { name: 'play',   from: 'None',     to: 'Play'     },
-          { name: 'setup',  from: 'Training', to: 'Setup'    },
-          { name: 'setup',  from: 'Play',     to: 'Setup'    },
-          { name: 'train',  from: 'Setup',    to: 'Training' },
-          { name: 'train',  from: 'Play',     to: 'Training' },
-          { name: 'play',   from: 'Setup',    to: 'Play'     },
-          { name: 'play',   from: 'Training', to: 'Play'     },
-        ],
-        callbacks: {
-          onsetup: function(name, from, to, data){console.log('ev: onsetup', arguments);},
-          ontrain: function(name, from, to, data){console.log('ev: ontrain', arguments);},
-          onplay:  function(name, from, to, data){console.log('ev: onplay',  arguments);},
-        }
-
+        events:  CFG.States.simulation.map(T.readEvents),
+        error:   T.logFsmError.bind(self),
       });
+
+    }, onsetup: function(name, from, to, data){
+      
+      SIM.message('sim: ' + to);
+
+      GAM.fsm.can('pause')       && GAM.fsm.pause();
+      GAM.team0.fsm.can('setup') && GAM.team0.fsm.setup();
+      GAM.team1.fsm.can('setup') && GAM.team1.fsm.setup();
+
+    }, ontrain: function(name, from, to, data){
+
+      SIM.message('sim: ' + to);
+
+      GAM.fsm.can('pause')       && GAM.fsm.pause();
+      GAM.team0.fsm.can('train') && team0.fsm.train();
+      GAM.team1.fsm.can('train') && team1.fsm.train();
+
+
+    }, onplay:  function(name, from, to, data){
+
+      SIM.message('sim: ' + to);
+      GAM.fsm.can('run') && GAM.fsm.run();
 
 
     }, message : function (message) {
 
-      var msg =  {msg: message, time: game.time};
+      var msg =  {msg: message, time: GAM.time};
 
       IFC.message(msg);
 
-      game.messages.push(msg);
+      GAM.messages.push(msg);
 
-      if (game.messages.length > CFG.Debug.maxMessages){
-        game.messages.shift();
+      if (GAM.messages.length > CFG.Debug.maxMessages){
+        GAM.messages.shift();
       }
 
 
@@ -300,7 +293,7 @@ SIM = (function(){
 
           var i, c, ball1, ball2, player1, player2;
 
-          if (game.state !== 'running'){return;} // suppress until game restarted
+          if (GAM.current !== 'run'){return;} // suppress until game restarted
           
           for (i=0; (c = data.collisions[i]); i++){
 

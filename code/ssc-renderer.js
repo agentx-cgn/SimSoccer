@@ -58,11 +58,10 @@ REN = (function(){
 
     boot: function(){return (self = this);
 
-    }, tick:     function(){PHY.world.render();
-    }, init:     function(canvas, context){
+    }, reset:     function(){
 
-      cvs = canvas; 
-      ctx = context;
+      cvs = IFC.cvs; 
+      ctx = IFC.ctx;
 
       imgWhistle = $('.img-whistle');
 
@@ -125,7 +124,7 @@ REN = (function(){
       draw.info        && self.drawDebug();
       draw.speed       && self.drawSpeed();
       draw.mouse       && self.drawMouse(IFC.mouse);
-      draw.messages    && self.drawMessages(SIM.game.messages);
+      draw.messages    && self.drawMessages(GAM.messages);
 
       ctx.save();
       self.translate();
@@ -369,10 +368,10 @@ REN = (function(){
 
       ctx.font = font;
       ctx.textAlign = 'right';
-      ctx.fillText(SIM.game.stage, -diff, topState);
+      ctx.fillText(GAM.stage, -diff, topState);
 
       ctx.textAlign = 'left';
-      ctx.fillText(H.format('%s (%s)', T.fmtTime(SIM.game.time), SIM.game.state), diff, topState);
+      ctx.fillText(H.format('%s (%s)', T.fmtTime(GAM.time), GAM.current), diff, topState);
 
 
     }, drawTeamsResult: function(alpha){
@@ -403,19 +402,19 @@ REN = (function(){
 
       ctx.font = fontResults;
       ctx.textAlign = 'right';
-      ctx.fillText(SIM.game.goals[0], -diff, topResults);
+      ctx.fillText(GAM.goals[0], -diff, topResults);
       ctx.textAlign = 'left';
-      ctx.fillText(SIM.game.goals[1], diff, topResults);
+      ctx.fillText(GAM.goals[1], diff, topResults);
 
       cardsLeft = - 3* diff - cardsSize;
       ctx.fillStyle = 'rgba(250, 250, 0, 0.4)',
-      cards = SIM.game.yellows[0];
+      cards = GAM.yellows[0];
       while (cards--){
         ctx.fillRect(cardsLeft, topResults, cardsSize, cardsSize * 2);
         cardsLeft -= diff;
       }
       ctx.fillStyle = 'rgba(250, 0, 0, 0.4)',
-      cards = SIM.game.reds[0];
+      cards = GAM.reds[0];
       while (cards--){
         ctx.fillRect(cardsLeft, topResults, cardsSize, cardsSize * 2);
         cardsLeft -= diff;
@@ -423,13 +422,13 @@ REN = (function(){
 
       cardsLeft = 3* diff;
       ctx.fillStyle = 'rgba(250, 250, 0, 0.4)',
-      cards = SIM.game.yellows[1];
+      cards = GAM.yellows[1];
       while (cards--){
         ctx.fillRect(cardsLeft, topResults, cardsSize, cardsSize * 2);
         cardsLeft += diff;
       }
       ctx.fillStyle = 'rgba(250, 0, 0, 0.4)',
-      cards = SIM.game.reds[1];
+      cards = GAM.reds[1];
       while (cards--){
         ctx.fillRect(cardsLeft, topResults, cardsSize, cardsSize * 2);
         cardsLeft += diff;
@@ -467,10 +466,13 @@ REN = (function(){
       ctx.fillStyle = 'rgba(240, 240, 240, 0.8)';
       ctx.textAlign = 'left';
 
-      ctx.fillText('fps/ipf    :  ' + ~~(meta.fps)              + '/' + meta.ipf                 , left, 20);
-      ctx.fillText('frame/secs :  ' + SIM.game.frame            + '/' + SIM.game.time.toFixed(1) , left, 40);
-      ctx.fillText('tick/rend  :  ' + IFC.msecTick.toFixed(2)   + '/' + IFC.msecRend.toFixed(2)  , left, 60);
-      ctx.fillText('simulation :  ' + SIM.Fsm.current                                            , left, 80);
+      ctx.fillText('fps/ipf    :  ' + ~~(meta.fps)              + '/' + meta.ipf                 , left,  20);
+      ctx.fillText('frame/secs :  ' + GAM.frame                 + '/' + GAM.time.toFixed(1)      , left,  40);
+      ctx.fillText('tick/rend  :  ' + IFC.msecTick.toFixed(2)   + '/' + IFC.msecRend.toFixed(2)  , left,  60);
+      ctx.fillText('simulation :  ' + SIM.current                                                , left,  80);
+      ctx.fillText('game       :  ' + GAM.current                                                , left, 100);
+      ctx.fillText('team0      :  ' + GAM.team0.fsm.current                                      , left, 120);
+      ctx.fillText('team1      :  ' + GAM.team1.fsm.current                                      , left, 140);
 
 
 

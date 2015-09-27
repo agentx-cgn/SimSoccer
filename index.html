@@ -55,34 +55,40 @@
 <body>
   
   <div class="barContainer">
-    <div id="barHeader">
+    <div class="barLeft left">
       <h1><a href="/">SIMSOCCER</a></h1><h2>-&nbsp;&nbsp;let some frogs kick</h2>
     </div>
-    <canvas class="barFps" width="300" height="32"></canvas>
-    <div class="barButtons">
-      <button id="btnStop"   class="button" name="btnStop"    type="button" value="Stop">Stop</button>
-      <button id="btnPlay"   class="button" name="btnPlay"    type="button" value="Play">Play</button>
-      <button id="btnPause"  class="button" name="btnPause"   type="button" value="Pause">Pause</button>
-      <button id="btnStep"   class="button" name="btnStep"    type="button" value="Step">Step</button>
-      <!-- <button id="btnCode"   class="button" name="btnCode"    type="button" value="Code">Code</button> -->
-      <!-- <button id="btnEval"   class="button" name="btnEval"    type="button" value="Eval">Eval</button> -->
-      <!-- <button id="btnStats"  class="button" name="btnStats"   type="button" value="Save">Statistics</button> -->
-      <button id="btnToggle" class="button" name="btnToggle"  type="button" value="Toggle">&gt;&gt;</button>
+    <div class="barMiddle left">
+      <canvas class="barCanvas" width="300" height="32"></canvas>
+    </div>
+    <div class="barRight right">
+      <div class="right">
+        <button id="btnStop"   class="button" name="btnStop"    type="button" value="Stop">Stop</button>
+        <button id="btnPlay"   class="button" name="btnPlay"    type="button" value="Play">Play</button>
+        <button id="btnPause"  class="button" name="btnPause"   type="button" value="Pause">Pause</button>
+        <button id="btnStep"   class="button" name="btnStep"    type="button" value="Step">Step</button>
+        <button id="btnToggle" class="button" name="btnToggle"  type="button" value="Toggle">&gt;&gt;</button>
+      </div>
     </div>
   </div>
 
 
-  <div class="content" style="display:none">
+  <div class="content none">
     
     <!-- menu also in fullscreen -->
     <div class="menu">
       <ul class="menu-list"></ul>
     </div>
+    <div class="sub-menu">
+      <ul class="sub-menu-list"></ul>
+    </div>
 
     <div class="tab playground"></div>
 
     <div class="tab images">
-      <img class="img-whistle" src="images/whistle.png" />
+      <div>
+        <img class="img-whistle" src="images/whistle.png" width="200"/><span style="color:white">images/whistle.png</span>
+      </div>
     </div>
 
     <div class="tab errors">
@@ -125,16 +131,20 @@
       <script src="extern/physicsjs-full.js"></script>
       <script src="extern/state-machine.js"></script>
       <script src="extern/mousetrap.js"></script>
+
       <script src="code/ssc-main.js"></script>
       <script src="code/ssc-helper.js"></script>
       <script src="code/ssc-tools.js"></script>
+      <script src="code/ssc-classes.js"></script>
       <script src="code/ssc-config.js"></script>
       <script src="code/ssc-services.js"></script>
       <script src="code/ssc-interface.js"></script>
+      <script src="code/ssc-game.js"></script>
       <script src="code/ssc-simulation.js"></script>
       <script src="code/ssc-renderer.js"></script>
       <script src="code/ssc-physics.js"></script>
       <script src="code/ssc-behaviors.js"></script>
+      
       <script type="text/javascript">
         TIM.step("loaded");
       </script>

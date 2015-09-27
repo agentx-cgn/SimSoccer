@@ -25,21 +25,26 @@ IFC = (function(){
     $messagesList,
 
     cmd, // animation
-    cvsFps, ctxFps, fps = 0, drawFps = CFG.Debug.draw.fps, msecFrame = 0,
+    cvsFps, ctxFps, fps = 0, drawFps = CFG.Debug.draw.fps, msecFrame = 0, bufFps, 
 
-    $menu,
-    $menuList,
+    $menu, $submenu, 
+    $menuList, $submenuList, 
     menuItems = [
-      {label: 'Reload',     action: () => window.location.reload()},
-      {label: 'Back',       action: () => window.history.back()},
-      {label: 'Fullscreen', action: () => self.toggleFullScreen()},
-      {label: 'Screenshot', action: () => self.shootScreen()},
-      {label: 'Reset',      action: () => SIM.reset()},
-      {label: 'Run',        action: () => PHY.world.emit('game:run')},
-      {label: 'Setup',      action: () => SIM.FsmSimu.setup({test:1})},
-      {label: 'Training',   action: () => SIM.FsmSimu.train({test:2})},
-      {label: 'Game',       action: () => SIM.FsmSimu.play({test:3})},
-    ];
+      {label: 'Reload',     active: true,  action: () => window.location.reload()},
+      {label: 'Back',       active: true,  action: () => window.history.back()},
+      {label: 'Fullscreen', active: true,  action: () => self.toggleFullScreen()},
+      {label: 'Screenshot', active: true,  action: () => self.shootScreen()},
+      {label: 'Reset',      active: true,  action: () => window.reset()},
+      {label: 'Setup',      active: () => SIM.fsm.can('setup'),  action: () => SIM.fsm.setup({test:1})},
+      {label: 'Training',   active: () => SIM.fsm.can('train'),  action: () => SIM.fsm.train({test:2})},
+      {label: 'Play',       active: () => SIM.fsm.can('play'),   action: () => SIM.fsm.play({test:3}), items: [
+        {label: 'Run',      active: () => GAM.fsm.can('run'),    action: () => GAM.fsm.run({test:5})},
+        {label: 'Pause',    active: () => GAM.fsm.can('pause'),  action: () => GAM.fsm.pause({test:4})},
+      ]},
+    ],
+
+    interprete = function(val){return typeof val === 'function' ? val() : val;},
+    eat = function(e){e.stopPropagation(); return false;};
 
 
   return {
@@ -61,6 +66,17 @@ IFC = (function(){
 
     boot:   function () { return (self = this);
 
+    }, throw: function(){
+
+        var 
+          msg = H.format.apply(null, H.toArray(arguments)),
+          stack = new Error().stack.split("\n").slice(1);
+
+        console.warn.apply(console, H.toArray(arguments));
+
+        stack.forEach(line => console.log(line));   
+        // throw "\n*\n" + msg;
+
     }, stop:  function ( ){SIM.reset(); self.animate('stop');
     }, play:  function ( ){self.animate('play');
     }, pause: function ( ){self.animate('pause');
@@ -78,6 +94,8 @@ IFC = (function(){
       $images       = $('.images');
       $menu         = $('.menu');
       $menuList     = $('.menu-list');
+      $submenu      = $('.sub-menu');
+      $submenuList  = $('.sub-menu-list');
       $messagesList = $('.messages-list');
 
       $('#btnToggle').onclick = function(){self.toggleTab();};
@@ -86,16 +104,25 @@ IFC = (function(){
       $('#btnPlay').onclick   = self.play;
       $('#btnStep').onclick   = self.step;
 
+      $menu.onmouseleave = function(){self.hideMenu();};
+
       cvs = self.cvs = document.createElement('canvas');
       // cvs.setAttribute('moz-opaque', 'moz-opaque');
+      cvs.setAttribute('crossOrigin', 'Anonymous');
       cvs.style.backgroundColor = CFG.Screen.backcolor;
       ctx = self.ctx = cvs.getContext('2d');
       $playground.appendChild(cvs);
 
-      cvsFps = $('.barFps');
+      cvsFps = $('.barCanvas');
       ctxFps = cvsFps.getContext('2d');
+      bufFps = H.createRingBuffer(120);
 
-      IFC.toggleTab(curTab);
+      self.toggleTab(curTab);
+      self.listen();
+      self.setKeys();
+
+
+    }, listen: function(){
 
       function onmousemove (e) {
         var yOff = self.isFullScreen() ? 0 : marginTop;
@@ -106,7 +133,6 @@ IFC = (function(){
 
       function onmouseup ( /* e */ ) {
         mouse.down = null;
-        self.hideMenu(mouse);
       }
 
       function onmousedown (e) {
@@ -143,7 +169,7 @@ IFC = (function(){
 
         // right marks/unmarks bodies
         if (e.button === 2 && !mouseOverBody){
-          self.updateMenu();
+          self.updateMenuList($menuList, menuItems);
           self.showMenu();
         }
 
@@ -158,9 +184,6 @@ IFC = (function(){
       cvs.addEventListener('mouseup',    onmouseup,    false);
       cvs.addEventListener('mousedown',  onmousedown,  false);
       cvs.addEventListener('touchstart', ontouchstart, false);
-
-      self.setKeys();
-      self.updateMenu();
 
 
     }, resize: function(outerWidth, outerHeight){
@@ -194,16 +217,18 @@ IFC = (function(){
 
       function animate (newtime){
 
-        fps = ~~(1 / (newtime - lasttime) * 1000);
+        fps = ~~(1000 / (newtime - lasttime));
+        bufFps.push(fps);
         lasttime = newtime;
 
         msecTick = window.performance.now();
           SIM.tick();
+          GAM.tick();
           PHY.tick( SIM.time * 1000 );
         self.msecTick = window.performance.now() - msecTick;
 
         msecRend = window.performance.now();
-          REN.tick();
+          PHY.world.render();
         self.msecRend = window.performance.now() - msecRend;
 
         REN.info.fps = fps;
@@ -220,10 +245,16 @@ IFC = (function(){
 
       var h = fps/2;
       ctxFps.fillStyle = h > 25 ? 'white' : 'red';
-      ctxFps.fillRect(0, 32 - h, 1, h > 25 ? 1 : h);
+      ctxFps.fillRect(0, 32 - h, 1, h > 25 ? 2 : h);
       ctxFps.drawImage(cvsFps, 1, 0);
       ctxFps.fillStyle = '#AAA';
       ctxFps.fillRect(0, 0, 1, 32);
+
+      // if (h <= 25){
+        // ctxFps.font = '16px sans-serif'
+        // ctxFps.fillStyle = '#e44';
+        // ctxFps.fillText(2, 2, bufFps.avg().toFixed(1));
+      // }
 
 
     }, message: function(message){
@@ -248,26 +279,61 @@ IFC = (function(){
       $menu.style.top  = (mouse.y + yOff -8) + 'px';
       $menu.style.display = 'block';
 
+    }, clearMenu: function($el){
+
+      while ($el.firstChild) {
+        $el.onclick = undefined;
+        $el.onmouseenter = undefined;
+        $el.onmouseleave = undefined;
+        self.clearMenu($el.firstChild);
+        $el.removeChild($el.firstChild);
+      }
 
     }, hideMenu: function(){
 
       $menu.style.display = 'none';
 
+    }, updateMenuList: function($el, list){
 
-    }, updateMenu: function(){
+      var el, ul, li;
 
-      var el;
+      self.clearMenu($el);
 
-      while ($menuList.firstChild) {
-        $menuList.removeChild($menuList.firstChild);
-      }
+      H.each(list, (i, entry) => {
 
-      H.each(menuItems, (i, item) => {
         el = document.createElement('li');
-        el.className = 'menu-item';
-        el.innerHTML = item.label;
-        el.onclick = function(){item.action(); self.hideMenu();};
-        $menuList.appendChild(el);
+        el.className = interprete(entry.active) ? ' menu-item' : 'menu-item-disabled';
+        el.innerHTML = entry.label;
+        el.onclick = function(e){entry.action(); self.hideMenu(); return eat(e);};
+
+        if (entry.items){
+
+          ul = document.createElement('ul');
+          ul.className = 'sub-menu-list none';
+          el.appendChild(ul);
+
+          H.each(entry.items, (i, subentry) => {
+            li = document.createElement('li');
+            li.className = interprete(subentry.active) ? ' sub-menu-item' : 'sub-menu-item-disabled';
+            li.innerHTML = subentry.label;
+            li.onclick = function(e){subentry.action(); self.hideMenu(); return eat(e);};
+            ul.appendChild(li);
+          });
+
+          el.onmouseenter  = function(){
+            ul.classList.remove('none');
+            ul.classList.add('block');
+          };
+
+          el.onmouseleave = function(){
+            ul.classList.add('none');
+            ul.classList.remove('block');
+          };
+
+        }
+
+        $el.appendChild(el);
+
       });
 
 
@@ -309,18 +375,14 @@ IFC = (function(){
 
     }, shootScreen: function(){
 
-      var 
-        draw = CFG.Debug.draw.info,
-        msgs = CFG.Debug.draw.messages;
+      var state = H.deepcopy(REN.draw);
 
       // suppress debug decoration
-      CFG.Debug.draw = false;
-      CFG.Debug.messages = false;
+      H.each(REN.draw, key => REN.draw[key] = false);
 
       window.setTimeout(function(){
         window.open(cvs.toDataURL('image/png'), 'toDataURL() image', 'width=' + cvs.width/2 + ', height=' + cvs.height/2);
-        CFG.Debug.draw.info = draw;
-        CFG.Debug.draw.messages = msgs;
+        H.extend(REN.draw, state);
       }, 32);
 
 

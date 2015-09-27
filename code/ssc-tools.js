@@ -9,6 +9,12 @@ T = (function () {
 
     now: performance.now.bind(performance),
 
+    logFsmError: function(eventName, from, to, args, errorCode, errorMessage) {
+      IFC.throw(this.name, 'event:' + eventName, from, '->', to, errorMessage);
+    },
+
+    readEvents : function (state){return {name: state[0], from: state[1], to: state[2]}; },
+
     getRandomColor : function (){
       return '#'+(Math.random()*0xFFFFFF<<0).toString(16);
     },

@@ -63,7 +63,7 @@ CFG = {
         mass:             0.43,  // 0.41 < 0.45
         radius:           0.7,   // Umfang: 0.68 < 0.70
         cof:              1.0,   // A cof of 1 has no slide.
-        restitution:      1.0,   // A restitution of 0 is not bouncy.
+        restitution:      0.8,   // A restitution of 0 is not bouncy.
     },
 
     Posts: {
@@ -95,7 +95,7 @@ CFG = {
         width:            1,
         height:           3,
         cof:              1.0,
-        restitution:      1.0,
+        restitution:      0.4,
         angle:            0.0,       //  positive is clockwise starting along the x axis
         marked:        false,
         selected:      false,
@@ -133,6 +133,76 @@ CFG = {
         }
 
     ],
+
+    States : {
+
+        simulation: [
+            // ['startup',      'none',           'None'         ],
+            ['setup',        'None',           'Setup'        ],
+            ['setup',        'Training',       'Setup'        ],
+            ['setup',        'Play',           'Setup'        ],
+            ['train',        'None',           'Training'     ],
+            ['train',        'Setup',          'Training'     ],
+            ['train',        'Play',           'Training'     ],
+            ['play',         'None',           'Play'         ],
+            ['play',         'Setup',          'Play'         ],
+            ['play',         'Training',       'Play'         ],
+        ],
+
+        game:       [
+            ['pause',        'None',            'Pause'       ],
+            ['run',          'None',            'Running'     ],
+            ['run',          'Pause',           'Running'     ],
+            ['run',          'Off',             'Running'     ],
+            ['pause',        'Running',         'Pause'       ],
+            ['off',          'Running',         'Off'         ],
+        ],
+
+        team:       [
+            // Initial
+            ['setup',        'None',            'Setup'       ],
+            ['train',        'None',            'Training'    ],
+
+            // Kickoff, Abstoss vom Mittelpunkt
+            ['forkickoff',   'None',            'ForKickoff'  ],
+            ['kikkickoff',   'None',            'KikKickoff'  ],
+            ['forkickoff',   'Setup',           'ForKickoff'  ],
+            ['kikkickoff',   'Training',        'KikKickoff'  ],
+            ['forkickoff',   'Setup',           'ForKickoff'  ],
+            ['kikkickoff',   'Training',        'KikKickoff'  ],
+            ['play',         'ForKickoff',      'Play'        ],
+            ['play',         'KikKickoff',      'Play'        ],
+
+            // Einwurf, Throwin
+            ['forthrowin',   'Play',            'ForThrowin'  ],
+            ['kikthrowin',   'Play',            'KikThrowin'  ],
+            ['play',         'ForThrowin',      'Play'        ],
+            ['play',         'KikThrowin',      'Play'        ],
+
+            // Ecke, Corner
+            ['forcorner',    'Play',            'ForCorner'   ],
+            ['kikcorner',    'Play',            'KikCorner'   ],
+            ['play',         'ForCorner',       'Play'        ],
+            ['play',         'KikCorner',       'Play'        ],
+
+            // Freistoss, Free Kick
+            ['forfreekick',  'Play',            'ForFreekick' ],
+            ['kikfreekick',  'Play',            'KikFreekick' ],
+            ['play',         'ForFreekick',     'Play'        ],
+            ['play',         'KikFreekick',     'Play'        ],
+
+            // Elfer, Penalty Kick
+            ['forpenalty',   'Play',            'ForPenalty'  ],
+            ['kikpenalty',   'Play',            'KikPenalty'  ],
+            ['play',         'ForPenalty',      'Play'        ],
+            ['play',         'KikPenalty',      'Play'        ],
+
+            // Pause
+            ['pause',        'Play',            'Pause'       ],
+        ],
+        player:     [],
+
+    },
 
     stages: {
         physics:   {

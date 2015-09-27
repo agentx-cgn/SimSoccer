@@ -32,6 +32,13 @@ BHV = (function(){
 
     boot:   function () {return (self = this);
 
+    }, reset: function(){
+
+      self.cleanup();
+      self.init();
+
+    }, cleanup: function(){
+
     }, init: function(){
 
       world = PHY.world;
@@ -105,8 +112,9 @@ BHV = (function(){
           y - body.radius > CFG.Field.width
         );
 
-      if ( isOff && SIM.game.state === 'running'){
-        world.emit('game:ball-off-field', {x, y, player: body.player});
+      if ( isOff && GAM.current === 'Running'){
+        GAM.off({x, y, last: body.player});
+        // world.emit('game:ball-off-field', );
         PHY.stopBodies([ body ]);
       }
 

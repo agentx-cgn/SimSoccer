@@ -1,5 +1,5 @@
 /*jslint bitwise: true, browser: true, evil:true, devel: true, todo: true, debug: true, nomen: true, plusplus: true, sloppy: true, vars: true, white: true, indent: 2 */
-/*globals*/
+/*globals H */
 
 /*--------------- H E L P E R -------------------------------------------------
 
@@ -15,7 +15,7 @@
 // The Object.getOwnPropertyNames() method returns an array of all properties (enumerable or not) found directly upon a given object.
 // http://rosettacode.org/wiki/Category:JavaScript
 
-var H = (function(){
+H = (function(){
 
   var H = {};
 
@@ -85,11 +85,12 @@ var H = (function(){
     // extend:     function (o,e){var a; for(a in e){if(e.hasOwnProperty(a)){o[a]=H.deepcopy(e[a]);}}return o;},
     // extend:     function (o,e){var a; for(a in e){if(e.hasOwnProperty(a)){o[a]=(e[a]);}} return o;},
     isEmpty:    function (o){var p;for(p in o){if(o.hasOwnProperty(p)){return false;}}return true;},
-    prettify:   function (o){return JSON.stringify(o).split('"').join("");},
+    prettify:   function (o){return JSON.stringify(o).split('"').join('');},
     map:        function (o,fn){var a,r={};for(a in o){if(o.hasOwnProperty(a)){r[a]=(typeof fn==='function')?fn(a,o[a]):fn;}}return r;},
     transform:  function (o, fn){
       // var r={}; H.each(o,function(k,v){var [ra,rv]=fn(k,v);r[ra]=rv;});return r; // chrome comp as of sep 15
     },
+
 
     // Arrays
     toArray:    function (a){return Array.prototype.slice.call(a);},
@@ -101,10 +102,10 @@ var H = (function(){
     removeAll:  function (a,v){var i,j,l;for(i=0,j=0,l=a.length;i<l;i++) {if(a[i]!==v){a[j++]=a[i];}}a.length=j;},
     remove:     function (a,e){var i=a.indexOf(e); if (i!==-1){a.splice(i, 1);}},
     flatten:    function (a){return Array.prototype.concat.apply([], a);},
-    pushUnique: function (a,e){if(a.indexOf(e)===-1){a.push(e);};return a;},
+    pushUnique: function (a,e){if(a.indexOf(e)===-1){a.push(e);}return a;},
     equal:      function (a,b){return JSON.stringify(a) === JSON.stringify(b);},
-    mean:       function(a){return a.reduce(function(s,x){return (s+x)},0)/a.length;},
-    median:     function(a){var al=a.length;m=~~(a.sort().length/2);return !al?null:al%2?a[m]:(a[m-1]+a[m])/2;},
+    mean:       function(a){return a.reduce(function(s,x){return (s+x);},0)/a.length;},
+    median:     function(a){var al=a.length,m=~~(a.sort().length/2);return !al?null:al%2?a[m]:(a[m-1]+a[m])/2;},
     mode:       function(a){
       var i, n, cnt = {}, mode = [], max = 0;
       for (i in a) {
@@ -147,7 +148,7 @@ var H = (function(){
     attribs:    function (o){return Object.keys(o);},
     each:       function (o,fn){Object.keys(o).forEach(a => fn(a, o[a]));},
     count:      function (o){return Object.keys(o).length;},
-    values:     function (o){return Object.keys(o).map(function(k){return o[k];})}
+    values:     function (o){return Object.keys(o).map(function(k){return o[k];});}
 
   });
 
