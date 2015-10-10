@@ -1,5 +1,5 @@
 /*jslint bitwise: true, browser: true, evil:true, devel: true, todo: true, debug: true, nomen: true, plusplus: true, sloppy: true, vars: true, white: true, indent: 2 */
-/*globals CFG, H, T, StateMachine */
+/*globals CFG, H, T, SIM, StateMachine */
 
 'use strict';
 
@@ -29,47 +29,59 @@ function Team (options){
   Actor.call(this, options);
   H.extend(this, options);
 
-  this.fsm = StateMachine.create({
-    target:  this.prototype,
-    initial: 'None',
-    events:  CFG.States.team.map(T.readEvents),
-    error:   T.logFsmError.bind(self),
-  });
-
 }
 
 Team.prototype = {
   constructor: Team,
 
-  onsetup: function      (name, from, to, data){
+  promise: function(event, data){
 
-    SIM.message(this.name + ": " + to);
+    var e = 'TRY: %s can\'t %s now, but %s';
 
-  }, ontrain: function      (name, from, to, data){
+    return new Promise(function(resolve, reject) {
+      if (event === this.current.toLowerCase()){
+        resolve();
+      } else if (this.can(event)){
+        this[event](data, resolve);
+      } else {
+        reject(H.format(e, this.nick, event, this.transitions()));
+      }
+    }.bind(this));
+
+  }, onsetup: function (name, from, to, data, resolve){
+
+    setTimeout(function(){
+      SIM.msgFromTo(this.nick, from, to);
+      resolve();
+    }.bind(this), 500);
+
+  }, ontrain: function (name, from, to, data, resolve){
     
-    SIM.message(this.name + ": " + to);
+    SIM.msgFromTo(this.nick, from, to);
+    // resolve();
 
-  }, onpause: function      (name, from, to, data){
+  }, onpause: function (name, from, to, data, resolve){
     
-    SIM.message(this.name + ": " + to);
+    SIM.msgFromTo(this.nick, from, to);
+
 
   
 
   }, onforkickoff: function (name, from, to, data){
     
-    SIM.message(this.name + ": " + to);
+    SIM.msgFromTo(this.name, from, to);
 
   }, onkikkickoff: function (name, from, to, data){
     
-    SIM.message(this.name + ": " + to);
+    SIM.msgFromTo(this.name, from, to);
 
   }, onforthrowin: function (name, from, to, data){
     
-    SIM.message(this.name + ": " + to);
+    SIM.msgFromTo(this.name, from, to);
 
   }, onkikthrowin: function (name, from, to, data){
     
-    SIM.message(this.name + ": " + to);
+    SIM.msgFromTo(this.name, from, to);
 
   }, onforcorner: function  (name, from, to, data){
     
@@ -97,3 +109,10 @@ Team.prototype = {
 
   }, };
 
+
+StateMachine.create({
+  target:  Team.prototype,
+  initial: 'None',
+  events:  CFG.States.team.map(T.readEvents),
+  error:   T.logFsmError.bind(self),
+});

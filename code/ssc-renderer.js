@@ -1,6 +1,6 @@
 /*jslint bitwise: true, browser: true, evil:true, devel: true, todo: true, debug: true, nomen: true, plusplus: true, sloppy: true, vars: true, white: true, indent: 2 */
 /*jshint -W030 */
-/*globals REN, TWEEN, CFG, SIM, PHY, IFC, T, H */
+/*globals REN, TWEEN, CFG, GAM, SIM, PHY, IFC, T, H */
 
 'use strict';
 
@@ -25,6 +25,7 @@ REN = (function(){
 
     draw = {
       info:       CFG.Debug.draw.info,
+      list:       CFG.Debug.draw.list,
       speed:      CFG.Debug.draw.speed,
       mouse:      CFG.Debug.draw.mouse,
       messages:   CFG.Debug.draw.messages,
@@ -33,14 +34,14 @@ REN = (function(){
       spotkick:   false,
     },
 
+    list = [],
+
     transX, transY, transA,
     transform = {field: [0, 0, 0, 0], scale: 1},
 
     strokeCircles, strokeRecs, fillRecs,
 
-    tweenWhistle = null,
-
-    imgWhistle;
+    tweenWhistle = null, imgWhistle;
 
     function bodyShort (infobody){
       return ( !infobody ? 'none' :
@@ -55,6 +56,7 @@ REN = (function(){
 
     info,
     draw,
+    list,
 
     boot: function(){return (self = this);
 
@@ -76,6 +78,12 @@ REN = (function(){
       PHY.resize(transform);
 
 
+    }, setMouse : function (mouse) {
+
+        mouse.fx = (mouse.x - transform.field[0]) / transform.scale, 
+        mouse.fy = (mouse.y - transform.field[1]) / transform.scale
+
+
     }, toField : function (point) {
 
       return {
@@ -91,6 +99,11 @@ REN = (function(){
 
       return point;
 
+    }, push: function(task){
+
+      list.push(task);
+
+
     }, whistle:  function(data){
 
       if (tweenWhistle){tweenWhistle.stop();}
@@ -102,6 +115,26 @@ REN = (function(){
         .onUpdate( () => self.drawWhistle(this.alpha, data.team) )
         .start()
       ;
+
+
+    }, alpha: function(newAlpha, fn){
+
+      var oldAlpha = ctx.globalAlpha;
+
+      ctx.globalAlpha = newAlpha;
+      fn();
+      ctx.globalAlpha = oldAlpha;
+
+
+    }, tween: function(from, to, msecs, easing, onUpdate){
+
+      return (new TWEEN
+        .Tween({delta: from})
+        .to(   {delta: to}, msecs)
+        .easing(easing)
+        .onUpdate(function(){onUpdate(this.delta);})
+        .start()
+      );
 
 
     }, render: function(bodies, worldmeta){
@@ -140,6 +173,8 @@ REN = (function(){
       self.drawTeamsResult(0.4);
       self.drawSimState(0.3);
 
+      draw.list        && H.consume(list, task => task());
+
       for (i = 0; (body = bodies[i]); i++){
 
         (body.name === 'ball')   && self.drawBall(body);
@@ -171,6 +206,7 @@ REN = (function(){
         transA = 0;
 
       }
+
 
     }, calcTransform: function(){
 
@@ -272,11 +308,22 @@ REN = (function(){
         ];
 
 
-    }, fillCircle:  function(x, y, radius, style, start, end){
+    }, strokeLine:  function(x1, y1, x2, y2, color, linewidth){
+
+      self.translate(0, 0);
+      ctx.lineWidth = (linewidth || 1) / transform.scale;
+      ctx.strokeStyle = color || 'yellow';
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+
+
+    }, fillCircle:  function(x, y, radius, fillStyle, start, end){
 
       ctx.beginPath();
-      ctx.fillStyle = style;
-      ctx.arc(x, y, radius, start || 0, end   || TAU, false);
+      ctx.fillStyle = fillStyle;
+      ctx.arc(x, y, radius, start || 0, end || TAU, false);
       ctx.fill();
       
 
@@ -471,8 +518,8 @@ REN = (function(){
       ctx.fillText('tick/rend  :  ' + IFC.msecTick.toFixed(2)   + '/' + IFC.msecRend.toFixed(2)  , left,  60);
       ctx.fillText('simulation :  ' + SIM.current                                                , left,  80);
       ctx.fillText('game       :  ' + GAM.current                                                , left, 100);
-      ctx.fillText('team0      :  ' + GAM.team0.fsm.current                                      , left, 120);
-      ctx.fillText('team1      :  ' + GAM.team1.fsm.current                                      , left, 140);
+      ctx.fillText('team0      :  ' + GAM.team0.current                                      , left, 120);
+      ctx.fillText('team1      :  ' + GAM.team1.current                                      , left, 140);
 
 
 

@@ -1,7 +1,7 @@
 /*jslint bitwise: true, browser: true, evil:true, devel: true, todo: true, debug: true, nomen: true, plusplus: true, sloppy: true, vars: true, white: true, indent: 2 */
 /*jshint -W030 */
 /*jshint -W069 */
-/*globals IFC, SIM, BHV, CFG, H, REN, PHY, Physics */
+/*globals IFC, SIM, BHV, CFG, H, REN, PHY, GAM, Physics */
 
 'use strict';
 
@@ -25,7 +25,8 @@ BHV = (function(){
     force,
     force1,
     offset,
-    position;
+    position,
+    speed;
 
 
   return {
@@ -124,22 +125,42 @@ BHV = (function(){
 
     }, 'players-marked-attractor': function (body) {
 
-      var norm, options = this.options;
+      var 
+        distance, color = 'yellow',
+        options = this.options,
+        range = 10;
 
       if (options.pos){
 
         body.sleep(false);
-      
+        
+        // vector from point to position
         vector = this.scratch.vector()
           .clone( options.pos )
           .vsub( body.state.pos )
         ;
 
-        norm = vector.norm();  // get the distance
+        distance = vector.norm();  // get the distance
 
-        if (norm > options.min && norm < options.max){
-          body.accelerate( vector.normalize().mult( options.strength / Math.pow(norm, options.order) ) );
+        if (distance > options.min && distance < options.max){
+          body.accelerate( vector.normalize().mult( options.strength / Math.pow(distance, options.order) ) );
         }
+
+        if (distance < range){
+          color = 'red';
+          speed = this.scratch.vector()
+            .clone( body.state.vel )
+            .mult(distance - range)
+          ;
+          body.state.vel.vadd(speed);
+
+        }
+
+        REN.push(() => REN.strokeLine (
+          options.pos.x, options.pos.y,
+          body.state.pos._[0], body.state.pos._[1],
+          color
+        ));
 
       }
 
@@ -225,7 +246,7 @@ BHV = (function(){
         pos:      null,
         filter:   {marked: true},
         scratch:  true,
-        strength: 0.0015,
+        strength: 0.00015,
         order:    0,
         min:      1,
         max:    200,

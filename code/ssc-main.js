@@ -70,7 +70,7 @@ window.onload = function(){
     IFC.show();  // go visible
     IFC.play();  // runs animate
 
-    GAM.run();
+    // GAM.run();
 
     // SIM.startup();
     // PHY.world.emit('game:start');
@@ -80,7 +80,7 @@ window.onload = function(){
 
   window.reset();
   bInitializes = false;
-  SIM.message('fullscreen: ' + IFC.isFullScreen());
+  // SIM.message('fullscreen: ' + IFC.isFullScreen());
   TIM.step('ready');
 
 };

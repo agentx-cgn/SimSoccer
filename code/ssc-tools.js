@@ -9,6 +9,10 @@ T = (function () {
 
     now: performance.now.bind(performance),
 
+    fromTo : function(what, from, to){
+      return H.format('%s: %s -> %s', what, from, to);
+    },
+
     logFsmError: function(eventName, from, to, args, errorCode, errorMessage) {
       IFC.throw(this.name, 'event:' + eventName, from, '->', to, errorMessage);
     },

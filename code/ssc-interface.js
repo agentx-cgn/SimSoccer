@@ -1,5 +1,5 @@
 /*jslint bitwise: true, browser: true, evil:true, devel: true, todo: true, debug: true, nomen: true, plusplus: true, sloppy: true, vars: true, white: true, indent: 2 */
-/*globals H, T, IFC, REN, SIM, PHY, Mousetrap, CFG */
+/*globals H, T, IFC, REN, GAM, SIM, REN, PHY, Mousetrap, CFG, TWEEN */
 /*jshint -W030 */
 
 'use strict';
@@ -19,7 +19,7 @@ IFC = (function(){
     
     marginTop = CFG.Screen.marginTop, 
 
-    mouse = {x: -1000, y: -1000, down: null},
+    mouse = {x: -1000, y: -1000, fx: -1000, fy: -1000, down: null},
     mouseOverBody,
 
     $messagesList,
@@ -35,11 +35,12 @@ IFC = (function(){
       {label: 'Fullscreen', active: true,  action: () => self.toggleFullScreen()},
       {label: 'Screenshot', active: true,  action: () => self.shootScreen()},
       {label: 'Reset',      active: true,  action: () => window.reset()},
-      {label: 'Setup',      active: () => SIM.fsm.can('setup'),  action: () => SIM.fsm.setup({test:1})},
-      {label: 'Training',   active: () => SIM.fsm.can('train'),  action: () => SIM.fsm.train({test:2})},
-      {label: 'Play',       active: () => SIM.fsm.can('play'),   action: () => SIM.fsm.play({test:3}), items: [
-        {label: 'Run',      active: () => GAM.fsm.can('run'),    action: () => GAM.fsm.run({test:5})},
-        {label: 'Pause',    active: () => GAM.fsm.can('pause'),  action: () => GAM.fsm.pause({test:4})},
+      {label: 'Setup',      active: () => SIM.can('setup'),  action: () => SIM.promise('setup', {test:1})},
+      {label: 'Training',   active: () => SIM.can('train'),  action: () => SIM.promise('train', {test:2})},
+      {label: 'Play',       active: () => SIM.can('play'),   action: () => SIM.promise('play',  {test:3}), items: [
+        {label: 'Pause',    active: () => GAM.can('pause'),  action: () => GAM.promise('pause', {test:4})},
+        {label: 'Half1',    active: () => GAM.can('half1'),  action: () => GAM.promise('half1', {test:5})},
+        {label: 'Half2',    active: () => GAM.can('half2'),  action: () => GAM.promise('half2', {test:5})},
       ]},
     ],
 
@@ -70,7 +71,7 @@ IFC = (function(){
 
         var 
           msg = H.format.apply(null, H.toArray(arguments)),
-          stack = new Error().stack.split("\n").slice(1);
+          stack = new Error().stack.split('\n').slice(1);
 
         console.warn.apply(console, H.toArray(arguments));
 
@@ -108,6 +109,7 @@ IFC = (function(){
 
       cvs = self.cvs = document.createElement('canvas');
       // cvs.setAttribute('moz-opaque', 'moz-opaque');
+      cvs.className = 'noselect';
       cvs.setAttribute('crossOrigin', 'Anonymous');
       cvs.style.backgroundColor = CFG.Screen.backcolor;
       ctx = self.ctx = cvs.getContext('2d');
@@ -128,7 +130,8 @@ IFC = (function(){
         var yOff = self.isFullScreen() ? 0 : marginTop;
         mouse.x = e.clientX - cvs.offsetLeft;
         mouse.y = e.clientY - cvs.offsetTop - yOff;
-        self.mouseOverBody = mouseOverBody = PHY.findAt(REN.toField(mouse));
+        REN.setMouse(mouse);
+        mouseOverBody = self.mouseOverBody = PHY.findAtMouse(mouse);
       }
 
       function onmouseup ( /* e */ ) {
@@ -137,7 +140,7 @@ IFC = (function(){
 
       function onmousedown (e) {
 
-        var selected;
+        var selected, tweener;
 
         mouse.down = {x: mouse.x, y: mouse.y, b: e.button};
         
@@ -149,6 +152,17 @@ IFC = (function(){
               body.selected = false;
             });
             mouseOverBody.selected = !selected;
+          
+          // leave a mark
+          } else {
+            tweener = function () {
+              var x = mouse.fx, y = mouse.fy;
+              return (alpha) => {
+                REN.alpha(alpha, REN.fillCircle.bind(null, x, y, 1, 'red'));
+              };
+            };
+            REN.tween(1.0, 0.0, 800, TWEEN.Easing.Quadratic.Out, tweener());
+
           }
         }
 
@@ -462,7 +476,7 @@ IFC = (function(){
         }
       }
 
-      SIM.message('fullscreen: ' + IFC.isFullScreen());
+      // SIM.message('fullscreen: ' + IFC.isFullScreen());
 
 
   }}; // method end/return

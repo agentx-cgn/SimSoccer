@@ -10,6 +10,15 @@ canvas {background:#000;}
 .left  {float:   left;}
 .none  {display: none;}
 .block {display: block;}
+.noselect {
+  cursor: default;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
 
 h1 {
   font-family: "Sans Serif";

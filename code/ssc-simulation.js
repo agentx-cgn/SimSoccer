@@ -1,5 +1,6 @@
 /*jslint bitwise: true, browser: true, evil:true, devel: true, todo: true, debug: true, nomen: true, plusplus: true, sloppy: true, vars: true, white: true, indent: 2 */
-/*globals SIM, REN, BHV, IFC, CFG, H, PHY, StateMachine */
+/*globals SIM, REN, BHV, IFC, CFG, H, T, PHY, GAM, StateMachine */
+/*jshint -W030 */
 
 'use strict';
 
@@ -19,6 +20,7 @@ SIM = (function(){
     frame,
 
     name: 'sim',
+    nick: 'SIM',
 
     boot:   function(){return (self = this);
 
@@ -39,6 +41,11 @@ SIM = (function(){
       self.init();
       self.listen();
 
+      SIM.message('SIM = ' + SIM.current);
+      SIM.message('GAM = ' + GAM.current);
+      SIM.message('TM0 = ' + GAM.team0.current);
+      SIM.message('TM1 = ' + GAM.team1.current);
+
 
     }, tick: function () {
 
@@ -47,35 +54,75 @@ SIM = (function(){
 
     }, init: function(){
 
-      fsm = self.fsm = StateMachine.create({
+      fsm = StateMachine.create({
         target:  self,
         initial: 'None',
         events:  CFG.States.simulation.map(T.readEvents),
         error:   T.logFsmError.bind(self),
       });
 
+
+    // F S M - S T A R T
+
+    }, promise: function(event, data){
+
+      var e = 'TRY: %s can\'t %s now, %s';
+
+      return new Promise(function(resolve, reject) {
+        if (event === this.current.toLowerCase()){
+          resolve();
+        } else if (this.can(event)){
+          this[event](data, resolve);
+        } else {
+          reject(H.format(e, this.nick, event, this.transitions()));
+        }
+      }.bind(self));
+
     }, onsetup: function(name, from, to, data){
       
-      SIM.message('sim: ' + to);
+      SIM.msgFromTo('sim', from, to);
 
-      GAM.fsm.can('pause')       && GAM.fsm.pause();
-      GAM.team0.fsm.can('setup') && GAM.team0.fsm.setup();
-      GAM.team1.fsm.can('setup') && GAM.team1.fsm.setup();
+      return (
+        GAM.promise('pause', data)
+          .then(Promise.all([
+            GAM.team0.promise('setup', data),
+            GAM.team1.promise('setup', data)
+          ]))
+          .catch(function(reason){
+            console.log('SIM.onsetup.failed:', reason, data);
+          })
+      );
 
     }, ontrain: function(name, from, to, data){
 
-      SIM.message('sim: ' + to);
+      SIM.msgFromTo('sim', from, to);
 
-      GAM.fsm.can('pause')       && GAM.fsm.pause();
-      GAM.team0.fsm.can('train') && team0.fsm.train();
-      GAM.team1.fsm.can('train') && team1.fsm.train();
+      return (
+        GAM.promise('pause', data)
+          .then(Promise.all([
+            GAM.team0.promise('train', data),
+            GAM.team1.promise('train', data)
+          ]))
+          .catch(function(reason){
+            console.log('SIM.ontrain.failed:', reason, data);
+          })
+      );
 
+      // GAM.can('pause')   && GAM.pause();
+      // GAM.team0.can('train') && GAM.team0.train();
+      // GAM.team1.can('train') && GAM.team1.train();
 
     }, onplay:  function(name, from, to, data){
 
-      SIM.message('sim: ' + to);
-      GAM.fsm.can('run') && GAM.fsm.run();
+      SIM.msgFromTo('sim', from, to);
+      GAM.can('run') && GAM.run();
 
+    // F S M - E N D
+
+
+    }, msgFromTo : function (what, from, to) {
+
+      self.message(H.format('%s : %s -> %s', what.toUpperCase(), from, to));
 
     }, message : function (message) {
 

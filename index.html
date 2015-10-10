@@ -8,12 +8,11 @@
 
   <script type="text/javascript">
 
-    if (typeof console === "undefined") {
-      console = { log:function(){}, warn:function(){}, error:function(){} };
-    }
+    window.console = window.console || { 
+      log:function(){}, warn:function(){}, error:function(){}
+    };
 
     window.performance = window.performance || {};
-    // window.performance.timing = window.performance.timing || {};
 
     window.performance.now = 
       window.performance.now ||
@@ -52,6 +51,7 @@
 
   <link rel="stylesheet" type="text/css" media="screen" href="styles/soccer.css" />
 
+</head>
 <body>
   
   <div class="barContainer">
@@ -135,8 +135,8 @@
       <script src="code/ssc-main.js"></script>
       <script src="code/ssc-helper.js"></script>
       <script src="code/ssc-tools.js"></script>
-      <script src="code/ssc-classes.js"></script>
       <script src="code/ssc-config.js"></script>
+      <script src="code/ssc-classes.js"></script>
       <script src="code/ssc-services.js"></script>
       <script src="code/ssc-interface.js"></script>
       <script src="code/ssc-game.js"></script>

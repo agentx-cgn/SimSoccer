@@ -95,6 +95,7 @@ H = (function(){
     // Arrays
     toArray:    function (a){return Array.prototype.slice.call(a);},
     contains:   function (a,e){return a.indexOf(e)!==-1;},
+    consume:    function (a, fn){while(a.length){fn(a.shift());}},
     toFixed:    function (a,n){ n=n||1;return a.map(function(n){return n.toFixed(1);});},
     rotate:     function (a,n){return a.concat(a.splice(0,n));},
     // unique:     function (a){var u=[];a.forEach(function(i){if(u.indexOf(i)===-1){u.push(i);}});return u;},

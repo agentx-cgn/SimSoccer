@@ -60,6 +60,12 @@ PHY = (function(){
           world.find(conds)
       );
 
+    }, findAtMouse: function(mouse){
+
+      return world.findOne({
+        $at: vector.set(mouse.fx, mouse.fy)
+      });
+    
     }, findAt: function(pos){
 
       return world.findOne({

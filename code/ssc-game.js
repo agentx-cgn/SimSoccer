@@ -1,5 +1,6 @@
 /*jslint bitwise: true, browser: true, evil:true, devel: true, todo: true, debug: true, nomen: true, plusplus: true, sloppy: true, vars: true, white: true, indent: 2 */
-/*globals GAM, SIM, REN, BHV, IFC, CFG, H, PHY, StateMachine */
+/*globals GAM, SIM, REN, BHV, IFC, CFG, H, T, PHY, StateMachine, Team */
+/*jshint -W030 */
 
 'use strict';
 
@@ -26,6 +27,7 @@ GAM = (function(){
   return {
 
     name: 'game',
+    nick: 'GAM',
 
     boot:   function(){return (self = this);
 
@@ -36,7 +38,7 @@ GAM = (function(){
 
     }, init: function(){
 
-      fsm = self.fsm = StateMachine.create({
+      fsm = StateMachine.create({
         target:  self,
         initial: 'None',
         events:  CFG.States.game.map(T.readEvents),
@@ -53,28 +55,51 @@ GAM = (function(){
         self.time  += 1 / CFG.fps;
       }      
 
-    }, onpause: function(name, from, to, data){
+
+    // F S M - S T A R T
+
+    }, promise: function(event, data){
+
+      var e = 'TRY: %s can\'t %s now, but %s';
+
+      return new Promise(function(resolve, reject) {
+        if (event === this.current.toLowerCase()){
+          resolve();
+        } else if (this.can(event)){
+          this[event](data, resolve);
+        } else {
+          reject(H.format(e, this.nick, event, this.transitions()));
+        }
+      }.bind(self));
+
+    }, onpause: function(name, from, to, data, resolve){
       
-      SIM.message('gam: ' + to);
-      SIM.fsm.can('play') && SIM.fsm.play();
+      setTimeout(function(){
+        SIM.msgFromTo(this.nick, from, to);
+        resolve();
+      }.bind(self), 500);      
       
-    }, onrun:   function(name, from, to, data){
+    }, onrun:   function(name, from, to, data, resolve){
       
-      SIM.message('gam: ' + to);
-      SIM.fsm.can('play') && SIM.fsm.play();
+      SIM.msgFromTo(self.nick, from, to);
+      SIM.can('play') && SIM.play();
 
       if (from === 'None'){
-
-        console.log(team0.fsm.current, team0.fsm.can('kikkickoff'));
-        team0.fsm.kikkickoff();
-        team1.fsm.forkickoff();
-        console.log(team0.fsm.current, team0.fsm.can('kikkickoff'));
+        console.log(team0.current, team0.can('kikkickoff'));
+        team0.kikkickoff();
+        team1.forkickoff();
+        console.log(team0.current, team0.can('kikkickoff'));
       }
+
+      resolve();
+
+    // F S M - E N D
+
 
     }, onoff:   function(name, from, to, data){
       
       SIM.message('gam: ' + to);
-      SIM.fsm.can('play') && SIM.fsm.play();
+      SIM.can('play') && SIM.play();
 
     }
 

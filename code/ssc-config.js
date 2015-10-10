@@ -16,6 +16,7 @@ CFG = {
         collectCollisions: false,
         draw: {
             fps:           true,   // draw FPS 
+            list:          true,   // draw Deb objects
             info:          true,   // draw Deb info
             speed:         true,   // draw Deb render info
             mouse:         false,  // draw mouse circle
@@ -112,6 +113,7 @@ CFG = {
     Teams : [
         { 
             abbr:     'H', 
+            nick:     'TM0',
             name:     'Hunters', 
             styles:   {fill: '#66F', stroke: '#FFF', angleIndicator: '#00F'},
             players : {
@@ -122,6 +124,7 @@ CFG = {
 
         }, {
             abbr:     'P', 
+            nick:     'TM1',
             name:     'Predators', 
             styles:   {fill: '#0F0', stroke: '#FFF', angleIndicator: '#0F0'},
             players : {
@@ -136,32 +139,32 @@ CFG = {
 
     States : {
 
+            // event,        // froms                           // to
+
         simulation: [
-            // ['startup',      'none',           'None'         ],
-            ['setup',        'None',           'Setup'        ],
-            ['setup',        'Training',       'Setup'        ],
-            ['setup',        'Play',           'Setup'        ],
-            ['train',        'None',           'Training'     ],
-            ['train',        'Setup',          'Training'     ],
-            ['train',        'Play',           'Training'     ],
-            ['play',         'None',           'Play'         ],
-            ['play',         'Setup',          'Play'         ],
-            ['play',         'Training',       'Play'         ],
+
+            ['setup',        ['None', 'Training', 'Play'],         'Setup'     ],
+            ['train',        ['None', 'Setup',    'Play'],         'Training'  ],
+            ['play',         ['None', 'Setup', '   Training'],     'Play'      ],
+        
         ],
 
         game:       [
-            ['pause',        'None',            'Pause'       ],
-            ['run',          'None',            'Running'     ],
-            ['run',          'Pause',           'Running'     ],
-            ['run',          'Off',             'Running'     ],
-            ['pause',        'Running',         'Pause'       ],
-            ['off',          'Running',         'Off'         ],
+
+            ['half1',        ['None', 'Pause'],                    'Half1'     ],
+            ['half2',        ['Pause'],                            'Half2'     ],
+            ['half3',        ['Pause'],                            'Half3'     ],
+            ['half4',        ['Pause'],                            'Half4'     ],
+            ['penalties',    ['Pause'],                            'Penalties' ],
+            ['party',        ['Pause', 'Penalties'],               'Party'     ],
+            ['pause',        ['None', 'Half1', 'Half2', 'Half3', 'Half4'], 'Pause'     ],
+
         ],
 
         team:       [
-            // Initial
-            ['setup',        'None',            'Setup'       ],
-            ['train',        'None',            'Training'    ],
+            // Initial and sim states
+            ['setup',        ['None', 'Training'],                   'Setup'       ],
+            ['train',        ['None', 'Setup'],                      'Training'    ],
 
             // Kickoff, Abstoss vom Mittelpunkt
             ['forkickoff',   'None',            'ForKickoff'  ],
