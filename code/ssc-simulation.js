@@ -68,34 +68,35 @@ SIM = (function(){
 
       var e = 'TRY: %s can\'t %s now, %s';
 
-      return new Promise(function(resolve, reject) {
-        if (event === this.current.toLowerCase()){
-          resolve();
-        } else if (this.can(event)){
-          this[event](data, resolve);
-        } else {
-          reject(H.format(e, this.nick, event, this.transitions()));
-        }
-      }.bind(self));
+      return (
+        new Promise(function(resolve, reject) {
+          if (event === this.current.toLowerCase()){
+            resolve();
+          } else if (this.can(event)){
+            this[event](data, resolve);
+          } else {
+            reject(H.format(e, this.nick, event, this.transitions()));
+          }
+        }.bind(self))
+        .then(function(){
+          SIM.msgFromTo(self.nick, self.current, event);
+        })
+        .catch(function(reason){
+          console.log('SIM.promise.failed:', event, reason, data);
+        })        
+      );
 
     }, onsetup: function(name, from, to, data){
       
-      SIM.msgFromTo('sim', from, to);
-
       return (
         GAM.promise('pause', data)
           .then(Promise.all([
             GAM.team0.promise('setup', data),
             GAM.team1.promise('setup', data)
           ]))
-          .catch(function(reason){
-            console.log('SIM.onsetup.failed:', reason, data);
-          })
       );
 
     }, ontrain: function(name, from, to, data){
-
-      SIM.msgFromTo('sim', from, to);
 
       return (
         GAM.promise('pause', data)
@@ -103,18 +104,11 @@ SIM = (function(){
             GAM.team0.promise('train', data),
             GAM.team1.promise('train', data)
           ]))
-          .catch(function(reason){
-            console.log('SIM.ontrain.failed:', reason, data);
-          })
       );
-
-      // GAM.can('pause')   && GAM.pause();
-      // GAM.team0.can('train') && GAM.team0.train();
-      // GAM.team1.can('train') && GAM.team1.train();
 
     }, onplay:  function(name, from, to, data){
 
-      SIM.msgFromTo('sim', from, to);
+      // SIM.msgFromTo('sim', from, to);
       GAM.can('run') && GAM.run();
 
     // F S M - E N D

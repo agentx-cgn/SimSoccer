@@ -38,27 +38,32 @@ Team.prototype = {
 
     var e = 'TRY: %s can\'t %s now, but %s';
 
-    return new Promise(function(resolve, reject) {
-      if (event === this.current.toLowerCase()){
-        resolve();
-      } else if (this.can(event)){
-        this[event](data, resolve);
-      } else {
-        reject(H.format(e, this.nick, event, this.transitions()));
-      }
-    }.bind(this));
+    return (
+      new Promise(function(resolve, reject) {
+        if (event === this.current.toLowerCase()){
+          resolve();
+        } else if (this.can(event)){
+          this[event](data, resolve);
+        } else {
+          reject(H.format(e, this.nick, event, this.transitions()));
+        }
+      }.bind(this))
+      .then(function(){
+        SIM.msgFromTo(this.nick, this.current, event);
+      }.bind(this))
+    );
 
   }, onsetup: function (name, from, to, data, resolve){
 
     setTimeout(function(){
-      SIM.msgFromTo(this.nick, from, to);
       resolve();
-    }.bind(this), 500);
+    }.bind(this), 2000);
 
   }, ontrain: function (name, from, to, data, resolve){
     
-    SIM.msgFromTo(this.nick, from, to);
-    // resolve();
+    setTimeout(function(){
+      resolve();
+    }.bind(this), 2000);
 
   }, onpause: function (name, from, to, data, resolve){
     

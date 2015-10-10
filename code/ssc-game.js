@@ -62,22 +62,27 @@ GAM = (function(){
 
       var e = 'TRY: %s can\'t %s now, but %s';
 
-      return new Promise(function(resolve, reject) {
-        if (event === this.current.toLowerCase()){
-          resolve();
-        } else if (this.can(event)){
-          this[event](data, resolve);
-        } else {
-          reject(H.format(e, this.nick, event, this.transitions()));
-        }
-      }.bind(self));
+      return (
+        new Promise(function(resolve, reject) {
+          if (event === this.current.toLowerCase()){
+            resolve();
+          } else if (this.can(event)){
+            this[event](data, resolve);
+          } else {
+            reject(H.format(e, this.nick, event, this.transitions()));
+          }
+        }.bind(self))
+        .then(function(){
+          SIM.msgFromTo(self.nick, self.current, event);
+        })
+      );
 
     }, onpause: function(name, from, to, data, resolve){
       
       setTimeout(function(){
-        SIM.msgFromTo(this.nick, from, to);
+        // SIM.msgFromTo(this.nick + '!', from, to);
         resolve();
-      }.bind(self), 500);      
+      }.bind(self), 1000);      
       
     }, onrun:   function(name, from, to, data, resolve){
       
