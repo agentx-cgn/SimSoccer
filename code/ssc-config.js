@@ -144,7 +144,7 @@ CFG = {
         simulation: [
 
             ['setup',        ['None', 'Training', 'Play'],         'Setup'     ],
-            ['train',        ['None', 'Setup',    'Play'],         'Training'  ],
+            ['training',     ['None', 'Setup',    'Play'],         'Training'  ],
             ['play',         ['None', 'Setup', '   Training'],     'Play'      ],
         
         ],
@@ -164,7 +164,7 @@ CFG = {
         team:       [
             // Initial and sim states
             ['setup',        ['None', 'Training'],                   'Setup'       ],
-            ['train',        ['None', 'Setup'],                      'Training'    ],
+            ['training',     ['None', 'Setup'],                      'Training'    ],
 
             // Kickoff, Abstoss vom Mittelpunkt
             ['forkickoff',   'None',            'ForKickoff'  ],

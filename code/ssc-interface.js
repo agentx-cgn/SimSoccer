@@ -35,12 +35,12 @@ IFC = (function(){
       {label: 'Fullscreen', active: true,  action: () => self.toggleFullScreen()},
       {label: 'Screenshot', active: true,  action: () => self.shootScreen()},
       {label: 'Reset',      active: true,  action: () => window.reset()},
-      {label: 'Setup',      active: () => SIM.can('setup'),  action: () => SIM.promise('setup', {test:1})},
-      {label: 'Training',   active: () => SIM.can('train'),  action: () => SIM.promise('train', {test:2})},
-      {label: 'Play',       active: () => SIM.can('play'),   action: () => SIM.promise('play',  {test:3}), items: [
-        {label: 'Pause',    active: () => GAM.can('pause'),  action: () => GAM.promise('pause', {test:4})},
-        {label: 'Half1',    active: () => GAM.can('half1'),  action: () => GAM.promise('half1', {test:5})},
-        {label: 'Half2',    active: () => GAM.can('half2'),  action: () => GAM.promise('half2', {test:5})},
+      {label: 'Setup',      active: () => SIM.can('setup'),     action: () => SIM.promise('setup',    {test:1})},
+      {label: 'Training',   active: () => SIM.can('training'),  action: () => SIM.promise('training', {test:2})},
+      {label: 'Play',       active: () => SIM.can('play'),      action: () => SIM.promise('play',     {test:3}), items: [
+        {label: 'Pause',    active: () => GAM.can('pause'),     action: () => GAM.promise('pause',    {test:4})},
+        {label: 'Half1',    active: () => GAM.can('half1'),     action: () => GAM.promise('half1',    {test:5})},
+        {label: 'Half2',    active: () => GAM.can('half2'),     action: () => GAM.promise('half2',    {test:5})},
       ]},
     ],
 

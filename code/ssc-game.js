@@ -60,29 +60,27 @@ GAM = (function(){
 
     }, promise: function(event, data){
 
-      var e = 'TRY: %s can\'t %s now, but %s';
+      var e = 'TRY: %s can\'t "%s" now, but %s';
 
       return (
-        new Promise(function(resolve, reject) {
-          if (event === this.current.toLowerCase()){
+        new Promise((resolve, reject) => {
+          if (event === self.current.toLowerCase()){
             resolve();
-          } else if (this.can(event)){
-            this[event](data, resolve);
+          } else if (self.can(event)){
+            self[event](data, resolve);
           } else {
-            reject(H.format(e, this.nick, event, this.transitions()));
+            reject(H.format(e, self.nick, event, self.transitions()));
           }
-        }.bind(self))
-        .then(function(){
-          SIM.msgFromTo(self.nick, self.current, event);
         })
+        .then(() => SIM.msgFromTo(self.nick, self.current, event))
+        .catch(reason => console.log('GAM.promise.failed:', event, reason, data))
       );
 
     }, onpause: function(name, from, to, data, resolve){
       
       setTimeout(function(){
-        // SIM.msgFromTo(this.nick + '!', from, to);
         resolve();
-      }.bind(self), 1000);      
+      }, 1000);      
       
     }, onrun:   function(name, from, to, data, resolve){
       

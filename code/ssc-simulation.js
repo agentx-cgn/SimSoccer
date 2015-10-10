@@ -66,24 +66,20 @@ SIM = (function(){
 
     }, promise: function(event, data){
 
-      var e = 'TRY: %s can\'t %s now, %s';
+      var e = 'TRY: %s can\'t "%s" now, but %s';
 
       return (
         new Promise(function(resolve, reject) {
-          if (event === this.current.toLowerCase()){
+          if (event === self.current.toLowerCase()){
             resolve();
-          } else if (this.can(event)){
-            this[event](data, resolve);
+          } else if (self.can(event)){
+            self[event](data, resolve);
           } else {
-            reject(H.format(e, this.nick, event, this.transitions()));
+            reject(H.format(e, self.nick, event, self.transitions()));
           }
-        }.bind(self))
-        .then(function(){
-          SIM.msgFromTo(self.nick, self.current, event);
         })
-        .catch(function(reason){
-          console.log('SIM.promise.failed:', event, reason, data);
-        })        
+        .then(() => SIM.msgFromTo(self.nick, self.current, event))
+        .catch(reason => console.log('SIM.promise.failed:', event, reason, data))
       );
 
     }, onsetup: function(name, from, to, data){
@@ -96,13 +92,13 @@ SIM = (function(){
           ]))
       );
 
-    }, ontrain: function(name, from, to, data){
+    }, ontraining: function(name, from, to, data){
 
       return (
         GAM.promise('pause', data)
           .then(Promise.all([
-            GAM.team0.promise('train', data),
-            GAM.team1.promise('train', data)
+            GAM.team0.promise('training', data),
+            GAM.team1.promise('training', data)
           ]))
       );
 
