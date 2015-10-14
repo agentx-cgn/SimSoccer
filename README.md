@@ -9,9 +9,9 @@ A simple JavaScript Soccer Simulation with an Player AI
 ### Status
 
  * *2015-10-14:*  
-   Finite State Machine integrated, with promises
-   Tweener integrated
-   Distance Service
+   Finite State Machine integrated, with promises  
+   Tweener integrated  
+   Distance Service  
 
  * *2015-09-16:*  
    Physicsjs integrated  
