@@ -1,6 +1,6 @@
 /*jslint bitwise: true, browser: true, evil:true, devel: true, todo: true, debug: true, nomen: true, plusplus: true, sloppy: true, vars: true, white: true, indent: 2 */
 /*jshint -W030 */
-/*globals IFC, CFG, H, REN, PHY, Physics */
+/*globals IFC, CFG, H, REN, PHY, SIM, Physics */
 
 'use strict';
 
@@ -50,7 +50,7 @@ PHY = (function(){
 
       return this;
 
-    }, tick:   function(time){world.step(time);
+    }, tick:   function(){world.step( SIM.time * 1000 );
     }, resize: function(){self.updateSandbox();
     }, find:   function(conds){
 
@@ -141,17 +141,7 @@ PHY = (function(){
 
     }, add:   function(list){
 
-      H.each(list, (i, item) => {
-
-        if (Array.isArray(item)){
-          self.add(item);
-        
-        } else {
-          world.add(item);
-
-        }
-
-      });
+      H.each(list, (i, item) => Array.isArray(item) ? self.add(item) : world.add(item) );
 
 
     }, listen:   function(){

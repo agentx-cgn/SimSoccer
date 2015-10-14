@@ -20,7 +20,7 @@ IFC = (function(){
     marginTop = CFG.Screen.marginTop, 
 
     mouse = {x: -1000, y: -1000, fx: -1000, fy: -1000, down: null},
-    mouseOverBody,
+    bodyUnderMouse,
 
     $messagesList,
 
@@ -30,19 +30,26 @@ IFC = (function(){
     $menu, $submenu, 
     $menuList, $submenuList, 
     menuItems = [
-      {label: 'Reload',     active: true,  action: () => window.location.reload()},
-      {label: 'Back',       active: true,  action: () => window.history.back()},
-      {label: 'Fullscreen', active: true,  action: () => self.toggleFullScreen()},
-      {label: 'Screenshot', active: true,  action: () => self.shootScreen()},
-      {label: 'Reset',      active: true,  action: () => window.reset()},
+      {label: 'Reload',     active: true,                       action: () => window.location.reload()},
+      {label: 'Back',       active: true,                       action: () => window.history.back()},
+      {label: 'Fullscreen', active: true,                       action: () => self.toggleFullScreen()},
+      {label: 'Screenshot', active: true,                       action: () => self.shootScreen()},
+      {label: 'Reset',      active: true,                       action: () => window.reset()},
       {label: 'Setup',      active: () => SIM.can('setup'),     action: () => SIM.promise('setup',    {test:1})},
       {label: 'Training',   active: () => SIM.can('training'),  action: () => SIM.promise('training', {test:2})},
-      {label: 'Play',       active: () => SIM.can('play'),      action: () => SIM.promise('play',     {test:3}), items: [
-        {label: 'Pause',    active: () => GAM.can('pause'),     action: () => GAM.promise('pause',    {test:4})},
-        {label: 'Half1',    active: () => GAM.can('half1'),     action: () => GAM.promise('half1',    {test:5})},
-        {label: 'Half2',    active: () => GAM.can('half2'),     action: () => GAM.promise('half2',    {test:5})},
+      {label: 'Play',       active: () => SIM.can('play'),      action: () => SIM.promise('play',     {test:3}),      items: [
+        {label: 'Pause',      active: () => GAM.can('pause'),     action: () => GAM.promise('pause',    {test:4})},
+        {label: 'Half1',      active: () => GAM.can('half1'),     action: () => GAM.promise('half1',    {test:5})},
+        {label: 'Half2',      active: () => GAM.can('half2'),     action: () => GAM.promise('half2',    {test:5})},
       ]},
     ],
+
+    bodyMenuItems = function ( body ){
+      return [
+        {label: 'Select',     active: true,                       action: () => GAM.toggleSelect(body)},
+        {label: 'Mark',       active: true,                       action: () => GAM.toggleMark(body)},
+      ];
+    },
 
     interprete = function(val){return typeof val === 'function' ? val() : val;},
     eat = function(e){e.stopPropagation(); return false;};
@@ -63,7 +70,7 @@ IFC = (function(){
 
     menuItems,
 
-    mouseOverBody,
+    bodyUnderMouse,
 
     boot:   function () { return (self = this);
 
@@ -83,7 +90,7 @@ IFC = (function(){
     }, pause: function ( ){self.animate('pause');
     }, step:  function ( ){self.animate('step');
     }, error: function (e){console.log(e);
-    }, show:  function ( ){ $content.style.display = 'block';
+    }, show:  function ( ){$content.style.display = 'block';
     }, init:  function ( ){
 
       $content      = $('.content');
@@ -131,7 +138,7 @@ IFC = (function(){
         mouse.x = e.clientX - cvs.offsetLeft;
         mouse.y = e.clientY - cvs.offsetTop - yOff;
         REN.setMouse(mouse);
-        mouseOverBody = self.mouseOverBody = PHY.findAtMouse(mouse);
+        bodyUnderMouse = self.bodyUnderMouse = PHY.findAtMouse(mouse);
       }
 
       function onmouseup ( /* e */ ) {
@@ -140,51 +147,29 @@ IFC = (function(){
 
       function onmousedown (e) {
 
-        var selected, tweener;
-
         mouse.down = {x: mouse.x, y: mouse.y, b: e.button};
         
-        // left toggle select of body, unselects other
-        if (e.button === 0){
-          if (mouseOverBody){
-            selected = mouseOverBody.selected;
-            H.each(PHY.find('selected'), (i, body) => {
-              body.selected = false;
-            });
-            mouseOverBody.selected = !selected;
-          
-          // leave a mark
-          } else {
-            tweener = function () {
-              var x = mouse.fx, y = mouse.fy;
-              return (alpha) => {
-                REN.alpha(alpha, REN.fillCircle.bind(null, x, y, 1, 'red'));
-              };
-            };
-            REN.tween(1.0, 0.0, 800, TWEEN.Easing.Quadratic.Out, tweener());
-
-          }
-        }
-
-        // middle removes mark and select
-        if (e.button === 1){
-          H.each(PHY.find('selected'), (i, body) => {
-            body.selected = false;
+        // left leaves a mark on field
+        if (e.button === 0 && !bodyUnderMouse){
+          REN.tween(1.0, 0.0, 800, TWEEN.Easing.Quadratic.Out, function () {
+            var x = mouse.fx, y = mouse.fy;
+            return (alpha) => REN.alpha(alpha, REN.fillCircle.bind(null, x, y, 1, 'red'));
           });
-          H.each(PHY.find('marked'), (i, body) => {
-            body.marked = false;
-          });
-        }
 
-        // right marks/unmarks bodies
-        if (e.button === 2 && mouseOverBody){
-          mouseOverBody.marked = !mouseOverBody.marked;
-        }
-
-        // right marks/unmarks bodies
-        if (e.button === 2 && !mouseOverBody){
+        } else if (e.button === 1){
+          // middle removes mark and select from bodies
+          GAM.deMarkSelect();
+        
+        } else if (e.button === 2 && bodyUnderMouse){
+          // right with body menu
+          self.updateMenuList($menuList, bodyMenuItems(bodyUnderMouse));
+          self.showMenu();
+        
+        } else if (e.button === 2 && !bodyUnderMouse){
+          // right with field menu
           self.updateMenuList($menuList, menuItems);
           self.showMenu();
+
         }
 
       }
@@ -198,7 +183,6 @@ IFC = (function(){
       cvs.addEventListener('mouseup',    onmouseup,    false);
       cvs.addEventListener('mousedown',  onmousedown,  false);
       cvs.addEventListener('touchstart', ontouchstart, false);
-
 
     }, resize: function(outerWidth, outerHeight){
 
@@ -220,7 +204,6 @@ IFC = (function(){
 
       REN.resize(width, height);
 
-
     }, animate: function (command){
 
       if (command === 'stop')  { cmd = command; SIM.reset(); return;}
@@ -238,7 +221,7 @@ IFC = (function(){
         msecTick = window.performance.now();
           SIM.tick();
           GAM.tick();
-          PHY.tick( SIM.time * 1000 );
+          PHY.tick();
         self.msecTick = window.performance.now() - msecTick;
 
         msecRend = window.performance.now();
@@ -254,7 +237,6 @@ IFC = (function(){
 
       }
 
-
     }, drawFps: function( fps ){
 
       var h = fps/2;
@@ -269,7 +251,6 @@ IFC = (function(){
         // ctxFps.fillStyle = '#e44';
         // ctxFps.fillText(2, 2, bufFps.avg().toFixed(1));
       // }
-
 
     }, message: function(message){
 
@@ -293,6 +274,10 @@ IFC = (function(){
       $menu.style.top  = (mouse.y + yOff -8) + 'px';
       $menu.style.display = 'block';
 
+    }, hideMenu: function(){
+
+      $menu.style.display = 'none';
+
     }, clearMenu: function($el){
 
       while ($el.firstChild) {
@@ -302,10 +287,6 @@ IFC = (function(){
         self.clearMenu($el.firstChild);
         $el.removeChild($el.firstChild);
       }
-
-    }, hideMenu: function(){
-
-      $menu.style.display = 'none';
 
     }, updateMenuList: function($el, list){
 
@@ -365,7 +346,7 @@ IFC = (function(){
           'm' : () => {REN.draw.messages = !REN.draw.messages;},
           'c' : () => {REN.draw.collisions = !REN.draw.collisions;},
           
-          // simulation          
+          // animation          
           'q' : self.stop,
           'w' : self.play,
           'e' : self.pause,
@@ -386,7 +367,6 @@ IFC = (function(){
         Mousetrap.bind(keys.split(','), e => {fn(e); return false;}); // console.log("trapped: " + keys); 
       });
 
-
     }, shootScreen: function(){
 
       var state = H.deepcopy(REN.draw);
@@ -398,7 +378,6 @@ IFC = (function(){
         window.open(cvs.toDataURL('image/png'), 'toDataURL() image', 'width=' + cvs.width/2 + ', height=' + cvs.height/2);
         H.extend(REN.draw, state);
       }, 32);
-
 
     }, toggleTab: function(tab){
 
@@ -432,7 +411,6 @@ IFC = (function(){
         window.oncontextmenu = function(){};
 
       }
-
 
     }, isFullScreen: function () {
 

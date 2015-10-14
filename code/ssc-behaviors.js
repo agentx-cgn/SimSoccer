@@ -206,11 +206,46 @@ BHV = (function(){
 
 
 
+    }, 'player-move-to-point': function(body){
+
+      var options = this.options;
+
+      distance = this.scratch.vector()
+        .clone( options.target )
+        .vsub( body.state.pos )
+        .norm()
+      ;
+
+      if (distance < options.range){
+
+        // stop body ??
+        options.resolve(body)
+
+      } else {
+
+        force = this.scratch.vector()
+          .clone(this.options.target)
+          .vsub(body.state.pos)
+          .mult(0.028)
+        ;
+
+        body.applyForce(force);
+
+      }
+
+
     }, createBehaviors: function(){
 
       function setVector (pos, vector){
         vector.set(pos.x, pos.y);
       }
+
+      self.create('player-move-to-point', {
+        scratch: true,
+        target:  null, // vector
+        range:   0,    // scalar
+        resolve: function(body){}
+      });
 
       self.create('balls-basic', {bodies: PHY.bodies.balls});
 

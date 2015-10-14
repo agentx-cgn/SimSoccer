@@ -128,6 +128,8 @@ REN = (function(){
 
     }, tween: function(from, to, msecs, easing, onUpdate){
 
+      onUpdate = onUpdate(); 
+
       return (new TWEEN
         .Tween({delta: from})
         .to(   {delta: to}, msecs)

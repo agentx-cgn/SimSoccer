@@ -56,6 +56,32 @@ GAM = (function(){
       }      
 
 
+    }, deMarkSelect: function (body) {
+
+      H.each(PHY.find('selected'), (i, body) => {
+        body.selected = false;
+      });
+      
+      H.each(PHY.find('marked'), (i, body) => {
+        body.marked = false;
+      });
+
+
+    }, toggleMark: function (body) {
+
+      body.marked = !body.marked;
+
+    }, toggleSelect: function (body) {
+
+      var selected = body.selected;
+
+      H.each(PHY.find('selected'), (i, body) => {
+        body.selected = false;
+      });
+
+      body.selected = !selected;
+
+
     // F S M - S T A R T
 
     }, promise: function(event, data){
