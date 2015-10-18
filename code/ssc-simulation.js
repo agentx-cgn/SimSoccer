@@ -34,9 +34,9 @@ SIM = (function(){
 
       self.cleanup();
 
-      GAM.reset();
       PHY.reset();
       BHV.reset();
+      GAM.reset();
 
       self.init();
       self.listen();
@@ -66,7 +66,9 @@ SIM = (function(){
 
     }, promise: function(event, data){
 
-      var e = 'TRY: %s can\'t "%s" now, but %s';
+      var 
+        now = this.current,
+        err = 'TRY: %s can\'t "%s" now, but %s';
 
       return (
         new Promise(function(resolve, reject) {
@@ -75,11 +77,11 @@ SIM = (function(){
           } else if (self.can(event)){
             self[event](data, resolve);
           } else {
-            reject(H.format(e, self.nick, event, self.transitions()));
+            reject(H.format(err, self.nick, event, self.transitions()));
           }
         })
-        .then(() => SIM.msgFromTo(self.nick, self.current, event))
-        .catch(reason => console.log('SIM.promise.failed:', event, reason, data))
+        .then(() => SIM.msgFromTo(self.nick, now, this.current))
+        .catch(reason => console.log(this.nick + '.promise.failed:', event, reason, data))
       );
 
     }, onsetup: function(name, from, to, data){
@@ -105,7 +107,7 @@ SIM = (function(){
     }, onplay:  function(name, from, to, data){
 
       // SIM.msgFromTo('sim', from, to);
-      GAM.can('run') && GAM.run();
+      // GAM.can('run') && GAM.run();
 
     // F S M - E N D
 
@@ -385,6 +387,7 @@ SIM = (function(){
             if (coll.bodyA.treatment !== 'static'){
               PHY.stopBodies([coll.bodyA]);
             }
+            
             if (coll.bodyB.treatment !== 'static'){
               PHY.stopBodies([coll.bodyB]);
             }

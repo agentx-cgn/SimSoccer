@@ -12,22 +12,24 @@ CFG = {
     Debug: {
         maxMessages:       10,     // max SIM Messages
         collectMessages:   false,
-        maxCollisions:     10,     // remember at least X collisions
-        collectCollisions: false,
+        maxCollisions:      0,     // remember at least X collisions
         draw: {
             fps:           true,   // draw FPS 
             list:          true,   // draw Deb objects
             info:          true,   // draw Deb info
             speed:         true,   // draw Deb render info
             mouse:         false,  // draw mouse circle
+            sandbox:       true,   // 
             messages:      true,   // draw SIM messages
             collisions:    true,   // draw PHY collisions
         }          
+
     },
 
     Physics: {
         drag:             0.01,    // 'Air drag' of integrator
         angularFriction:  0.99,    // balls only
+
     },
 
     Screen : {
@@ -56,6 +58,7 @@ CFG = {
         length  :         7.32,
         space:            5.5,
         fillColor:        'rgba(200, 200, 200, 0.4)',
+
     },
 
     Ball: {
@@ -65,6 +68,7 @@ CFG = {
         radius:           0.7,   // Umfang: 0.68 < 0.70
         cof:              1.0,   // A cof of 1 has no slide.
         restitution:      0.8,   // A restitution of 0 is not bouncy.
+
     },
 
     Posts: {
@@ -78,6 +82,7 @@ CFG = {
         // upper left corners
         xcoords:           [           -0.5,      -0.5,             110,       110],
         ycoords:           [35 - 3.66 - 0.5, 35 + 3.66, 35 - 3.66 - 0.5, 35 + 3.66]
+
     },
 
     // players are all variable, min max
@@ -100,6 +105,7 @@ CFG = {
         angle:            0.0,       //  positive is clockwise starting along the x axis
         marked:        false,
         selected:      false,
+
     },
 
     minimumPlayers:       1,
@@ -108,10 +114,41 @@ CFG = {
         momFoul:          2,   // if sum of momentum (vel * mass) is higher => spotkick
         momFoulYellow:    4,   // yellow + spotkick
         momFoulRed:       6,   // red + spotkick
+
+    },
+
+    Behaviors: {
+
+        world:      [   // always active
+                        'sweep-prune', 
+                        'body-collision-detection', 
+                        'body-impulse-response'
+        ],
+
+        balls:      [   // always active
+                        'balls-basic'
+        ],
+
+        players:    {
+            
+            // these add bodies by the interface
+            'players-selected-targeting': [],
+            'players-marked-attractor':   [],
+
+            // these relates to Team.state
+            // 'players-move-to-point':      ['Training', 'Setup', 'Pause'],
+
+
+            'players-focus-ball':         ['Play'],
+            'players-selected-steering':  ['Play'],
+        },
+
+
     },
 
     Teams : [
         { 
+            index:    0,
             abbr:     'H', 
             nick:     'TM0',
             name:     'Hunters', 
@@ -123,6 +160,7 @@ CFG = {
             }
 
         }, {
+            index:    1,
             abbr:     'P', 
             nick:     'TM1',
             name:     'Predators', 
@@ -145,7 +183,7 @@ CFG = {
 
             ['setup',        ['None', 'Training', 'Play'],         'Setup'     ],
             ['training',     ['None', 'Setup',    'Play'],         'Training'  ],
-            ['play',         ['None', 'Setup', '   Training'],     'Play'      ],
+            ['play',         ['None', 'Setup',    'Training'],     'Play'      ],
         
         ],
 
@@ -163,8 +201,11 @@ CFG = {
 
         team:       [
             // Initial and sim states
-            ['setup',        ['None', 'Training'],                   'Setup'       ],
-            ['training',     ['None', 'Setup'],                      'Training'    ],
+            ['setup',        ['None', 'Pause', 'Training'],          'Setup'       ],
+            ['training',     ['None', 'Pause', 'Setup'],             'Training'    ],
+
+            // Pause
+            ['pause',        ['None', 'Play'],                       'Pause'       ],
 
             // Kickoff, Abstoss vom Mittelpunkt
             ['forkickoff',   'None',            'ForKickoff'  ],
@@ -200,8 +241,6 @@ CFG = {
             ['play',         'ForPenalty',      'Play'        ],
             ['play',         'KikPenalty',      'Play'        ],
 
-            // Pause
-            ['pause',        'Play',            'Pause'       ],
         ],
         player:     [],
 

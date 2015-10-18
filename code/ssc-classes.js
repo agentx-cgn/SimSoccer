@@ -24,19 +24,46 @@ Player.prototype = {
 };
 
 
-function Team (options){
+function Team (config){
 
-  Actor.call(this, options);
-  H.extend(this, options);
+  Actor.call(this, config);
+  H.extend(this, config);
+
+  this.team = PHY.bodies['team' + config.index];
+
+  H.extend(this, {
+    //squad
+    bank:  [],
+    field: [],
+  });
 
 }
 
 Team.prototype = {
   constructor: Team,
 
-  promise: function(event, data){
+  updateBehaviors: function (state) {
 
-    var e = 'TRY: %s can\'t %s now, but %s';
+    H.each(CFG.Behaviors.players, (bhv, states) => {
+
+      if (H.contains(states, state)){
+        BHV.behaviors[bhv].addBodies(this.team);
+
+      } else {
+        BHV.behaviors[bhv].subBodies(this.team);
+
+      }
+
+    });
+
+
+    // F S M - S T A R T
+
+  }, promise: function(event, data){
+
+    var 
+      now = this.current,
+      err = 'TRY: %s can\'t "%s" now, but %s';
 
     return (
       new Promise((resolve, reject) => {
@@ -45,14 +72,16 @@ Team.prototype = {
         } else if (this.can(event)){
           this[event](data, resolve);
         } else {
-          reject(H.format(e, this.nick, event, this.transitions()));
+          reject(H.format(err, this.nick, event, this.transitions()));
         }
       })
-      .then(() => SIM.msgFromTo(this.nick, this.current, event))
+      .then(() => SIM.msgFromTo(this.nick, now, this.current))
       .catch(reason => console.log(this.nick + '.promise.failed:', event, reason, data))
     );
 
   }, onsetup: function (name, from, to, data, resolve){
+
+    this.updateBehaviors(to);
 
     setTimeout(() => {
       resolve();
@@ -60,12 +89,16 @@ Team.prototype = {
 
   }, ontraining: function (name, from, to, data, resolve){
     
+    this.updateBehaviors(to);
+
     setTimeout(() => {
       resolve();
     }, 2000);
 
   }, onpause: function (name, from, to, data, resolve){
     
+    this.updateBehaviors(to);
+
     setTimeout(() => {
       resolve();
     }, 2000);

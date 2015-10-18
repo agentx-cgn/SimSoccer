@@ -11,7 +11,8 @@ A simple JavaScript Soccer Simulation with an Player AI
  * *2015-10-14:*  
    Finite State Machine integrated, with promises  
    Tweener integrated  
-   Distance Service  
+   Distance service  
+   Refactored for Chrome  
 
  * *2015-09-16:*  
    Physicsjs integrated  
@@ -21,9 +22,10 @@ A simple JavaScript Soccer Simulation with an Player AI
    Basic behaviors work  
 
 ### ToDo
-    
-  * Finish Team & Player Classes
+   
+  * Make teams adjust player behavior
+  * Finish team & player classes
   * Bigger sandbox?
   * Behaviors: 
     * Calibration for players
-  * Concept for Skills
+  * Concept for skills

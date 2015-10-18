@@ -50,7 +50,14 @@ GAM = (function(){
 
     }, tick: function () {
 
-      if (self.current === 'Running'){
+      var isRunning = (
+        this.current === 'Half1' || 
+        this.current === 'Half2' || 
+        this.current === 'Half3' || 
+        this.current === 'Half4'
+      );
+
+      if (isRunning){
         self.frame += 1;
         self.time  += 1 / CFG.fps;
       }      
@@ -58,13 +65,8 @@ GAM = (function(){
 
     }, deMarkSelect: function (body) {
 
-      H.each(PHY.find('selected'), (i, body) => {
-        body.selected = false;
-      });
-      
-      H.each(PHY.find('marked'), (i, body) => {
-        body.marked = false;
-      });
+      H.each(PHY.find('selected'), (i, body) => body.selected = false);
+      H.each(PHY.find('marked'), (i, body) => body.marked = false);
 
 
     }, toggleMark: function (body) {
@@ -75,10 +77,7 @@ GAM = (function(){
 
       var selected = body.selected;
 
-      H.each(PHY.find('selected'), (i, body) => {
-        body.selected = false;
-      });
-
+      H.each(PHY.find('selected'), (i, body) => body.selected = false);
       body.selected = !selected;
 
 
@@ -86,7 +85,9 @@ GAM = (function(){
 
     }, promise: function(event, data){
 
-      var e = 'TRY: %s can\'t "%s" now, but %s';
+      var 
+        now = this.current,
+        err = 'TRY: %s can\'t "%s" now, but %s';
 
       return (
         new Promise((resolve, reject) => {
@@ -95,40 +96,40 @@ GAM = (function(){
           } else if (self.can(event)){
             self[event](data, resolve);
           } else {
-            reject(H.format(e, self.nick, event, self.transitions()));
+            reject(H.format(err, self.nick, event, self.transitions()));
           }
         })
-        .then(() => SIM.msgFromTo(self.nick, self.current, event))
+        .then(() => SIM.msgFromTo(self.nick, now, this.current))
         .catch(reason => console.log('GAM.promise.failed:', event, reason, data))
       );
 
     }, onpause: function(name, from, to, data, resolve){
       
-      setTimeout(function(){
-        resolve();
-      }, 1000);      
+      return (
+        SIM.promise('play', data)
+          .then(Promise.all([
+            GAM.team0.promise('pause', data),
+            GAM.team1.promise('pause', data)
+        ]))
+      );
       
-    }, onrun:   function(name, from, to, data, resolve){
+    }, onhalf1:   function(name, from, to, data, resolve){
       
-      SIM.msgFromTo(self.nick, from, to);
-      SIM.can('play') && SIM.play();
-
-      if (from === 'None'){
-        console.log(team0.current, team0.can('kikkickoff'));
-        team0.kikkickoff();
-        team1.forkickoff();
-        console.log(team0.current, team0.can('kikkickoff'));
-      }
-
-      resolve();
+      return (
+        SIM.promise('play', data)
+          .then(Promise.all([
+            GAM.team0.promise('kikkickoff', data),
+            GAM.team1.promise('forkickoff', data)
+        ]))
+      );
 
     // F S M - E N D
 
 
-    }, onoff:   function(name, from, to, data){
+    // }, onoff:   function(name, from, to, data){
       
-      SIM.message('gam: ' + to);
-      SIM.can('play') && SIM.play();
+    //   SIM.message('gam: ' + to);
+    //   SIM.can('play') && SIM.play();
 
     }
 

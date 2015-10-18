@@ -64,11 +64,11 @@ window.onload = function(){
     IFC.init();
     IFC.resize(window.innerWidth, window.innerHeight);
     
-    REN.reset(); // IFC.cvs
-    SIM.reset();
-    SVC.init();  // needs PHY.world
-    IFC.show();  // go visible
-    IFC.play();  // runs animate
+    REN.reset();    // IFC.cvs
+    SIM.reset();    // => GAM, PHY, BHV
+    SVC.init();     // needs PHY.world
+    IFC.show();     // go visible
+    IFC.play();     // runs animate
 
     // GAM.run();
 

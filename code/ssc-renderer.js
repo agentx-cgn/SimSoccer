@@ -28,6 +28,7 @@ REN = (function(){
       list:       CFG.Debug.draw.list,
       speed:      CFG.Debug.draw.speed,
       mouse:      CFG.Debug.draw.mouse,
+      sandbox:    CFG.Debug.draw.sandbox,
       messages:   CFG.Debug.draw.messages,
       collisions: CFG.Debug.draw.collisions,
       corner:     false,
@@ -155,7 +156,7 @@ REN = (function(){
       ctx.fillStyle = CFG.Screen.backcolor;
       ctx.fillRect(0, 0, cvs.width, cvs.height);
 
-      // no transform
+      // draw on canvas, no transform
       draw.info        && self.drawDebug();
       draw.speed       && self.drawSpeed();
       draw.mouse       && self.drawMouse(IFC.mouse);
@@ -164,8 +165,10 @@ REN = (function(){
       ctx.save();
       self.translate();
 
+      // draw on field, transformed
       draw.corner      && self.drawCorner();
       draw.spotkick    && self.drawSpotkick();
+      draw.sandbox     && self.drawSandbox();
 
       self.drawField();
 
@@ -354,6 +357,17 @@ REN = (function(){
       ctx.globalAlpha = alpha;
       ctx.drawImage(imgWhistle, 0, 0, size, size);
       ctx.globalAlpha = keep;
+
+
+    }, drawSandbox: function(){
+
+      var edges = PHY.sandbox._edges;
+
+      self.translate(0, 0);
+      ctx.lineWidth = 1 / transform.scale;
+      ctx.strokeStyle = 'rgba(120, 120, 120, 0.5)';
+      
+      ctx.strokeRect(edges.min.x, edges.min.y, edges.max.x - edges.min.x, edges.max.y - edges.min.y);
 
 
     }, drawSpotkick: function(){

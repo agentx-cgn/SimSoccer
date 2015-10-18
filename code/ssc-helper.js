@@ -64,13 +64,13 @@ H = (function(){
 
     // strings
     replace:    function (s,f,r){return s.replace(new RegExp(H.escapeRex(f), 'g'), r);},
-    padZero:    function (num, len){len = len || 2; num = "0000" + num; return num.substr(num.length-2, 2);},
-    format:     function (){var a=H.toArray(arguments),s=a[0].split("%s"),p=a.slice(1).concat([""]),c=0;return s.map(function(t){return t + p[c++];}).join('');},
+    padZero:    function (num, len){len = len || 2; num = '0000' + num; return num.substr(num.length-2, 2);},
+    format:     function (){var a=H.toArray(arguments),s=a[0].split('%s'),p=a.slice(1).concat(['']),c=0;return s.map(function(t){return t + p[c++];}).join('');},
     mulString:  function (s, l){return new Array(l+1).join(s);},
-    escapeRex:  function (s){return s.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");},
-    letterRange:function (r){return H.range(r.charCodeAt(0), r.charCodeAt(1)+1).map(function(i){return String.fromCharCode(i);}).join("");},
+    escapeRex:  function (s){return s.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');},
+    letterRange:function (r){return H.range(r.charCodeAt(0), r.charCodeAt(1)+1).map(function(i){return String.fromCharCode(i);}).join('');},
     findAll:    function (str, s){var idxs=[],idx,p=0;while((idx=str.indexOf(s,p))>-1){idxs.push(idx);p=idx+1;}return idxs;},
-    tab:        function (s,l){l=l||8;s=new Array(l+1).join(" ")+s;return s.substr(s.length-l);},
+    tab:        function (s,l){l=l||8;s=new Array(l+1).join(' ')+s;return s.substr(s.length-l);},
     replaceAll: function (find, replace, str) {return str.replace(new RegExp(H.escapeRex(find), 'g'), replace);},
     endsWith:   function (str, end){var l0=str.length,l1=end.length; return str.slice(l0-l1,l0) === end;},
 
@@ -87,12 +87,15 @@ H = (function(){
     isEmpty:    function (o){var p;for(p in o){if(o.hasOwnProperty(p)){return false;}}return true;},
     prettify:   function (o){return JSON.stringify(o).split('"').join('');},
     map:        function (o,fn){var a,r={};for(a in o){if(o.hasOwnProperty(a)){r[a]=(typeof fn==='function')?fn(a,o[a]):fn;}}return r;},
-    transform:  function (o, fn){
-      // var r={}; H.each(o,function(k,v){var [ra,rv]=fn(k,v);r[ra]=rv;});return r; // chrome comp as of sep 15
-    },
+    // transform:  function (o, fn){
+    //   var r={}; H.each(o,function(k,v){var [ra,rv]=fn(k,v);r[ra]=rv;});return r; // chrome comp as of sep 15
+    // },
 
 
     // Arrays
+    empty:      function (a){while(a.length){a.shift()};},
+    // check: http://stackoverflow.com/a/18885102/515069
+    delete:     function (a, fn){var i=0,o=0;while(a[i]!==undefined){if(fn(a[i])){a.splice(i,1);o++;}else{i++;}}return o;  },
     toArray:    function (a){return Array.prototype.slice.call(a);},
     contains:   function (a,e){return a.indexOf(e)!==-1;},
     consume:    function (a, fn){while(a.length){fn(a.shift());}},
@@ -105,9 +108,9 @@ H = (function(){
     flatten:    function (a){return Array.prototype.concat.apply([], a);},
     pushUnique: function (a,e){if(a.indexOf(e)===-1){a.push(e);}return a;},
     equal:      function (a,b){return JSON.stringify(a) === JSON.stringify(b);},
-    mean:       function(a){return a.reduce(function(s,x){return (s+x);},0)/a.length;},
-    median:     function(a){var al=a.length,m=~~(a.sort().length/2);return !al?null:al%2?a[m]:(a[m-1]+a[m])/2;},
-    mode:       function(a){
+    mean:       function (a){return a.reduce(function(s,x){return (s+x);},0)/a.length;},
+    median:     function (a){var al=a.length,m=~~(a.sort().length/2);return !al?null:al%2?a[m]:(a[m-1]+a[m])/2;},
+    mode:       function (a){
       var i, n, cnt = {}, mode = [], max = 0;
       for (i in a) {
         n = a[i];
@@ -130,6 +133,15 @@ H = (function(){
     },  
 
     // functions
+    arrayfy:    function(fn){
+      return function (param) {
+        if (Array.isArray(param)){
+          param.forEach(item => fn(item));
+        } else {
+          fn(param);
+        }
+      };
+    },
     binda:      function(fn, obj, a){
       // return fn.bind.apply(obj, [obj].concat(args));
       // return Function.prototype.bind.apply(fn, [obj].concat(args));
@@ -147,7 +159,7 @@ H = (function(){
     // ES6 Suite
     unique:     function (a){return [...Set(a)];},
     attribs:    function (o){return Object.keys(o);},
-    each:       function (o,fn){Object.keys(o).forEach(a => fn(a, o[a]));},
+    each:       function (o,fn){Object.keys(o || {}).forEach(a => fn(a, o[a]));},
     count:      function (o){return Object.keys(o).length;},
     values:     function (o){return Object.keys(o).map(function(k){return o[k];});}
 
@@ -278,18 +290,18 @@ H = (function(){
           // console.log("proxy", proxy, name);
           return (
             proxy[name] !== undefined ? proxy[name] : 
-            name === "nil"      ? !proxy.length :
-            name === "head"     ? list.apply(null, slice(0, 1)) :
-            name === "tail"     ? list.apply(null, slice(1)) :
-            name === "last"     ? list.apply(null, slice(-1)) :
-            name === "inverse"  ? list.apply(null, copy().reverse()) :
-            name === "multiply" ? function(m){
+            name === 'nil'      ? !proxy.length :
+            name === 'head'     ? list.apply(null, slice(0, 1)) :
+            name === 'tail'     ? list.apply(null, slice(1)) :
+            name === 'last'     ? list.apply(null, slice(-1)) :
+            name === 'inverse'  ? list.apply(null, copy().reverse()) :
+            name === 'multiply' ? function(m){
               return list.apply(null, multiply(m));} :
-            name === "append"   ? function(){
+            name === 'append'   ? function(){
               return list.apply(null, concat(ap.slice.call(arguments)));} :
-            name === "prepend"  ? function(){
+            name === 'prepend'  ? function(){
               return list.apply(null, ap.slice.call(arguments).concat(proxy));} :
-            name === "string"   ? "[list " + proxy.join(", ") + "]" :
+            name === 'string'   ? '[list ' + proxy.join(', ') + ']' :
               null
           );
         }

@@ -12,7 +12,7 @@ PHY = (function(){
     player, 
     collisions = [],
 
-    // lifted, used in findat()
+    // lifted from findat()
     vector = Physics.vector(),
 
     bodies = {
@@ -33,6 +33,7 @@ PHY = (function(){
 
     world, 
     bodies, 
+    sandbox, 
     collisions,
 
     boot:   function(){
@@ -129,6 +130,9 @@ PHY = (function(){
         team1:   world.find({team: 1})
       });
 
+      // enable mouse interaction
+      world.add(Physics.behavior('interactive', { el: IFC.cvs }));
+
       // add physical behaviors
       self.add([
         Physics.behavior('sweep-prune'),                // broad phase
@@ -141,8 +145,10 @@ PHY = (function(){
 
     }, add:   function(list){
 
-      H.each(list, (i, item) => Array.isArray(item) ? self.add(item) : world.add(item) );
+      list.forEach(H.arrayfy(item => world.add(item)));
 
+      // H.each(list, (i, item) => Array.isArray(item) ? self.add(item) : world.add(item) );
+      // H.each(list, H.arrayfy((i, item) => world.add(item));
 
     }, listen:   function(){
 
@@ -159,7 +165,7 @@ PHY = (function(){
           // pos: // the collision point relative to bodyA
           // overlap: // the amount bodyA overlaps bodyB
 
-          if (CFG.Debug.collectCollisions){
+          if (CFG.Debug.maxCollisions){
 
             for (i=0; (coll = data.collisions[i]); i++){
 
@@ -194,16 +200,22 @@ PHY = (function(){
         l = CFG.Field.length,
         w = CFG.Field.width;
 
-      world && world.removeBehavior(sandbox);
+      if (sandbox){
+        sandbox.setAABB( Physics.aabb(-m, -m, l + m, w + m) );
 
-      sandbox = Physics.behavior('edge-collision-detection', {
-        aabb: Physics.aabb(-m, -m, l + m, w + m), 
-        cof:  1.0,         // no slide
-        restitution: 0.0,  // not bouncy
-        channel: 'sandbox-collision:detected'
-      });
+      } else if (world) {
+        sandbox = self.sandbox = Physics.behavior('edge-collision-detection', {
+          channel: 'sandbox-collision:detected',
+          aabb:    Physics.aabb(-m, -m, l + m, w + m), 
+          cof:         1.0,  // no slide
+          restitution: 0.0,  // not bouncy
+        });
+        world.addBehavior(sandbox);
 
-      world && world.addBehavior(sandbox);
+      } else {
+        // debugger;
+
+      }
 
 
     }, prepareBodies: function(){
@@ -283,97 +295,3 @@ PHY = (function(){
   };
 
 }()).boot();
-
-
-
-
-// Physics.behavior('attractor', function( parent ){
-
-//     var defaults = {
-
-//         pos: null, // default to (0, 0)
-//         // how strong the attraction is
-//         strength: 1,
-//         // power of the inverse distance (2 is inverse square)
-//         order: 2,
-//         // max distance to apply it to
-//         max: false, // infinite
-//         // min distance to apply it to
-//         min: false // auto calc
-//     };
-
-//     return {
-
-//         // extended
-//         init: function( options ){
-
-//             var self = this;
-//             this._pos = new Physics.vector();
-//             // call parent init method
-//             parent.init.call( this );
-//             this.options.defaults( defaults );
-//             this.options.onChange(function( opts ){
-//                 self._maxDist = opts.max === false ? Infinity : opts.max;
-//                 self._minDist = opts.min ? opts.min : 10;
-//                 self.position( opts.pos );
-//             });
-//             this.options( options );
-//         },
-
-//         *
-//          * AttractorBehavior#position( [pos] ) -> this|Object
-//          * - pos (Vectorish): The position to set
-//          * + (Object): Returns the [[Vectorish]] position if no arguments provided
-//          * + (this): For chaining
-//          *
-//          * Get or set the position of the attractor.
-//          *
-//         position: function( pos ){
-            
-//             var self = this;
-
-//             if ( pos ){
-//                 this._pos.clone( pos );
-//                 return self;
-//             }
-
-//             return this._pos.values();
-//         },
-        
-//         // extended
-//         behave: function( data ){
-
-//             var bodies = this.getTargets()
-//                 ,body
-//                 ,order = this.options.order
-//                 ,strength = this.options.strength
-//                 ,minDist = this._minDist
-//                 ,maxDist = this._maxDist
-//                 ,scratch = Physics.scratchpad()
-//                 ,acc = scratch.vector()
-//                 ,norm
-//                 ,g
-//                 ;
-
-//             for ( var j = 0, l = bodies.length; j < l; j++ ){
-                
-//                 body = bodies[ j ];
-
-//                 // clone the position
-//                 acc.clone( this._pos );
-//                 acc.vsub( body.state.pos );
-//                 // get the distance
-//                 norm = acc.norm();
-
-//                 if (norm > minDist && norm < maxDist){
-
-//                     g = strength / Math.pow(norm, order);
-
-//                     body.accelerate( acc.normalize().mult( g ) );
-//                 }
-//             }
-
-//             scratch.done();
-//         }
-//     };
-// });

@@ -14,7 +14,6 @@ BHV = (function(){
 
   var 
     self,
-    world,
     behaviors = {},
 
     // lifted objects
@@ -26,10 +25,13 @@ BHV = (function(){
     force1,
     offset,
     position,
+    distance,
     speed;
 
 
   return {
+
+    behaviors,
 
     boot:   function () {return (self = this);
 
@@ -40,30 +42,28 @@ BHV = (function(){
 
     }, cleanup: function(){
 
+      behaviors = self.behaviors = {};
+
     }, init: function(){
 
-      world = PHY.world;
       self.createBehaviors();
 
-      // enable mouse interaction
-      world.add(Physics.behavior('interactive', { el: IFC.cvs }));
-
-      self.add('players-marked-attractor');
-      self.add('players-selected-steering');
-      self.add('players-selected-targeting');
-      self.add('players-focus-ball', {bodies: PHY.bodies.team0});
+      // always active
       self.add('balls-basic');      
 
+      // for players
+      H.each(CFG.Behaviors.players, behavior => {
+        self.add(behavior);
+      });
 
-    }, add:    function(name, options){
+    }, add:    function(name){
 
-      behaviors[name] =  Physics.behavior(name, options || {}),
-      world.add(behaviors[name]);
-
+      behaviors[name] = Physics.behavior(name),
+      PHY.world.add(behaviors[name]);
 
     }, sub:    function(name){
 
-      world.remove(behaviors[name]);    
+      PHY.world.remove(behaviors[name]);    
       behaviors[name] = null;  
 
 
@@ -115,7 +115,7 @@ BHV = (function(){
 
       if ( isOff && GAM.current === 'Running'){
         GAM.off({x, y, last: body.player});
-        // world.emit('game:ball-off-field', );
+        // PHY.world.emit('game:ball-off-field', );
         PHY.stopBodies([ body ]);
       }
 
@@ -206,7 +206,7 @@ BHV = (function(){
 
 
 
-    }, 'player-move-to-point': function(body){
+    }, 'players-move-to-point': function(body){
 
       var options = this.options;
 
@@ -219,7 +219,7 @@ BHV = (function(){
       if (distance < options.range){
 
         // stop body ??
-        options.resolve(body)
+        options.resolve(body);
 
       } else {
 
@@ -240,17 +240,22 @@ BHV = (function(){
         vector.set(pos.x, pos.y);
       }
 
-      self.create('player-move-to-point', {
+      // n bodies  => array
+      self.create('players-move-to-point', {
         scratch: true,
-        target:  null, // vector
-        range:   0,    // scalar
-        resolve: function(body){}
+        target:  Physics.vector(),  // vector
+        range:   0,                 // scalar
+        resolve: function(/* body */){}
       });
 
-      self.create('balls-basic', {bodies: PHY.bodies.balls});
+      // n bodies  => array
+      // self.create('balls-basic', {bodies: PHY.bodies.balls});
+      self.create('balls-basic', {bodies: []});
 
-      self.create('players-focus-ball', {scratch: true});
+      // n bodies by filter => array
+      self.create('players-focus-ball', {scratch: true, bodies: []});
 
+      // 1 bodies by filter
       self.create('players-selected-targeting', {
         scratch: true,
         active:  false,
@@ -277,6 +282,7 @@ BHV = (function(){
       // max: The maximum distance in which to apply the attraction (default: Infinity)
       // min: The minimum distance above which to apply the attraction (default: very small non-zero)
 
+      // n bodies by filter
       self.create('players-marked-attractor', {
         pos:      null,
         filter:   {marked: true},
@@ -300,10 +306,10 @@ BHV = (function(){
         }
       });
 
-
+      // 1 body by filter
       self.create('players-selected-steering', {
-        accel:   0.0,
-        turn:    0.0,
+        accel:     0.0,
+        turn:      0.0,
         facAccel:  0.00001, 
         facTurn:   0.3, 
         scratch: true,
@@ -334,28 +340,49 @@ BHV = (function(){
 
       Physics.behavior (name, function ( parent ) {
         return {
+          toString: function(){return name;},
+          setBodies: function(bodies){
+            if (config.bodies){
+              H.empty(config.bodies);
+              bodies.forEach(body => config.bodies.push(body));
+            // } else {
+            //   console.warn(name, 'can\'t set', bodies);
+            }
+          },
+          addBodies: H.arrayfy(function(body){
+            if (config.bodies){
+              if (!H.contains(config.bodies, body)) {
+                config.bodies.push(body);
+              }
+            // } else {
+            //   console.warn(name, 'can\'t add', body);
+            }
+          }),
+          subBodies: H.arrayfy(function(body){
+            if (config.bodies){
+              H.remove(config.bodies, body);
+            // } else {
+            //   console.warn(name, 'can\'t sub', body);
+            }
+          }),
           init: function ( options ) {
             H.extend(config, defaults, options);
             parent.init.call( this, config );
           },
           connect: function(world){
             world.on( 'integrate:positions', this.behave, this);
-            if (config.listen){
-              H.each(config.listen, (name, action) => {
-                world.on(name, action, this);
-              });
-            }
+            H.each(config.listen, (name, action) => {
+              world.on(name, action, this);
+            });
           },
           disconnect: function(world){
             world.off( 'integrate:positions', this.behave, this);
-            if (config.listen){
-              H.each(config.listen, (name, action) => {
-                world.off(name, action, this);
-              });
-            }
+            H.each(config.listen, (name, action) => {
+              world.off(name, action, this);
+            });
           },
           behave: function ( data ) {
-            bodies = config.bodies || (config.filter ? world.find(config.filter) : data.bodies);
+            bodies = config.bodies || (config.filter ? PHY.world.find(config.filter) : data.bodies);
             config.scratch && (this.scratch = Physics.scratchpad());
             for (i = 0; (body = bodies[i]); i++){
               behave.call(this, body);

@@ -45,10 +45,15 @@ IFC = (function(){
     ],
 
     bodyMenuItems = function ( body ){
+      
+      var header = H.format('%s %s - T%s %s', body.name, body.number || '', body.team !== undefined ? body.team : '', body.sign || '');
+      
       return [
+        {label: header,       active: false,                      action: null},
         {label: 'Select',     active: true,                       action: () => GAM.toggleSelect(body)},
         {label: 'Mark',       active: true,                       action: () => GAM.toggleMark(body)},
       ];
+
     },
 
     interprete = function(val){return typeof val === 'function' ? val() : val;},
