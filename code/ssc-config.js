@@ -130,7 +130,7 @@ CFG = {
         ],
 
         players:    {
-            
+
             // these add bodies by the interface
             'players-selected-targeting': [],
             'players-marked-attractor':   [],
@@ -211,8 +211,8 @@ CFG = {
             ['forkickoff',   'None',            'ForKickoff'  ],
             ['kikkickoff',   'None',            'KikKickoff'  ],
             ['forkickoff',   'Setup',           'ForKickoff'  ],
-            ['kikkickoff',   'Training',        'KikKickoff'  ],
-            ['forkickoff',   'Setup',           'ForKickoff'  ],
+            ['kikkickoff',   'Setup',           'KikKickoff'  ],
+            ['forkickoff',   'Training',        'ForKickoff'  ],
             ['kikkickoff',   'Training',        'KikKickoff'  ],
             ['play',         'ForKickoff',      'Play'        ],
             ['play',         'KikKickoff',      'Play'        ],

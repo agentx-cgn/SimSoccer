@@ -3,25 +3,29 @@
 
 'use strict';
 
-function Actor (options) {
-
-} 
+function Actor () {} 
 
 Actor.prototype = {
   constructor: Actor,
 };
 
+StateMachine.create({
+  target:  Actor.prototype,
+  initial: 'None',
+  events:  CFG.States.team.map(T.readEvents),
+  error:   T.logFsmError,
+});
+
 
 function Player (options){
-
   Actor.call(this, options);
   H.extend(this, options);
-
 }
 
-Player.prototype = {
+Player.prototype = H.mixin (
+  Actor.prototype, {
   constructor: Player,
-};
+});
 
 
 function Team (config){
@@ -39,7 +43,8 @@ function Team (config){
 
 }
 
-Team.prototype = {
+Team.prototype = H.mixin (
+  Actor.prototype, {
   constructor: Team,
 
   updateBehaviors: function (state) {
@@ -105,50 +110,45 @@ Team.prototype = {
 
   }, onforkickoff: function (name, from, to, data){
     
-    SIM.msgFromTo(this.name, from, to);
+    SIM.msgFromTo(this.nick, from, to);
 
   }, onkikkickoff: function (name, from, to, data){
     
-    SIM.msgFromTo(this.name, from, to);
+    SIM.msgFromTo(this.nick, from, to);
 
   }, onforthrowin: function (name, from, to, data){
     
-    SIM.msgFromTo(this.name, from, to);
+    SIM.msgFromTo(this.nick, from, to);
 
   }, onkikthrowin: function (name, from, to, data){
     
-    SIM.msgFromTo(this.name, from, to);
+    SIM.msgFromTo(this.nick, from, to);
 
   }, onforcorner: function  (name, from, to, data){
     
-    SIM.message(this.name + ': ' + to);
+    SIM.message(this.nick + ': ' + to);
 
   }, onkikcorner: function  (name, from, to, data){
     
-    SIM.message(this.name + ': ' + to);
+    SIM.message(this.nick + ': ' + to);
 
   }, onforfreekick: function(name, from, to, data){
     
-    SIM.message(this.name + ': ' + to);
+    SIM.message(this.nick + ': ' + to);
 
   }, onkikfreekick: function(name, from, to, data){
     
-    SIM.message(this.name + ': ' + to);
+    SIM.message(this.nick + ': ' + to);
 
   }, onforpenalty: function (name, from, to, data){
     
-    SIM.message(this.name + ': ' + to);
+    SIM.message(this.nick + ': ' + to);
 
   }, onkikpenalty: function (name, from, to, data){
     
-    SIM.message(this.name + ': ' + to);
+    SIM.message(this.nick + ': ' + to);
 
-  }, };
+  }, 
 
-
-StateMachine.create({
-  target:  Team.prototype,
-  initial: 'None',
-  events:  CFG.States.team.map(T.readEvents),
-  error:   T.logFsmError,
 });
+

@@ -115,6 +115,7 @@ GAM = (function(){
       
     }, onhalf1:   function(name, from, to, data, resolve){
       
+      // TODO: inverse this
       return (
         SIM.promise('play', data)
           .then(Promise.all([

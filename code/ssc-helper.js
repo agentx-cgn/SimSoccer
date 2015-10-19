@@ -90,7 +90,12 @@ H = (function(){
     // transform:  function (o, fn){
     //   var r={}; H.each(o,function(k,v){var [ra,rv]=fn(k,v);r[ra]=rv;});return r; // chrome comp as of sep 15
     // },
-
+    mixin:      function(){
+      var o = {}, mx = Array.prototype.slice.call(arguments, 0);
+      mx.forEach(m => Object.keys(m).forEach(k => o[k] = m[k]));
+      return o;
+    },
+    
 
     // Arrays
     empty:      function (a){while(a.length){a.shift()};},
