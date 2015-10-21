@@ -534,10 +534,11 @@ REN = (function(){
       ctx.fillText('tick/rend  :  ' + IFC.msecTick.toFixed(2)   + '/' + IFC.msecRend.toFixed(2)  , left,  60);
       ctx.fillText('simulation :  ' + SIM.current                                                , left,  80);
       ctx.fillText('game       :  ' + GAM.current                                                , left, 100);
-      ctx.fillText('team0      :  ' + GAM.team0.current                                      , left, 120);
-      ctx.fillText('team1      :  ' + GAM.team1.current                                      , left, 140);
+      ctx.fillText('team0      :  ' + GAM.team0.current                                          , left, 120);
+      ctx.fillText('team1      :  ' + GAM.team1.current                                          , left, 140);
+      ctx.fillText('tasks      :  ' + SIM.tasks.length                                           , left, 160);
 
-
+   
 
     }, drawDebug: function(){
 

@@ -18,6 +18,7 @@ SIM = (function(){
 
     time,
     frame,
+    tasks,
     name: 'sim',
     nick: 'SIM',
 
@@ -36,7 +37,7 @@ SIM = (function(){
 
     }, cleanup: function () {
 
-      tasks = [];
+      tasks = self.tasks = [];
       frame = time = self.frame = self.time = 0;
 
     }, reset: function () {

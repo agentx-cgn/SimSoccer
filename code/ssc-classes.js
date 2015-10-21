@@ -85,7 +85,7 @@ Team.prototype = H.mixin (
 
     SIM.appendTask([null, 60, action, () => {
       resolve(); 
-      console.log('resovled', this.index);
+      console.log('resovled', this.index, SIM.tasks.length);
     }]);
 
 
@@ -96,15 +96,15 @@ Team.prototype = H.mixin (
     if (this.index === 0){ // left
       H.extend(this.paths, {
         setup:     new T.Path(length + '; translate 20 35; circle 5'),
-        training:  new T.Path(length + '; linspace 20 35 40 35'),
-        pause:     new T.Path(length + '; linspace 20 30 20 40'),
+        training:  new T.Path(length + '; translate 20 35; linspace 20 35 40 35'),
+        pause:     new T.Path(length + '; translate 20 35; linspace 20 30 20 40'),
       });
 
     } else { // right 
       H.extend(this.paths, {
         setup:     new T.Path(length + '; translate 90 35; circle 5'),
-        training:  new T.Path(length + '; linspace 90 35 40 35'),
-        pause:     new T.Path(length + '; linspace 90 30 90 40'),
+        training:  new T.Path(length + '; translate 90 35; linspace 0 -5 0 5'),
+        pause:     new T.Path(length + '; translate 90 35; linspace 90 30 90 40'),
       });
 
     }

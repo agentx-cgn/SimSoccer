@@ -209,12 +209,12 @@ BHV = (function(){
     }, 'players-single-move-to-point': function(body){
 
       var 
-        target = this.options.targets[body.uid];
+        targets = this.options.targets;
 
-      if (target){
+      if (targets[body.uid]){
 
         force = this.scratch.vector()
-          .clone(target)
+          .clone(targets[body.uid])
           .vsub(body.state.pos)
           .mult(0.028)
         ;
@@ -222,7 +222,7 @@ BHV = (function(){
         body.applyForce(force);
 
         // remove target
-        target = null;
+        targets[body.uid] = null;
 
       }
 
