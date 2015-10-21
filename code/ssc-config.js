@@ -108,8 +108,6 @@ CFG = {
 
     },
 
-    minimumPlayers:       1,
-
     Rules: {
         momFoul:          2,   // if sum of momentum (vel * mass) is higher => spotkick
         momFoulYellow:    4,   // yellow + spotkick
@@ -136,7 +134,7 @@ CFG = {
             'players-marked-attractor':   [],
 
             // these relates to Team.state
-            // 'players-move-to-point':      ['Training', 'Setup', 'Pause'],
+            'players-single-move-to-point':      ['Training', 'Setup', 'Pause'],
 
 
             'players-focus-ball':         ['Play'],
@@ -177,7 +175,7 @@ CFG = {
 
     States : {
 
-            // event,        // froms                           // to
+        //    event,        // froms                           // to
 
         simulation: [
 
@@ -203,8 +201,6 @@ CFG = {
             // Initial and sim states
             ['setup',        ['None', 'Pause', 'Training'],          'Setup'       ],
             ['training',     ['None', 'Pause', 'Setup'],             'Training'    ],
-
-            // Pause
             ['pause',        ['None', 'Play'],                       'Pause'       ],
 
             // Kickoff, Abstoss vom Mittelpunkt
@@ -242,7 +238,15 @@ CFG = {
             ['play',         'KikPenalty',      'Play'        ],
 
         ],
-        player:     [],
+
+        player:     [
+
+            // Initial and sim states
+            ['setup',        ['None', 'Pause', 'Training'],          'Setup'       ],
+            ['training',     ['None', 'Pause', 'Setup'],             'Training'    ],
+            ['pause',        ['None', 'Play'],                       'Pause'       ],
+
+        ],
 
     },
 

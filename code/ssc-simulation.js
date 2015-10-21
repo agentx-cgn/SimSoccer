@@ -8,29 +8,38 @@ SIM = (function(){
 
   var 
     self, 
-    fsm,
 
     frame = 0,
-    time  = 0;
+    time  = 0,
+
+    tasks = [];
 
   return {
 
-    fsm,
     time,
     frame,
-
     name: 'sim',
     nick: 'SIM',
 
-    boot:   function(){return (self = this);
+  // I N I T
+
+    boot:   function(){
+
+      StateMachine.create({
+        target:  this,
+        initial: 'None',
+        events:  CFG.States.simulation.map(T.readEvents),
+        error:   T.logFsmError.bind(this),
+      });
+
+      return (self = this);
 
     }, cleanup: function () {
 
+      tasks = [];
+      frame = time = self.frame = self.time = 0;
+
     }, reset: function () {
-
-      // SIM.message('Reset');
-
-      frame = time = 0;
 
       self.cleanup();
 
@@ -41,28 +50,21 @@ SIM = (function(){
       self.init();
       self.listen();
 
-      SIM.message('SIM = ' + SIM.current);
-      SIM.message('GAM = ' + GAM.current);
-      SIM.message('TM0 = ' + GAM.team0.current);
-      SIM.message('TM1 = ' + GAM.team1.current);
-
+      [SIM, GAM, GAM.team0, GAM.team1].forEach(fsm => {
+        H.format('%s = %s', fsm.nick, fsm.current);
+      });
 
     }, tick: function () {
 
         frame = self.frame += 1;
         time  = self.time  += 1 / CFG.fps;
 
+        self.processTasks();
+
     }, init: function(){
 
-      fsm = StateMachine.create({
-        target:  self,
-        initial: 'None',
-        events:  CFG.States.simulation.map(T.readEvents),
-        error:   T.logFsmError.bind(self),
-      });
 
-
-    // F S M - S T A R T
+  // F S M
 
     }, promise: function(event, data){
 
@@ -109,7 +111,72 @@ SIM = (function(){
       // SIM.msgFromTo('sim', from, to);
       // GAM.can('run') && GAM.run();
 
-    // F S M - E N D
+
+  // T A S K S 
+
+    }, appendTask : function (task) {
+
+      // task [frame, interval, action, resolve]; chrome :(
+
+      if (task[0] > frame && !task[1]){
+        // fixed frame
+        // nothing to do here
+
+      } else if (!task[0]){
+        // next frame, recurring
+        task[0] = frame +1;
+
+      } else if (task[0] < 0) {
+        // future frame
+        task[0] = frame - task[0];
+
+      } else {
+        console.log('wtf');
+
+      }
+      
+      tasks.push(task);
+
+
+
+    }, processTasks : function () {
+
+      // task [taskframe, interval, action, resolve]; chrome :(
+
+      H.each(tasks, (index, task) => {
+
+        // one time
+        if (frame === task[0] && !task[1]){
+
+          // run action, check and resolve, if avail.
+          task[2]() && task[3] && task[3]();
+
+        // recurring
+        } else if (frame === task[0] && task[1]) {
+
+          // check action
+          if (task[2]()){
+            
+            // resolve, if avail.
+            task[3] && task[3]();
+
+          } else {
+
+            // try again next interval
+            task[0] += task[1];
+
+          }
+
+        // done
+        } else if (frame > task[0]) {
+
+          // remove
+          H.delete(tasks, task);
+
+        }
+
+      });
+
 
 
     }, msgFromTo : function (what, from, to) {

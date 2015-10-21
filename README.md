@@ -29,3 +29,11 @@ A simple JavaScript Soccer Simulation with an Player AI
   * Behaviors: 
     * Calibration for players
   * Concept for skills
+
+
+### Used Librairies
+  
+  * FSM State Machine / https://github.com/jakesgordon/javascript-state-machine
+  * Mousetrap / craig.is/killing/mice
+  * PhysicssJS / http://wellcaffeinated.net/PhysicsJS
+  * Tween / https://github.com/sole/tween.js

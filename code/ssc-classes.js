@@ -1,5 +1,5 @@
 /*jslint bitwise: true, browser: true, evil:true, devel: true, todo: true, debug: true, nomen: true, plusplus: true, sloppy: true, vars: true, white: true, indent: 2 */
-/*globals CFG, H, T, SIM, StateMachine */
+/*globals CFG, H, T, SIM, PHY, BHV, StateMachine */
 
 'use strict';
 
@@ -8,13 +8,6 @@ function Actor () {}
 Actor.prototype = {
   constructor: Actor,
 };
-
-StateMachine.create({
-  target:  Actor.prototype,
-  initial: 'None',
-  events:  CFG.States.team.map(T.readEvents),
-  error:   T.logFsmError,
-});
 
 
 function Player (options){
@@ -27,6 +20,12 @@ Player.prototype = H.mixin (
   constructor: Player,
 });
 
+StateMachine.create({
+  target:  Player.prototype,
+  initial: 'None',
+  events:  CFG.States.player.map(T.readEvents),
+  error:   T.logFsmError,
+});
 
 function Team (config){
 
@@ -34,6 +33,7 @@ function Team (config){
   H.extend(this, config);
 
   this.team = PHY.bodies['team' + config.index];
+  this.paths = {};
 
   H.extend(this, {
     //squad
@@ -41,13 +41,73 @@ function Team (config){
     field: [],
   });
 
+  this.updatePaths();
+
 }
 
 Team.prototype = H.mixin (
   Actor.prototype, {
   constructor: Team,
 
-  updateBehaviors: function (state) {
+  getDistanceTo: function (bodies, path){
+
+    var 
+      distance = 0,
+      posBodies = bodies.map(body => [body.state.pos._[0], body.state.pos._[1]]);
+
+    H.each(posBodies, (index, pos) => {
+
+      distance += Math.hypot(
+        pos[0] - path.path[index][0],
+        pos[1] - path.path[index][1]
+      );
+
+    });
+
+    return distance / bodies.length;
+
+
+  }, arrangePlayers: function (path, resolve) {
+
+    var 
+      targets = BHV.behaviors['players-single-move-to-point'].options.targets,
+      action  = () => {
+        if (this.getDistanceTo(this.team, path) < 1){
+          return true;
+        } else {
+          H.each(this.team, (index, player) => {
+            targets[player.uid] = new Vector(path.path[index][0], path.path[index][1]);
+          });
+        }
+      };
+
+      // task [taskframe, interval, action, resolve];
+
+    SIM.appendTask([null, 60, action, resolve]);
+
+
+  }, updatePaths: function () {
+
+    var length = this.team.length;
+
+    if (this.index === 0){ // left
+      H.extend(this.paths, {
+        setup:     new T.Path(length + '; translate 20 35; circle 5'),
+        training:  new T.Path(length + '; linspace 20 35 40 35'),
+        pause:     new T.Path(length + '; linspace 20 30 20 40'),
+      });
+
+    } else { // right 
+      H.extend(this.paths, {
+        setup:     new T.Path(length + '; translate 90 35; circle 5'),
+        training:  new T.Path(length + '; linspace 90 35 40 35'),
+        pause:     new T.Path(length + '; linspace 90 30 90 40'),
+      });
+
+    }
+
+
+  }, updateBehaviors: function (state) {
 
     H.each(CFG.Behaviors.players, (bhv, states) => {
 
@@ -87,18 +147,20 @@ Team.prototype = H.mixin (
   }, onsetup: function (name, from, to, data, resolve){
 
     this.updateBehaviors(to);
+    this.arrangePlayers(this.paths.setup, resolve);
 
-    setTimeout(() => {
-      resolve();
-    }, 2000);
+    // setTimeout(() => {
+    //   resolve();
+    // }, 2000);
 
   }, ontraining: function (name, from, to, data, resolve){
     
     this.updateBehaviors(to);
+    this.movePlayers(this.paths.training, resolve);
 
-    setTimeout(() => {
-      resolve();
-    }, 2000);
+    // setTimeout(() => {
+    //   resolve();
+    // }, 2000);
 
   }, onpause: function (name, from, to, data, resolve){
     
@@ -152,3 +214,9 @@ Team.prototype = H.mixin (
 
 });
 
+StateMachine.create({
+  target:  Team.prototype,
+  initial: 'None',
+  events:  CFG.States.team.map(T.readEvents),
+  error:   T.logFsmError,
+});

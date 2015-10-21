@@ -206,30 +206,23 @@ BHV = (function(){
 
 
 
-    }, 'players-move-to-point': function(body){
+    }, 'players-single-move-to-point': function(body){
 
-      var options = this.options;
+      var 
+        target = this.options.targets[body.uid];
 
-      distance = this.scratch.vector()
-        .clone( options.target )
-        .vsub( body.state.pos )
-        .norm()
-      ;
-
-      if (distance < options.range){
-
-        // stop body ??
-        options.resolve(body);
-
-      } else {
+      if (target){
 
         force = this.scratch.vector()
-          .clone(this.options.target)
+          .clone(target)
           .vsub(body.state.pos)
           .mult(0.028)
         ;
 
         body.applyForce(force);
+
+        // remove target
+        options.targets[body.uid] = null;
 
       }
 
@@ -241,11 +234,10 @@ BHV = (function(){
       }
 
       // n bodies  => array
-      self.create('players-move-to-point', {
+      self.create('players-single-move-to-point', {
         scratch: true,
-        target:  Physics.vector(),  // vector
-        range:   0,                 // scalar
-        resolve: function(/* body */){}
+        targets: {},   // vector
+        resolve: null, // function
       });
 
       // n bodies  => array

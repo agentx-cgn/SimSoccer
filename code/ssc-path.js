@@ -28,7 +28,7 @@
   // helper
   function loop (n, fn){for (var i=0; i<n; i++){fn(i);}}
 
-  T.Path = function(context, definition){
+  T.Path = function(definition){
 
     // this.deb('  PATH: new def: %s', definition);
 
@@ -72,7 +72,7 @@
         definition
           .split(';')
           .filter(s => !!s)
-          .map(String.trim)
+          .map(s => s.trim())
       );
     
     }, getCenter : function(){
