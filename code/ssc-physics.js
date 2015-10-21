@@ -53,6 +53,7 @@ PHY = (function(){
 
     }, tick:   function(){world.step( SIM.time * 1000 );
     }, resize: function(){self.updateSandbox();
+    }, vector: function(pos){return Physics.vector(pos[0], pos[1]);
     }, find:   function(conds){
 
       return (
@@ -73,6 +74,7 @@ PHY = (function(){
         $at: vector.set(pos.x, pos.y)
       });
     
+
     }, reset:   function(){
 
       self.cleanup();

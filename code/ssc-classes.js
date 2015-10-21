@@ -76,14 +76,17 @@ Team.prototype = H.mixin (
           return true;
         } else {
           H.each(this.team, (index, player) => {
-            targets[player.uid] = new Vector(path.path[index][0], path.path[index][1]);
+            targets[player.uid] = PHY.vector(path.path[index]);
           });
         }
       };
 
       // task [taskframe, interval, action, resolve];
 
-    SIM.appendTask([null, 60, action, resolve]);
+    SIM.appendTask([null, 60, action, () => {
+      resolve(); 
+      console.log('resovled', this.index);
+    }]);
 
 
   }, updatePaths: function () {
@@ -156,7 +159,7 @@ Team.prototype = H.mixin (
   }, ontraining: function (name, from, to, data, resolve){
     
     this.updateBehaviors(to);
-    this.movePlayers(this.paths.training, resolve);
+    this.arrangePlayers(this.paths.training, resolve);
 
     // setTimeout(() => {
     //   resolve();

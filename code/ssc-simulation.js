@@ -167,16 +167,12 @@ SIM = (function(){
 
           }
 
-        // done
-        } else if (frame > task[0]) {
-
-          // remove
-          H.delete(tasks, task);
-
         }
 
       });
 
+      // Delete outdated tasks
+      H.delete(tasks, task => frame > task[0]);
 
 
     }, msgFromTo : function (what, from, to) {

@@ -222,7 +222,7 @@ BHV = (function(){
         body.applyForce(force);
 
         // remove target
-        options.targets[body.uid] = null;
+        target = null;
 
       }
 
