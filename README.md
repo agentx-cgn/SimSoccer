@@ -33,7 +33,7 @@ A simple JavaScript Soccer Simulation with an Player AI
 
 ### Used Librairies
   
-  * FSM State Machine / https://github.com/jakesgordon/javascript-state-machine
-  * Mousetrap / craig.is/killing/mice
-  * PhysicssJS / http://wellcaffeinated.net/PhysicsJS
-  * Tween / https://github.com/sole/tween.js
+  * FSM State Machine, https://github.com/jakesgordon/javascript-state-machine
+  * Mousetrap, http://craig.is/killing/mice
+  * PhysicssJS, http://wellcaffeinated.net/PhysicsJS
+  * Tween, https://github.com/sole/tween.js
