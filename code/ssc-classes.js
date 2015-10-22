@@ -96,15 +96,15 @@ Team.prototype = H.mixin (
     if (this.index === 0){ // left
       H.extend(this.paths, {
         setup:     new T.Path(length + '; translate 20 35; circle 5'),
-        training:  new T.Path(length + '; translate 20 35; linspace 20 35 40 35'),
-        pause:     new T.Path(length + '; translate 20 35; linspace 20 30 20 40'),
+        training:  new T.Path(length + '; translate 40 35; line 5'),
+        pause:     new T.Path(length + '; translate 40 35; line 5; rotate 90'),
       });
 
     } else { // right 
       H.extend(this.paths, {
-        setup:     new T.Path(length + '; translate 90 35; circle 5'),
-        training:  new T.Path(length + '; translate 90 35; linspace 0 -5 0 5'),
-        pause:     new T.Path(length + '; translate 90 35; linspace 90 30 90 40'),
+        setup:     new T.Path(length + '; translate 90 35; circle 5; rotate 180'),
+        training:  new T.Path(length + '; translate 90 35; line 5'),
+        pause:     new T.Path(length + '; translate 90 35; line 5; rotate 90'),
       });
 
     }

@@ -117,14 +117,16 @@ CFG = {
 
     Behaviors: {
 
-        world:      [   // always active
-                        'sweep-prune', 
-                        'body-collision-detection', 
-                        'body-impulse-response'
+        world:      [   
+            // always active
+            'sweep-prune', 
+            'body-collision-detection', 
+            'body-impulse-response'
         ],
 
-        balls:      [   // always active
-                        'balls-basic'
+        balls:      [   
+            // always active
+            'balls-basic'
         ],
 
         players:    {
@@ -153,8 +155,8 @@ CFG = {
             styles:   {fill: '#66F', stroke: '#FFF', angleIndicator: '#00F'},
             players : {
                  '1': {sign: 'Sam', role: 'TW', mass: 100, x:  2.0, y: 35, angle: 0, styles: {stroke: '#000'}},
-                 '2': {sign: 'Sun', role: 'LV', mass: 100, x: 12.0, y: 30, angle: 0, styles: {}},
-                 '3': {sign: 'Son', role: 'RV', mass: 100, x: 12.0, y: 40, angle: 0, styles: {}},
+                 '2': {sign: 'Sun', role: 'LV', mass: 100, x: 12.0, y: 40, angle: 0, styles: {}},
+                 '3': {sign: 'Son', role: 'RV', mass: 100, x: 12.0, y: 30, angle: 0, styles: {}},
             }
 
         }, {

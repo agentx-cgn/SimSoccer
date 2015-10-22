@@ -340,29 +340,39 @@ IFC = (function(){
     }, setKeys: function(){
 
       var 
+        draw = REN.draw,
         keymap = {
           
           // guess what
           's' : self.shootScreen,
           
-          // toggle debug decoration
-          'd' : () => {REN.draw.info = !REN.draw.info;},
-          'f' : () => {REN.draw.speed = !REN.draw.speed;},
-          'm' : () => {REN.draw.messages = !REN.draw.messages;},
-          'c' : () => {REN.draw.collisions = !REN.draw.collisions;},
-          
-          // animation          
+          // animation, top line       
           'q' : self.stop,
           'w' : self.play,
           'e' : self.pause,
           'r' : self.step,
 
+          // toggle debug decoration, second line + space
+          'a' : () => draw.info = !draw.info,
+          's' : () => draw.speed = !draw.speed,
+          'd' : () => draw.messages = !draw.messages,
+          'f' : () => draw.collisions = !draw.collisions,
+          'g' : () => draw.sandbox = !draw.sandbox,
+          'h' : () => draw.fps = !draw.fps,
+          'space' : () => {
+            draw.info = false;
+            draw.speed = false;
+            draw.messages = false;
+            draw.collisions = false;
+            draw.sandbox = false;
+            draw.fps = false;
+          },
+          
           // steer selected player
           'up'    : () => {PHY.world.emit('key:up');},
           'down'  : () => {PHY.world.emit('key:down');},
           'left'  : () => {PHY.world.emit('key:left');},
           'right' : () => {PHY.world.emit('key:right');},
-          'space' : () => {PHY.world.emit('key:space');},
 
         };
 
