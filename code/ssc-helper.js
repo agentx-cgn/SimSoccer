@@ -98,7 +98,7 @@ H = (function(){
     
 
     // Arrays
-    empty:      function (a){while(a.length){a.shift()};},
+    empty:      function (a){while(a.length){a.shift();}},
     // check: http://stackoverflow.com/a/18885102/515069
     delete:     function (a, fn){var i=0,o=0;while(a[i]!==undefined){if(fn(a[i])){a.splice(i,1);o++;}else{i++;}}return o;  },
     toArray:    function (a){return Array.prototype.slice.call(a);},
@@ -110,7 +110,7 @@ H = (function(){
     sample:     function (a,n){var l=a.length;n=n||1;return H.range(n).map(function(){return a[~~(Math.random() * l)];});},
     removeAll:  function (a,v){var i,j,l;for(i=0,j=0,l=a.length;i<l;i++) {if(a[i]!==v){a[j++]=a[i];}}a.length=j;},
     remove:     function (a,e){var i=a.indexOf(e); if (i!==-1){a.splice(i, 1);}},
-    flatten:    function (a){return Array.prototype.concat.apply([], a);},
+    flatten:    function (a){return a.reduce(function(a, b) {return a.concat(b);});},
     pushUnique: function (a,e){if(a.indexOf(e)===-1){a.push(e);}return a;},
     equal:      function (a,b){return JSON.stringify(a) === JSON.stringify(b);},
     mean:       function (a){return a.reduce(function(s,x){return (s+x);},0)/a.length;},

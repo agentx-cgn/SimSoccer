@@ -35,6 +35,12 @@ IFC = (function(){
       {label: 'Fullscreen', active: true,                       action: () => self.toggleFullScreen()},
       {label: 'Screenshot', active: true,                       action: () => self.shootScreen()},
       {label: 'Reset',      active: true,                       action: () => window.reset()},
+      
+      {label: 'Mark All',   active: true,                       action: () => PHY.bodies.players.forEach(GAM.mark)},
+      {label: 'Mark T0',    active: true,                       action: () => PHY.bodies.team0.forEach(GAM.mark)},
+      {label: 'Mark T1',    active: true,                       action: () => PHY.bodies.team1.forEach(GAM.mark)},
+      {label: 'Mark Ball',  active: true,                       action: () => PHY.bodies.balls.forEach(GAM.mark)},
+
       {label: 'Setup',      active: () => SIM.can('setup'),     action: () => SIM.promise('setup',    {test:1})},
       {label: 'Training',   active: () => SIM.can('training'),  action: () => SIM.promise('training', {test:2})},
       {label: 'Play',       active: () => SIM.can('play'),      action: () => SIM.promise('play',     {test:3}),      items: [
@@ -139,11 +145,15 @@ IFC = (function(){
     }, listen: function(){
 
       function onmousemove (e) {
+
         var yOff = self.isFullScreen() ? 0 : marginTop;
+
         mouse.x = e.clientX - cvs.offsetLeft;
         mouse.y = e.clientY - cvs.offsetTop - yOff;
         REN.setMouse(mouse);
         bodyUnderMouse = self.bodyUnderMouse = PHY.findAtMouse(mouse);
+        GAM.hover(bodyUnderMouse);
+
       }
 
       function onmouseup ( /* e */ ) {

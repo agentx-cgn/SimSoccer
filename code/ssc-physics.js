@@ -16,6 +16,7 @@ PHY = (function(){
     vector = Physics.vector(),
 
     bodies = {
+      all:     [],
       ball:    [],
       balls:   [],
       players: [],
@@ -93,6 +94,7 @@ PHY = (function(){
       });
 
       H.extend(bodies, {
+        all:     [],
         ball:    [],
         balls:   [],
         players: [],
@@ -127,6 +129,7 @@ PHY = (function(){
 
       // prepare body queries for behaviors
       H.extend(bodies, {
+        all:     H.flatten([bodies.balls, bodies.players]),
         ball:    world.find({name: 'ball'})[0],
         team0:   world.find({team: 0}),
         team1:   world.find({team: 1})

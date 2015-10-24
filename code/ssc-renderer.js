@@ -57,7 +57,7 @@ REN = (function(){
 
     info,
     draw,
-    list,
+    // list,
 
     boot: function(){return (self = this);
 
@@ -65,6 +65,8 @@ REN = (function(){
 
       cvs = IFC.cvs; 
       ctx = IFC.ctx;
+
+      list = [];
 
       imgWhistle = $('.img-whistle');
 
@@ -81,8 +83,8 @@ REN = (function(){
 
     }, setMouse : function (mouse) {
 
-        mouse.fx = (mouse.x - transform.field[0]) / transform.scale, 
-        mouse.fy = (mouse.y - transform.field[1]) / transform.scale
+      mouse.fx = (mouse.x - transform.field[0]) / transform.scale, 
+      mouse.fy = (mouse.y - transform.field[1]) / transform.scale
 
 
     }, toField : function (point) {
@@ -129,13 +131,13 @@ REN = (function(){
 
     }, tween: function(from, to, msecs, easing, onUpdate){
 
-      onUpdate = onUpdate(); 
+      var updater = onUpdate(); 
 
       return (new TWEEN
         .Tween({delta: from})
         .to(   {delta: to}, msecs)
         .easing(easing)
-        .onUpdate(function(){onUpdate(this.delta);})
+        .onUpdate(function(){updater(this.delta);})
         .start()
       );
 
@@ -165,20 +167,19 @@ REN = (function(){
       ctx.save();
       self.translate();
 
+      self.drawField();
+
       // draw on field, transformed
       draw.corner      && self.drawCorner();
       draw.spotkick    && self.drawSpotkick();
       draw.sandbox     && self.drawSandbox();
-
-      self.drawField();
-
       draw.collisions  && self.drawCollisions(PHY.collisions);
 
       TWEEN.update();  // whistle
+      draw.list        && H.consume(list, task => task());
+
       self.drawTeamsResult(0.4);
       self.drawSimState(0.3);
-
-      draw.list        && H.consume(list, task => task());
 
       for (i = 0; (body = bodies[i]); i++){
 
@@ -604,13 +605,9 @@ REN = (function(){
 
       ctx.lineWidth = 3 / transform.scale;
 
-      if (body.selected){
-        self.strokeCircle(0, 0, body.width + 1.5, body.styles.mark);
-      }
-
-      if (body.marked){
-        self.fillCircle(0, 0, body.width + 1.5, body.styles.select);
-      }
+      body.selected && self.strokeCircle(0, 0, body.width + 1.5, body.styles.mark);
+      body.marked   && self.fillCircle(0, 0, body.width + 1.5, body.styles.select);
+      body.hover    && self.fillCircle(0, 0, body.width + 1.5, body.styles.hover);
 
       ctx.fillStyle   = body.styles.fill;
       ctx.strokeStyle = body.styles.stroke;
@@ -654,14 +651,11 @@ REN = (function(){
 
       self.translate(x, y, angle);
 
-      if (body.selected){
-        ctx.lineWidth = 3 / transform.scale;
-        self.strokeCircle(0, 0, r + 1.5, body.styles.mark);
-      }
+      ctx.lineWidth = 3 / transform.scale;
 
-      if (body.marked){
-        self.fillCircle(0, 0, r + 1.5, body.styles.select);
-      }
+      body.selected && self.strokeCircle(0, 0, r + 1.5, body.styles.mark);
+      body.marked   && self.fillCircle(0, 0, r + 1.5, body.styles.select);
+      body.hover    && self.fillCircle(0, 0, r + 1.5, body.styles.hover);
 
       ctx.lineWidth = 1 / transform.scale;
       ctx.fillStyle   = body.styles.fill;
@@ -671,9 +665,7 @@ REN = (function(){
       ctx.stroke();
       ctx.fill();
 
-      if (playerColor){
-        self.fillCircle(0, 0, r/2, playerColor);
-      }
+      playerColor && self.fillCircle(0, 0, r/2, playerColor);
 
       ctx.strokeStyle = body.styles.angleIndicator;
       ctx.beginPath();

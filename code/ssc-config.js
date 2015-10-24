@@ -63,7 +63,7 @@ CFG = {
 
     Ball: {
         name:            'ball',
-        styles:           {fill: '#F00', stroke: '#DDD', angleIndicator: '#E33', mark: '#FF0', select: 'rgba(255, 255, 0, 0.4)'},
+        styles:           {fill: '#F00', stroke: '#DDD', angleIndicator: '#E33', mark: '#FF0', select: 'rgba(255, 255, 0, 0.4)', hover: 'rgba(255, 255, 255, 0.4)'},
         mass:             0.43,  // 0.41 < 0.45
         radius:           0.7,   // Umfang: 0.68 < 0.70
         cof:              1.0,   // A cof of 1 has no slide.
@@ -93,7 +93,8 @@ CFG = {
             stroke:         '#DDD', 
             angleIndicator: '#E33', 
             mark:           '#FF0', 
-            select:         'rgba(255, 255, 0, 0.4)'
+            select:         'rgba(255, 255, 0, 0.4)', 
+            hover:          'rgba(255, 255, 255, 0.4)',
         },
         mass:            60,        //[60, 100], // kg
         speed:           10,        // ms

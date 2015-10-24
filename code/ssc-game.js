@@ -63,6 +63,13 @@ GAM = (function(){
       }      
 
 
+    }, mark:    function (body) {body.marked = true;
+    }, unhover: function (body) {body.hover = false;
+    }, hover:   function (body) {
+      
+      PHY.bodies.all.forEach(GAM.unhover); 
+      body && (body.hover = true);
+
     }, deMarkSelect: function (body) {
 
       H.each(PHY.find('selected'), (i, body) => body.selected = false);
