@@ -138,11 +138,11 @@ IFC = (function(){
       bufFps = H.createRingBuffer(120);
 
       self.toggleTab(curTab);
-      self.listen();
-      self.setKeys();
 
 
     }, listen: function(){
+
+      self.setKeys();
 
       function onmousemove (e) {
 
@@ -167,8 +167,11 @@ IFC = (function(){
         // left leaves a mark on field
         if (e.button === 0 && !bodyUnderMouse){
           REN.tween(1.0, 0.0, 800, TWEEN.Easing.Quadratic.Out, function () {
-            var x = mouse.fx, y = mouse.fy;
-            return (alpha) => REN.alpha(alpha, REN.fillCircle.bind(null, x, y, 1, 'red'));
+            var 
+              x = mouse.fx, 
+              y = mouse.fy,
+              action = REN.fillCircle.bind(null, x, y, 1, 'red');
+            return (alpha) => REN.alpha(alpha, action);
           });
 
         } else if (e.button === 1){

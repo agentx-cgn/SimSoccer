@@ -65,10 +65,15 @@ window.onload = function(){
     IFC.resize(window.innerWidth, window.innerHeight);
     
     REN.reset();    // IFC.cvs
+    PHY.reset();
+    SVC.reset();    // needs PHY.world
+    BHV.reset();
+    GAM.reset();
     SIM.reset();    // => GAM, PHY, BHV
-    SVC.init();     // needs PHY.world
+    
+    IFC.listen();   // activates events, keys, needs IFC.cvs
     IFC.show();     // go visible
-    IFC.play();     // runs animate
+    IFC.play();     // starts animation loop
 
     // GAM.run();
 

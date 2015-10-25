@@ -50,6 +50,7 @@ BHV = (function(){
 
       // always active
       self.add('balls-basic');      
+      self.add('mouse-grabs-body');      
 
       // for players
       H.each(CFG.Behaviors.players, behavior => {
@@ -257,13 +258,34 @@ BHV = (function(){
         offset:  Physics.vector(),
         listen: {
           'interact:poke': function( e ){
-            if (e.button === 0 && !IFC.mouseOverBody){
+            if (e.button === 0 && !IFC.bodyUnderMouse){
               this.options.active = true;
               setVector(REN.toField(e), this.options.target);
             }
           }, 
           'interact:release': function(){
             this.options.active = false;
+          }
+        }
+      });
+
+      // 1 bodies by mouse
+      self.create('mouse-grabs-body', {
+        body:  null,
+        listen:  {
+          'interact:poke': function( e ){
+            if (e.button === 0 && IFC.bodyUnderMouse){
+              this.options.body = IFC.bodyUnderMouse;
+            }
+          }, 
+          'interact:move': function( e ){
+            if (e.button === 0 && this.options.body){
+              setVector(REN.toField(e), this.options.body.state.pos);
+              setVector(REN.toField(e), this.options.body.state.old.pos);
+            }
+          }, 
+          'interact:release': function(){
+            this.options.body = null;
           }
         }
       });
@@ -285,7 +307,7 @@ BHV = (function(){
         max:    200,
         listen: {
           'interact:poke': function( e ){
-            if (!IFC.mouseOverBody){
+            if (!IFC.bodyUnderMouse){
               this.options.pos = e.button === 0 ? REN.toField(e) : null;
             }
           }, 
@@ -328,7 +350,7 @@ BHV = (function(){
 
     }, create: function(name, defaults){
 
-      var i, body, bodies, config = {}, behave = self[name];
+      var i, body, bodies, config = {}, behave = self[name] || function () {};
 
       Physics.behavior (name, function ( parent ) {
         return {
@@ -337,8 +359,6 @@ BHV = (function(){
             if (config.bodies){
               H.empty(config.bodies);
               bodies.forEach(body => config.bodies.push(body));
-            // } else {
-            //   console.warn(name, 'can\'t set', bodies);
             }
           },
           addBodies: H.arrayfy(function(body){
@@ -346,15 +366,11 @@ BHV = (function(){
               if (!H.contains(config.bodies, body)) {
                 config.bodies.push(body);
               }
-            // } else {
-            //   console.warn(name, 'can\'t add', body);
             }
           }),
           subBodies: H.arrayfy(function(body){
             if (config.bodies){
               H.remove(config.bodies, body);
-            // } else {
-            //   console.warn(name, 'can\'t sub', body);
             }
           }),
           init: function ( options ) {

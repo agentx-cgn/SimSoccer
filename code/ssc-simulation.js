@@ -43,13 +43,7 @@ SIM = (function(){
     }, reset: function () {
 
       self.cleanup();
-
-      PHY.reset();
-      BHV.reset();
-      GAM.reset();
-
       self.init();
-      self.listen();
 
       [SIM, GAM, GAM.team0, GAM.team1].forEach(fsm => {
         H.format('%s = %s', fsm.nick, fsm.current);
@@ -62,7 +56,9 @@ SIM = (function(){
 
         self.processTasks();
 
-    }, init: function(){
+    }, init: function () {
+
+      self.listen();
 
 
   // F S M

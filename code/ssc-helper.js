@@ -17,7 +17,10 @@
 
 H = (function(){
 
-  var H = {};
+  var 
+    H = {},
+    slice = Array.prototype.slice;
+
 
   if (!H.extend){
     H.extend = function (o){
@@ -63,9 +66,16 @@ H = (function(){
     isInteger:  function (n){return Math.floor(n) === n;},
 
     // strings
+    format:     function (){
+      var 
+        c=0, args = slice.call(arguments),
+        inserts = args.slice(1),
+        tokens = (args[0] || '').split('%s');
+      return tokens.map(t => t + (inserts[c++] || '')).join('');
+    },
+
     replace:    function (s,f,r){return s.replace(new RegExp(H.escapeRex(f), 'g'), r);},
-    padZero:    function (num, len){len = len || 2; num = '0000' + num; return num.substr(num.length-2, 2);},
-    format:     function (){var a=H.toArray(arguments),s=a[0].split('%s'),p=a.slice(1).concat(['']),c=0;return s.map(function(t){return t + p[c++];}).join('');},
+    padZero:    function (num, len){len = len || 2; var snum = '0000' + num; return snum.substr(snum.length-2, 2);},
     mulString:  function (s, l){return new Array(l+1).join(s);},
     escapeRex:  function (s){return s.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');},
     letterRange:function (r){return H.range(r.charCodeAt(0), r.charCodeAt(1)+1).map(function(i){return String.fromCharCode(i);}).join('');},

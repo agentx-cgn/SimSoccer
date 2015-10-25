@@ -8434,7 +8434,8 @@ Physics.behavior('interactive', function( parent ){
                     for ( touchIndex = 0, l = e.changedTouches.length; touchIndex < l; touchIndex++) {
                         touch = e.changedTouches[touchIndex];
                         touchId = touch.identifier || touch.pointerId || "mouse";
-                        pos = { idx: touchId, x: touch.pageX - offset.left, y: touch.pageY - offset.top };
+                        // patched by noiv, + button
+                        pos = { idx: touchId, x: touch.pageX - offset.left, y: touch.pageY - offset.top, button: e.button };
                         body = self._world.findOne({ $at: new Physics.vector( pos ), $in: self.getTargets() });
 
                         if ( body ){
@@ -8471,9 +8472,6 @@ Physics.behavior('interactive', function( parent ){
                             self._world.emit('interact:grab', pos);
 
                         } else {
-                            //noiv
-                            // self._world.emit('interact:poke', pos);
-                            pos.button = e.button;
                             self._world.emit('interact:poke', pos);
                         }
                     }
@@ -8506,7 +8504,8 @@ Physics.behavior('interactive', function( parent ){
                     for ( touchIndex = 0, l = e.changedTouches.length; touchIndex < l; touchIndex++) {
                         touch = e.changedTouches[touchIndex];
                         touchId = touch.identifier || touch.pointerId || "mouse";
-                        pos = { idx: touchId, x: touch.pageX - offset.left, y: touch.pageY - offset.top };
+                        // patched by noiv, + button
+                        pos = { idx: touchId, x: touch.pageX - offset.left, y: touch.pageY - offset.top, button: e.button };
                         data = self.bodyData[touchId];
 
                         if ( data ){

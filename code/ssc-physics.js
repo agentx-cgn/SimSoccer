@@ -135,14 +135,17 @@ PHY = (function(){
         team1:   world.find({team: 1})
       });
 
-      // enable mouse interaction
-      world.add(Physics.behavior('interactive', { el: IFC.cvs }));
-
-      // add physical behaviors
+      // stock behaviors
       self.add([
+    
+        // enable mouse interaction
+        Physics.behavior('interactive', { el: IFC.cvs }),
+    
+        // add physical behaviors
         Physics.behavior('sweep-prune'),                // broad phase
         Physics.behavior('body-collision-detection'),   // narrow phase
         Physics.behavior('body-impulse-response'),      // applies impulses on collision
+    
       ]);
 
       self.listen();

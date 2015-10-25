@@ -8,17 +8,21 @@ SVC = (function(){
 
   var 
     self,
-
-    distances = {}
-
-    ;
-
-
+    distances = {};
 
   return {
 
     boot:   function () {return (self = this);
 
+    }, reset: function(){
+
+      self.cleanup();
+      self.init();
+
+    }, cleanup: function(){
+
+      distances = {};
+      
     }, init: function(){
 
       self.Distance.listen();

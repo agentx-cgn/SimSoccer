@@ -120,12 +120,12 @@ REN = (function(){
       ;
 
 
-    }, alpha: function(newAlpha, fn){
+    }, alpha: function(newAlpha, action){
 
       var oldAlpha = ctx.globalAlpha;
 
       ctx.globalAlpha = newAlpha;
-      fn();
+      action();
       ctx.globalAlpha = oldAlpha;
 
 
@@ -182,11 +182,9 @@ REN = (function(){
       self.drawSimState(0.3);
 
       for (i = 0; (body = bodies[i]); i++){
-
         (body.name === 'ball')   && self.drawBall(body);
         (body.name === 'player') && self.drawPlayer(body);
         (body.name === 'post')   && self.drawPost(body);
-
       }
 
       ctx.restore();
