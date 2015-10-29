@@ -70,7 +70,7 @@ Team.prototype = H.mixin (
   }, arrangePlayers: function (path, resolve) {
 
     var 
-      targets = BHV.behaviors['players-single-move-to-point'].options.targets,
+      targets = BHV.behaviors['player-all-single-move-to-point'].options.targets,
       action  = () => {
         if (this.getDistanceTo(this.team, path) < 1){
           return true;
@@ -85,7 +85,7 @@ Team.prototype = H.mixin (
 
     SIM.appendTask([null, 60, action, () => {
       resolve(); 
-      console.log('resovled', this.index, SIM.tasks.length);
+      console.log('resolved', this.index, SIM.tasks.length);
     }]);
 
 

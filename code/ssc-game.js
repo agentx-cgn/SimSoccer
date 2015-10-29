@@ -48,6 +48,8 @@ GAM = (function(){
       team0 = self.team0 = new Team(CFG.Teams[0]);
       team1 = self.team1 = new Team(CFG.Teams[1]);
 
+      BHV.behaviors['ball-all-basic'].addBodies(PHY.bodies.balls);
+
     }, tick: function () {
 
       var isRunning = (
@@ -63,22 +65,43 @@ GAM = (function(){
       }      
 
 
-    }, mark:    function (body) {body.marked = true;
+    }, updateBehaviors: function (selection) {
+
+      H.each(PHY.bodies.all, (index, body) => {
+        H.each(BHV.behaviors, (name, behavior) => {
+          if(name.split('-')[1] === selection){
+            if (body[selection]){
+              behavior.addBodies(body);
+            } else {
+              behavior.subBodies(body);
+            }
+          }
+        });
+      });
+
     }, unhover: function (body) {body.hover = false;
     }, hover:   function (body) {
       
-      PHY.bodies.all.forEach(GAM.unhover); 
+      PHY.bodies.all.forEach(self.unhover); 
       body && (body.hover = true);
+
+    }, mark:    function (body) {
+
+      body.marked = true;
+      self.updateBehaviors('marked');
 
     }, deMarkSelect: function (body) {
 
       H.each(PHY.find('selected'), (i, body) => body.selected = false);
-      H.each(PHY.find('marked'), (i, body) => body.marked = false);
+      H.each(PHY.find('marked'),   (i, body) => body.marked   = false);
 
+      self.updateBehaviors('marked');
+      self.updateBehaviors('selected');
 
     }, toggleMark: function (body) {
 
       body.marked = !body.marked;
+      self.updateBehaviors('marked');
 
     }, toggleSelect: function (body) {
 
@@ -86,6 +109,7 @@ GAM = (function(){
 
       H.each(PHY.find('selected'), (i, body) => body.selected = false);
       body.selected = !selected;
+      self.updateBehaviors('selected');
 
 
     // F S M - S T A R T

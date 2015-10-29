@@ -49,7 +49,7 @@ BHV = (function(){
       self.createBehaviors();
 
       // always active
-      self.add('balls-basic');      
+      self.add('ball-all-basic');      
       self.add('mouse-grabs-body');      
 
       // for players
@@ -68,7 +68,29 @@ BHV = (function(){
       behaviors[name] = null;  
 
 
-    }, 'players-selected-steering': function(body){
+    }, hasBody: function(body, behavior){
+
+      return H.contains(behaviors[behavior].options.bodies, body);
+
+
+    }, ofBody: function(body){
+
+      var list = [];
+
+      H.each(behaviors, (name, behavior) => {
+
+        console.log(name, behavior.options.bodies.length);
+
+        if (H.contains(behavior.options.bodies, body)){
+          list.push(name);
+        }
+
+      });
+
+      return list;
+
+
+    }, 'player-selected-steered-by-keys': function(body){
 
       var 
         angle = body.state.angular.pos,
@@ -89,7 +111,7 @@ BHV = (function(){
       body.state.angular.vel = turn;
 
 
-    }, 'players-focus-ball' : function (body) {
+    }, 'player-all-focus-ball' : function (body) {
 
         vector = this.scratch.vector()
           .set(
@@ -102,7 +124,7 @@ BHV = (function(){
         body.state.angular.pos = (vector.angle() + PI) % TAU;
 
 
-    }, 'balls-basic': function (body) {
+    }, 'ball-all-basic': function (body) {
 
       var
         x = body.state.pos._[0], 
@@ -124,7 +146,7 @@ BHV = (function(){
       body.state.angular.vel *= CFG.Physics.angularFriction; 
 
 
-    }, 'players-marked-attractor': function (body) {
+    }, 'body-marked-attracted-by-mouse': function (body) {
 
       var 
         distance, color = 'yellow',
@@ -166,7 +188,7 @@ BHV = (function(){
       }
 
 
-    }, 'players-selected-targeting': function(body){
+    }, 'body-selected-targeting-mouse': function(body){
 
       if (this.options.active){
 
@@ -207,7 +229,7 @@ BHV = (function(){
 
 
 
-    }, 'players-single-move-to-point': function(body){
+    }, 'player-all-single-move-to-point': function(body){
 
       var 
         targets = this.options.targets;
@@ -235,21 +257,21 @@ BHV = (function(){
       }
 
       // n bodies  => array
-      self.create('players-single-move-to-point', {
+      self.create('player-all-single-move-to-point', {
         scratch: true,
         targets: {},   // vector
         resolve: null, // function
       });
 
       // n bodies  => array
-      // self.create('balls-basic', {bodies: PHY.bodies.balls});
-      self.create('balls-basic', {bodies: []});
+      // self.create('ball-all-basic', {bodies: PHY.bodies.balls});
+      self.create('ball-all-basic', {bodies: []});
 
       // n bodies by filter => array
-      self.create('players-focus-ball', {scratch: true, bodies: []});
+      self.create('player-all-focus-ball', {scratch: true, bodies: []});
 
       // 1 bodies by filter
-      self.create('players-selected-targeting', {
+      self.create('body-selected-targeting-mouse', {
         scratch: true,
         active:  false,
         filter:  {selected: true},
@@ -297,7 +319,7 @@ BHV = (function(){
       // min: The minimum distance above which to apply the attraction (default: very small non-zero)
 
       // n bodies by filter
-      self.create('players-marked-attractor', {
+      self.create('body-marked-attracted-by-mouse', {
         pos:      null,
         filter:   {marked: true},
         scratch:  true,
@@ -321,7 +343,7 @@ BHV = (function(){
       });
 
       // 1 body by filter
-      self.create('players-selected-steering', {
+      self.create('body-selected-steered-by-keys', {
         accel:     0.0,
         turn:      0.0,
         facAccel:  0.00001, 
@@ -352,31 +374,27 @@ BHV = (function(){
 
       var i, body, bodies, config = {}, behave = self[name] || function () {};
 
+      defaults.bodies = defaults.bodies || [];
+
       Physics.behavior (name, function ( parent ) {
         return {
           toString: function(){return name;},
-          setBodies: function(bodies){
-            if (config.bodies){
-              H.empty(config.bodies);
-              bodies.forEach(body => config.bodies.push(body));
-            }
-          },
-          addBodies: H.arrayfy(function(body){
-            if (config.bodies){
-              if (!H.contains(config.bodies, body)) {
-                config.bodies.push(body);
-              }
-            }
-          }),
-          subBodies: H.arrayfy(function(body){
-            if (config.bodies){
-              H.remove(config.bodies, body);
-            }
-          }),
           init: function ( options ) {
             H.extend(config, defaults, options);
             parent.init.call( this, config );
           },
+          setBodies: function(bodies){
+            H.empty(config.bodies);
+            bodies.forEach(body => config.bodies.push(body));
+          },
+          addBodies: H.arrayfy(function(body){
+            if (!H.contains(config.bodies, body)) {
+              config.bodies.push(body);
+            }
+          }),
+          subBodies: H.arrayfy(function(body){
+            H.remove(config.bodies, body);
+          }),
           connect: function(world){
             world.on( 'integrate:positions', this.behave, this);
             H.each(config.listen, (name, action) => {
@@ -389,8 +407,8 @@ BHV = (function(){
               world.off(name, action, this);
             });
           },
-          behave: function ( data ) {
-            bodies = config.bodies || (config.filter ? PHY.world.find(config.filter) : data.bodies);
+          behave: function () {
+            bodies = config.bodies; //(config.filter ? PHY.world.find(config.filter) : data.bodies);
             config.scratch && (this.scratch = Physics.scratchpad());
             for (i = 0; (body = bodies[i]); i++){
               behave.call(this, body);

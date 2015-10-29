@@ -65,7 +65,7 @@ window.onload = function(){
     IFC.resize(window.innerWidth, window.innerHeight);
     
     REN.reset();    // IFC.cvs
-    PHY.reset();
+    PHY.reset();    // provides world
     SVC.reset();    // needs PHY.world
     BHV.reset();
     GAM.reset();

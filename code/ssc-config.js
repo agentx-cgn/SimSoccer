@@ -118,30 +118,29 @@ CFG = {
 
     Behaviors: {
 
+        // apply to world, always active
         world:      [   
-            // always active
             'sweep-prune', 
             'body-collision-detection', 
             'body-impulse-response'
         ],
 
+        // apply to bodies, 'type-filter-action'
         balls:      [   
-            // always active
-            'balls-basic'
+            'ball-all-basic'
         ],
 
         players:    {
 
             // these add bodies by the interface
-            'players-selected-targeting': [],
-            'players-marked-attractor':   [],
+            'body-selected-targeting-mouse':  [],
+            'body-selected-steered-by-keys':  [],
+            'body-marked-attracted-by-mouse': [],
 
             // these relates to Team.state
-            'players-single-move-to-point':      ['Training', 'Setup', 'Pause'],
+            'player-all-single-move-to-point':  ['Training', 'Setup', 'Pause'],
 
-
-            'players-focus-ball':         ['Play'],
-            'players-selected-steering':  ['Play'],
+            'player-all-focus-ball':            ['Play'],
         },
 
 

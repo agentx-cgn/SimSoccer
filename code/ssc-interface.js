@@ -1,5 +1,5 @@
 /*jslint bitwise: true, browser: true, evil:true, devel: true, todo: true, debug: true, nomen: true, plusplus: true, sloppy: true, vars: true, white: true, indent: 2 */
-/*globals H, T, IFC, REN, GAM, SIM, REN, PHY, Mousetrap, CFG, TWEEN */
+/*globals H, T, IFC, REN, GAM, SIM, REN, PHY, Mousetrap, BHV, CFG, TWEEN */
 /*jshint -W030 */
 
 'use strict';
@@ -52,12 +52,19 @@ IFC = (function(){
 
     bodyMenuItems = function ( body ){
       
-      var header = H.format('%s %s - T%s %s', body.name, body.number || '', body.team !== undefined ? body.team : '', body.sign || '');
+      var 
+        header = H.format('%s %s - T%s %s', body.name, body.number || '', body.team !== undefined ? body.team : '', body.sign || ''),
+        behaviors = BHV.ofBody(body) || [],
+        items = behaviors.map(name => {
+          return {label: name, active: true, action: null};
+        });
       
       return [
         {label: header,       active: false,                      action: null},
         {label: 'Select',     active: true,                       action: () => GAM.toggleSelect(body)},
         {label: 'Mark',       active: true,                       action: () => GAM.toggleMark(body)},
+        {label: 'Behaviors',  active: false,                      action: null, items: items },
+
       ];
 
     },
@@ -356,8 +363,8 @@ IFC = (function(){
         draw = REN.draw,
         keymap = {
           
-          // guess what
-          's' : self.shootScreen,
+          // meta
+          '^' : self.shootScreen,
           
           // animation, top line       
           'q' : self.stop,

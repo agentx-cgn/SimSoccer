@@ -94,13 +94,16 @@ PHY = (function(){
       });
 
       H.extend(bodies, {
+        // filtered
         all:     [],
         ball:    [],
-        balls:   [],
-        players: [],
         team0:   [],
         team1:   [],
+        // types
+        balls:   [],
         posts:   [],
+        players: [],
+
       });
 
       self.createBodies();
@@ -270,7 +273,7 @@ PHY = (function(){
     createBodies: function(){
 
       var bodies = {
-        // new   , copy       , config
+        // new   , copy of  , config
         post:   ['rectangle', CFG.Posts],
         player: ['rectangle', CFG.Player],
         ball:   ['circle',    CFG.Ball],
