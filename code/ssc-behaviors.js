@@ -1,7 +1,7 @@
 /*jslint bitwise: true, browser: true, evil:true, devel: true, todo: true, debug: true, nomen: true, plusplus: true, sloppy: true, vars: true, white: true, indent: 2 */
 /*jshint -W030 */
 /*jshint -W069 */
-/*globals IFC, SIM, BHV, CFG, H, REN, PHY, GAM, Physics */
+/*globals IFC, BHV, CFG, H, REN, PHY, GAM, Physics */
 
 'use strict';
 
@@ -48,14 +48,8 @@ BHV = (function(){
 
       self.createBehaviors();
 
-      // always active
-      self.add('ball-all-basic');      
-      self.add('mouse-grabs-body');      
-
-      // for players
-      H.each(CFG.Behaviors.players, behavior => {
-        self.add(behavior);
-      });
+      // for actors
+      H.each(CFG.Behaviors.actors, self.add);
 
     }, add:    function(name){
 
@@ -67,24 +61,34 @@ BHV = (function(){
       PHY.world.remove(behaviors[name]);    
       behaviors[name] = null;  
 
-
     }, hasBody: function(body, behavior){
 
-      return H.contains(behaviors[behavior].options.bodies, body);
+      return H.contains(behaviors[behavior].bodies(), body);
 
+    }, forBody: function(body){
+
+      var 
+        list = [],
+        names = ['body'];
+
+      names.push(body.name);
+
+      H.each(behaviors, (name, behavior) => {
+        if (H.contains(names, name.split('-')[0])){
+          list.push(name);
+        }
+      });
+
+      return list;
 
     }, ofBody: function(body){
 
       var list = [];
 
       H.each(behaviors, (name, behavior) => {
-
-        console.log(name, behavior.options.bodies.length);
-
-        if (H.contains(behavior.options.bodies, body)){
+        if (H.contains(behavior.bodies(), body)){
           list.push(name);
         }
-
       });
 
       return list;
@@ -228,11 +232,9 @@ BHV = (function(){
       }
 
 
-
     }, 'player-all-single-move-to-point': function(body){
 
-      var 
-        targets = this.options.targets;
+      var targets = this.options.targets;
 
       if (targets[body.uid]){
 
@@ -249,6 +251,21 @@ BHV = (function(){
 
       }
 
+    }, 'player-all-follow-mouse': function(body){
+
+      var target = this.options.target;
+
+      force = this.scratch.vector()
+        .clone(target)
+        .vsub(body.state.pos)
+        .mult(0.010)
+      ;
+
+      body.applyForce(force);
+
+
+
+
 
     }, createBehaviors: function(){
 
@@ -257,18 +274,27 @@ BHV = (function(){
       }
 
       // n bodies  => array
+      self.create('ball-all-basic');
+
+      // n bodies by filter => array
+      self.create('player-all-focus-ball', {scratch: true});
+
+      // n bodies  => array
       self.create('player-all-single-move-to-point', {
         scratch: true,
         targets: {},   // vector
         resolve: null, // function
       });
 
-      // n bodies  => array
-      // self.create('ball-all-basic', {bodies: PHY.bodies.balls});
-      self.create('ball-all-basic', {bodies: []});
-
-      // n bodies by filter => array
-      self.create('player-all-focus-ball', {scratch: true, bodies: []});
+      self.create('player-all-follow-mouse', {
+        scratch: true,
+        target:  Physics.vector(),
+        listeners:  {
+          'interact:move': function( e ){
+            setVector(REN.toField(e), this.options.target);
+          }, 
+        }
+      });
 
       // 1 bodies by filter
       self.create('body-selected-targeting-mouse', {
@@ -278,7 +304,7 @@ BHV = (function(){
         target:  Physics.vector(),
         force:   Physics.vector(),
         offset:  Physics.vector(),
-        listen: {
+        listeners: {
           'interact:poke': function( e ){
             if (e.button === 0 && !IFC.bodyUnderMouse){
               this.options.active = true;
@@ -292,22 +318,21 @@ BHV = (function(){
       });
 
       // 1 bodies by mouse
-      self.create('mouse-grabs-body', {
-        body:  null,
-        listen:  {
+      self.create('body-all-grabbed-by-mouse', {
+        listeners:  {
           'interact:poke': function( e ){
             if (e.button === 0 && IFC.bodyUnderMouse){
-              this.options.body = IFC.bodyUnderMouse;
+              this.bodies().push(IFC.bodyUnderMouse);
             }
           }, 
           'interact:move': function( e ){
-            if (e.button === 0 && this.options.body){
-              setVector(REN.toField(e), this.options.body.state.pos);
-              setVector(REN.toField(e), this.options.body.state.old.pos);
+            if (e.button === 0 && this.bodies().length){
+              setVector(REN.toField(e), this.bodies()[0].state.pos);
+              setVector(REN.toField(e), this.bodies()[0].state.old.pos);
             }
           }, 
           'interact:release': function(){
-            this.options.body = null;
+            H.empty(this.bodies());
           }
         }
       });
@@ -327,7 +352,7 @@ BHV = (function(){
         order:    0,
         min:      1,
         max:    200,
-        listen: {
+        listeners: {
           'interact:poke': function( e ){
             if (!IFC.bodyUnderMouse){
               this.options.pos = e.button === 0 ? REN.toField(e) : null;
@@ -350,7 +375,7 @@ BHV = (function(){
         facTurn:   0.3, 
         scratch: true,
         filter:  {selected: true},
-        listen:  {
+        listeners:  {
           'key:space': function(){
             this.options.accel = 0.0; this.options.turn = 0.0;
           },
@@ -372,43 +397,51 @@ BHV = (function(){
 
     }, create: function(name, defaults){
 
-      var i, body, bodies, config = {}, behave = self[name] || function () {};
+      var i, body, bodies = [], config = {}, behave = self[name] || function () {};
 
-      defaults.bodies = defaults.bodies || [];
+      defaults = defaults || {};
+      // defaults.bodies = defaults.bodies || [];
 
       Physics.behavior (name, function ( parent ) {
         return {
-          toString: function(){return name;},
+          bodies: function () {return bodies;},
           init: function ( options ) {
             H.extend(config, defaults, options);
             parent.init.call( this, config );
           },
           setBodies: function(bodies){
-            H.empty(config.bodies);
-            bodies.forEach(body => config.bodies.push(body));
+            H.empty(bodies);
+            bodies.forEach(body => bodies.push(body));
           },
           addBodies: H.arrayfy(function(body){
-            if (!H.contains(config.bodies, body)) {
-              config.bodies.push(body);
+            if (!H.contains(bodies, body)) {
+              bodies.push(body);
             }
           }),
           subBodies: H.arrayfy(function(body){
-            H.remove(config.bodies, body);
+            H.remove(bodies, body);
           }),
+          toggleBody: function(body){
+            if (H.contains(bodies, body)){
+              H.remove(bodies, body);
+            } else {
+              bodies.push(body);
+            }
+          },
           connect: function(world){
             world.on( 'integrate:positions', this.behave, this);
-            H.each(config.listen, (name, action) => {
+            H.each(config.listeners, (name, action) => {
               world.on(name, action, this);
             });
           },
           disconnect: function(world){
             world.off( 'integrate:positions', this.behave, this);
-            H.each(config.listen, (name, action) => {
+            H.each(config.listeners, (name, action) => {
               world.off(name, action, this);
             });
           },
           behave: function () {
-            bodies = config.bodies; //(config.filter ? PHY.world.find(config.filter) : data.bodies);
+            // bodies = bodies; //(config.filter ? PHY.world.find(config.filter) : data.bodies);
             config.scratch && (this.scratch = Physics.scratchpad());
             for (i = 0; (body = bodies[i]); i++){
               behave.call(this, body);

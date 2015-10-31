@@ -54,23 +54,19 @@ IFC = (function(){
       
       var 
         header = H.format('%s %s - T%s %s', body.name, body.number || '', body.team !== undefined ? body.team : '', body.sign || ''),
-        behaviors = BHV.ofBody(body) || [],
-        items = behaviors.map(name => {
-          return {label: name, active: true, action: null};
+        items = BHV.forBody(body).map(name => {
+          return {label: name, active: BHV.hasBody(body, name), action: () => BHV.behaviors[name].toggleBody(body)};
         });
       
       return [
         {label: header,       active: false,                      action: null},
         {label: 'Select',     active: true,                       action: () => GAM.toggleSelect(body)},
         {label: 'Mark',       active: true,                       action: () => GAM.toggleMark(body)},
-        {label: 'Behaviors',  active: false,                      action: null, items: items },
+        {label: 'Behaviors',  active: false,                      action: null,                             items: items },
 
       ];
 
-    },
-
-    interprete = function(val){return typeof val === 'function' ? val() : val;},
-    eat = function(e){e.stopPropagation(); return false;};
+    };
 
 
   return {
@@ -322,9 +318,9 @@ IFC = (function(){
       H.each(list, (i, entry) => {
 
         el = document.createElement('li');
-        el.className = interprete(entry.active) ? ' menu-item' : 'menu-item-disabled';
+        el.className = H.interprete(entry.active) ? ' menu-item' : 'menu-item-disabled';
         el.innerHTML = entry.label;
-        el.onclick = function(e){entry.action(); self.hideMenu(); return eat(e);};
+        el.onclick = function(e){entry.action(); self.hideMenu(); return H.eat(e);};
 
         if (entry.items){
 
@@ -334,9 +330,9 @@ IFC = (function(){
 
           H.each(entry.items, (i, subentry) => {
             li = document.createElement('li');
-            li.className = interprete(subentry.active) ? ' sub-menu-item' : 'sub-menu-item-disabled';
+            li.className = H.interprete(subentry.active) ? ' sub-menu-item' : 'sub-menu-item-disabled';
             li.innerHTML = subentry.label;
-            li.onclick = function(e){subentry.action(); self.hideMenu(); return eat(e);};
+            li.onclick = function(e){subentry.action(); self.hideMenu(); return H.eat(e);};
             ul.appendChild(li);
           });
 

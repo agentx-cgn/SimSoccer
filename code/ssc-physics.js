@@ -158,9 +158,6 @@ PHY = (function(){
 
       list.forEach(H.arrayfy(item => world.add(item)));
 
-      // H.each(list, (i, item) => Array.isArray(item) ? self.add(item) : world.add(item) );
-      // H.each(list, H.arrayfy((i, item) => world.add(item));
-
     }, listen:   function(){
 
       var i, coll = null;

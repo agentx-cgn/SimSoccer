@@ -112,7 +112,7 @@ Team.prototype = H.mixin (
 
   }, updateBehaviors: function (state) {
 
-    H.each(CFG.Behaviors.players, (bhv, states) => {
+    H.each(CFG.Behaviors.actors, (bhv, states) => {
 
       if (H.contains(states, state)){
         BHV.behaviors[bhv].addBodies(this.team);

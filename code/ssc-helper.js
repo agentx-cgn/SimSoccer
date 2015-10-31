@@ -32,6 +32,10 @@ H = (function(){
 
   H.extend(H, {
 
+    // unsorted
+    interprete: function(val){return typeof val === 'function' ? val() : val;},
+    eat: function(e){e.stopPropagation(); return false;},
+
     // looping
     // for:        function(n,fn){var i=n,a=[];while(n--){a.push(fn(i-n+1));}return a;},
     range:      function (st, ed, sp){

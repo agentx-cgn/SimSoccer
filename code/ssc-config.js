@@ -126,21 +126,21 @@ CFG = {
         ],
 
         // apply to bodies, 'type-filter-action'
-        balls:      [   
-            'ball-all-basic'
-        ],
+        actors:      {   
 
-        players:    {
+            // used by the interface
+            'body-selected-targeting-mouse':    [],
+            'body-selected-steered-by-keys':    [],
+            'body-marked-attracted-by-mouse':   [],
+            'body-all-grabbed-by-mouse':        [],
 
-            // these add bodies by the interface
-            'body-selected-targeting-mouse':  [],
-            'body-selected-steered-by-keys':  [],
-            'body-marked-attracted-by-mouse': [],
+            // balls only
+            'ball-all-basic':                   [],
 
-            // these relates to Team.state
+            // players only
             'player-all-single-move-to-point':  ['Training', 'Setup', 'Pause'],
-
             'player-all-focus-ball':            ['Play'],
+            'player-all-follow-mouse':          [],
         },
 
 
