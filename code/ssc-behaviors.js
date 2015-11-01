@@ -1,7 +1,7 @@
 /*jslint bitwise: true, browser: true, evil:true, devel: true, todo: true, debug: true, nomen: true, plusplus: true, sloppy: true, vars: true, white: true, indent: 2 */
 /*jshint -W030 */
 /*jshint -W069 */
-/*globals IFC, BHV, CFG, H, REN, PHY, GAM, Physics */
+/*globals IFC, BHV, CFG, H, REN, PHY, GAM, SVC, Physics */
 
 'use strict';
 
@@ -20,12 +20,14 @@ BHV = (function(){
     vector,
     vector1,
     vector2,
-    target,
+    target,  // vector
+    targets, // array
     force,
     force1,
     offset,
     position,
     distance,
+    desired,
     speed;
 
 
@@ -93,6 +95,8 @@ BHV = (function(){
 
       return list;
 
+
+  // Behaves
 
     }, 'player-selected-steered-by-keys': function(body){
 
@@ -251,21 +255,103 @@ BHV = (function(){
 
       }
 
-    }, 'player-all-follow-mouse': function(body){
+    }, 'player-all-avoid-target': function (body) {
 
-      var target = this.options.target;
+      const 
+        color = 'yellow',
+        max_avoid_ahead = 6,
+        max_velocity = 0.02,
+        avoidance_force = 0.0001;
 
-      force = this.scratch.vector()
-        .clone(target)
+      var target = SVC.Distance.toPlayers(body)[1].state.pos;
+
+      var distance = this.scratch.vector()
+        .clone(this.options.target)
         .vsub(body.state.pos)
-        .mult(0.010)
+        .norm()
       ;
 
+      var tv = this.scratch.vector()
+        .clone(target)
+        .normalize()
+        .mult(max_avoid_ahead * body.state.vel.norm() / max_velocity)
+      ;
+
+      var ahead = this.scratch.vector()
+        .clone(body.state.pos)
+        .add(tv)
+      ;
+
+      // var factor = avoidance_force * ((max_avoid_ahead - distance) / max_avoid_ahead);
+      var factor = avoidance_force; //* ((max_avoid_ahead - distance) / max_avoid_ahead);
+
+      // console.log(avoidance_force, factor);
+
+      var avoidance = ahead
+        .vsub(target)           // check
+        .normalize()
+        .mult( factor > 0 ? factor : 0)
+      ;
+
+      body.applyForce(avoidance);
+
+      REN.push(() => REN.strokeVector(target, body.state.pos, 'yellow'));
+      REN.push(() => REN.strokeVector(body.state.pos.clone(), avoidance.clone().normalize().mult(8), 'red'));
+      REN.push(() => REN.strokeVector(body.state.pos.clone(), ahead.clone().normalize().mult(8), 'blue'));
+
+      // var tv  = velocity.slice();
+      // tv = normalize(tv);
+      // tv = mult(tv, (max_avoid_ahead * mag(velocity)) / max_velocity);
+      
+      // var ahead = add(position.slice(), tv);
+        
+      // var avoidance = sub(ahead, avoidance);
+      // avoidance = normalize(avoidance);
+      // avoidance = mult(avoidance_force);
+      
+      // return avoidance;
+
+
+
+    }, 'player-all-approach-target': function (body) {
+
+      const 
+        radius = 3,
+        maxVel = 0.02;
+
+      desired = this.scratch.vector()
+        .clone(this.options.target)
+        .vsub(body.state.pos)
+      ;
+
+      distance = desired.norm();
+
+      body.applyForce(
+        desired
+          .normalize()
+          .mult(maxVel * (distance <= radius ? distance/radius : 1))
+          .vsub(body.state.vel)
+      );
+
+    }, 'player-all-follow-mouse': function (body) {
+
+      const 
+        radius = 3,
+        maxVel = 0.02;
+
+      desired = this.scratch.vector()
+        .clone(this.options.target)
+        .vsub(body.state.pos)
+      ;
+
+      distance = desired.norm();
+      desired  = desired.normalize();
+      desired.mult(maxVel * (distance <= radius ? distance/radius : 1));
+      force = desired.vsub(body.state.vel);
       body.applyForce(force);
 
 
-
-
+  // configure
 
     }, createBehaviors: function(){
 
@@ -288,12 +374,19 @@ BHV = (function(){
 
       self.create('player-all-follow-mouse', {
         scratch: true,
+        behave:  'player-all-approach-target',
         target:  Physics.vector(),
         listeners:  {
           'interact:move': function( e ){
             setVector(REN.toField(e), this.options.target);
           }, 
         }
+      });
+
+      self.create('player-all-avoid-target', {
+        scratch: true,
+        behave:  'player-all-avoid-target',
+        target:  Physics.vector(),
       });
 
       // 1 bodies by filter
@@ -397,10 +490,10 @@ BHV = (function(){
 
     }, create: function(name, defaults){
 
-      var i, body, bodies = [], config = {}, behave = self[name] || function () {};
+      var i, body, behave, bodies = [], config = {};
 
       defaults = defaults || {};
-      // defaults.bodies = defaults.bodies || [];
+      behave   = self[defaults.behave] || self[name] || function () {};
 
       Physics.behavior (name, function ( parent ) {
         return {
@@ -421,13 +514,13 @@ BHV = (function(){
           subBodies: H.arrayfy(function(body){
             H.remove(bodies, body);
           }),
-          toggleBody: function(body){
+          toggleBodies: H.arrayfy(function(body){
             if (H.contains(bodies, body)){
               H.remove(bodies, body);
             } else {
               bodies.push(body);
             }
-          },
+          }),
           connect: function(world){
             world.on( 'integrate:positions', this.behave, this);
             H.each(config.listeners, (name, action) => {

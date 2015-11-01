@@ -66,6 +66,13 @@ SVC = (function(){
           return SVC.Distance.between(body, a) < SVC.Distance.between(body, b) ? 1 : -1;
         });
 
+      // returns array
+      }, toPlayers : function(body){
+
+        return PHY.bodies.players.sort((a, b) => {
+          return SVC.Distance.between(body, a) > SVC.Distance.between(body, b) ? 1 : -1;
+        });
+
 
       }, listen : function(){
 
@@ -95,12 +102,9 @@ SVC = (function(){
 
             }
 
-            REN.info.dist = ((T.now() - t0) / 1000).toFixed(5);
-
-
           }
 
-        });
+        }, null, 1000); // no scope, high priority
 
       }
 

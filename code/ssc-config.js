@@ -141,6 +141,7 @@ CFG = {
             'player-all-single-move-to-point':  ['Training', 'Setup', 'Pause'],
             'player-all-focus-ball':            ['Play'],
             'player-all-follow-mouse':          [],
+            'player-all-avoid-target':          [],
         },
 
 

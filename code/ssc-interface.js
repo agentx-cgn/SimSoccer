@@ -55,7 +55,7 @@ IFC = (function(){
       var 
         header = H.format('%s %s - T%s %s', body.name, body.number || '', body.team !== undefined ? body.team : '', body.sign || ''),
         items = BHV.forBody(body).map(name => {
-          return {label: name, active: BHV.hasBody(body, name), action: () => BHV.behaviors[name].toggleBody(body)};
+          return {label: name, active: BHV.hasBody(body, name), action: () => BHV.behaviors[name].toggleBodies(body)};
         });
       
       return [

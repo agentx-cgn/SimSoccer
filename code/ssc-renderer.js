@@ -312,6 +312,19 @@ REN = (function(){
         ];
 
 
+    }, strokeVector:  function(v1, v2, color, linewidth){
+
+      // self.strokeLine(v1._[0], v1._[1], v2._[0], v2._[1], color, linewidth);
+
+      self.translate(v1._[0], v1._[1]);
+      ctx.lineWidth = (linewidth || 1) / transform.scale;
+      ctx.strokeStyle = color || 'yellow';
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(v2._[0], v2._[1]);
+      ctx.stroke();
+
+
     }, strokeLine:  function(x1, y1, x2, y2, color, linewidth){
 
       self.translate(0, 0);
