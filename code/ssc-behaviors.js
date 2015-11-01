@@ -21,6 +21,9 @@ BHV = (function(){
     vector1,
     vector2,
     target,  // vector
+    forward, // vector
+    avoidance, // vector
+    ahead, // vector
     targets, // array
     force,
     force1,
@@ -258,36 +261,35 @@ BHV = (function(){
     }, 'player-all-avoid-target': function (body) {
 
       const 
-        color = 'yellow',
-        max_avoid_ahead = 6,
-        max_velocity = 0.02,
-        avoidance_force = 0.0001;
+        maxAhead = 8,
+        maxVel = 0.02,
+        maxForce = 0.03;
 
-      var target = SVC.Distance.toPlayers(body)[1].state.pos;
+      var factor;
 
-      var distance = this.scratch.vector()
-        .clone(this.options.target)
+      target = SVC.Distance.toPlayers(body)[1].state.pos;
+
+      distance = this.scratch.vector()
+        .clone(target)
         .vsub(body.state.pos)
         .norm()
       ;
 
-      var tv = this.scratch.vector()
-        .clone(target)
+      factor = maxForce * ((maxAhead - distance) / maxAhead);
+
+      forward = this.scratch.vector()
+        .clone(body.state.vel)
         .normalize()
-        .mult(max_avoid_ahead * body.state.vel.norm() / max_velocity)
+        .mult(maxAhead * body.state.vel.norm() / maxVel)
       ;
 
-      var ahead = this.scratch.vector()
+      ahead = this.scratch.vector()
         .clone(body.state.pos)
-        .add(tv)
+        .add(forward)
       ;
 
-      // var factor = avoidance_force * ((max_avoid_ahead - distance) / max_avoid_ahead);
-      var factor = avoidance_force; //* ((max_avoid_ahead - distance) / max_avoid_ahead);
-
-      // console.log(avoidance_force, factor);
-
-      var avoidance = ahead
+      avoidance = this.scratch.vector()
+        .clone(ahead)
         .vsub(target)           // check
         .normalize()
         .mult( factor > 0 ? factor : 0)
@@ -295,21 +297,10 @@ BHV = (function(){
 
       body.applyForce(avoidance);
 
-      REN.push(() => REN.strokeVector(target, body.state.pos, 'yellow'));
-      REN.push(() => REN.strokeVector(body.state.pos.clone(), avoidance.clone().normalize().mult(8), 'red'));
-      REN.push(() => REN.strokeVector(body.state.pos.clone(), ahead.clone().normalize().mult(8), 'blue'));
-
-      // var tv  = velocity.slice();
-      // tv = normalize(tv);
-      // tv = mult(tv, (max_avoid_ahead * mag(velocity)) / max_velocity);
-      
-      // var ahead = add(position.slice(), tv);
-        
-      // var avoidance = sub(ahead, avoidance);
-      // avoidance = normalize(avoidance);
-      // avoidance = mult(avoidance_force);
-      
-      // return avoidance;
+      REN.push(REN.strokeCircle.bind(null, target._[0], target._[1], maxAhead, factor > 0 ? 'orange' : 'violet'));
+      REN.push(REN.strokeVector.bind(null, body.state.pos.clone(), forward.clone(), 'yellow'));
+      REN.push(REN.strokeVector.bind(null, body.state.pos.clone(), avoidance.clone().normalize().mult(8), 'red'));
+      REN.push(REN.strokeVector.bind(null, body.state.pos.clone(), ahead.clone().normalize().mult(8), 'blue'));
 
 
 

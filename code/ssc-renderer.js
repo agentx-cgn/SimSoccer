@@ -142,7 +142,7 @@ REN = (function(){
       );
 
 
-    }, render: function(bodies, worldmeta){
+    }, render: function render (bodies, worldmeta){
 
       var i, body;
 
@@ -190,7 +190,7 @@ REN = (function(){
       ctx.restore();
 
 
-    }, translate: function(x, y, angle){
+    }, translate: function translate (x, y, angle){
 
       if (x !== undefined){
         ctx.rotate(-transA);
@@ -313,8 +313,6 @@ REN = (function(){
 
 
     }, strokeVector:  function(v1, v2, color, linewidth){
-
-      // self.strokeLine(v1._[0], v1._[1], v2._[0], v2._[1], color, linewidth);
 
       self.translate(v1._[0], v1._[1]);
       ctx.lineWidth = (linewidth || 1) / transform.scale;
