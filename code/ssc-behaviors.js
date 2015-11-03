@@ -16,6 +16,8 @@ BHV = (function(){
     self,
     behaviors = {},
 
+    scratches = 0, // Scratchpad Vectors, max
+
     // lifted objects
     vector,
     vector1,
@@ -36,6 +38,7 @@ BHV = (function(){
 
   return {
 
+    scratches,
     behaviors,
 
     boot:   function () {return (self = this);
@@ -238,7 +241,6 @@ BHV = (function(){
 
       }
 
-
     }, 'player-all-single-move-to-point': function(body){
 
       var targets = this.options.targets;
@@ -258,7 +260,7 @@ BHV = (function(){
 
       }
 
-    }, 'player-all-avoid-target': function (body) {
+    }, 'player-all-avoid-players': function (body) {
 
       const 
         maxAhead = 8,
@@ -302,27 +304,31 @@ BHV = (function(){
       REN.push(REN.strokeVector.bind(null, body.state.pos.clone(), avoidance.clone().normalize().mult(8), 'red'));
       REN.push(REN.strokeVector.bind(null, body.state.pos.clone(), ahead.clone().normalize().mult(8), 'blue'));
 
-
-
-    }, 'player-all-approach-target': function (body) {
+    }, 'player-all-approach-point': function (body) {
 
       const 
         radius = 3,
         maxVel = 0.02;
 
-      desired = this.scratch.vector()
-        .clone(this.options.target)
-        .vsub(body.state.pos)
-      ;
+      var targets = this.options.targets;
 
-      distance = desired.norm();
+      if (targets[body.uid]){
 
-      body.applyForce(
-        desired
-          .normalize()
-          .mult(maxVel * (distance <= radius ? distance/radius : 1))
-          .vsub(body.state.vel)
-      );
+        desired = this.scratch.vector()
+          .clone(targets[body.uid])
+          .vsub(body.state.pos)
+        ;
+
+        distance = desired.norm();
+
+        body.applyForce(
+          desired
+            .normalize()
+            .mult(maxVel * (distance <= radius ? distance/radius : 1))
+            .vsub(body.state.vel)
+        );
+
+      }
 
     }, 'player-all-follow-mouse': function (body) {
 
@@ -354,31 +360,41 @@ BHV = (function(){
       self.create('ball-all-basic');
 
       // n bodies by filter => array
-      self.create('player-all-focus-ball', {scratch: true});
+      self.create('player-all-focus-ball', {
+        scratch: true
+      });
 
       // n bodies  => array
       self.create('player-all-single-move-to-point', {
         scratch: true,
-        targets: {},   // vector
+        targets: {},   // vectors
         resolve: null, // function
+      });
+
+      self.create('player-all-approach-point', {
+        scratch: true,
+        targets: {},   // vectors
+      });
+
+      self.create('player-all-avoid-players', {
+        scratch: true,
+        target:  Physics.vector(),
       });
 
       self.create('player-all-follow-mouse', {
         scratch: true,
-        behave:  'player-all-approach-target',
-        target:  Physics.vector(),
+        behave:  'player-all-approach-point',
+        targets: {},   // vectors
         listeners:  {
           'interact:move': function( e ){
-            setVector(REN.toField(e), this.options.target);
+            this.bodies().forEach(body => {
+              !this.options.targets[body.uid] && (this.options.targets[body.uid] = Physics.vector());
+              setVector(REN.toField(e), this.options.targets[body.uid]);
+            });
           }, 
         }
       });
 
-      self.create('player-all-avoid-target', {
-        scratch: true,
-        behave:  'player-all-avoid-target',
-        target:  Physics.vector(),
-      });
 
       // 1 bodies by filter
       self.create('body-selected-targeting-mouse', {
@@ -525,12 +541,12 @@ BHV = (function(){
             });
           },
           behave: function () {
-            // bodies = bodies; //(config.filter ? PHY.world.find(config.filter) : data.bodies);
             config.scratch && (this.scratch = Physics.scratchpad());
             for (i = 0; (body = bodies[i]); i++){
               behave.call(this, body);
             }
             config.scratch && this.scratch.done();
+            config.scratch && (BHV.scratches = this.scratch._vectorStack.length);
           }
 
         };

@@ -2620,7 +2620,7 @@ Physics.scratchpad = (function(){
 
     // options
     Scratchpad.maxScratches = 100; // maximum number of scratches
-    Scratchpad.maxIndex = 20; // maximum number of any type of temp objects
+    Scratchpad.maxIndex = 30; // maximum number of any type of temp objects
 
     /**
      * Physics.scratchpad.fn( fn ) -> Function

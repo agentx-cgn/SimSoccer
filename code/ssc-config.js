@@ -138,10 +138,12 @@ CFG = {
             'ball-all-basic':                   [],
 
             // players only
-            'player-all-single-move-to-point':  ['Training', 'Setup', 'Pause'],
+            // 'player-all-single-move-to-point':  ['Training', 'Setup', 'Pause'],
             'player-all-focus-ball':            ['Play'],
             'player-all-follow-mouse':          [],
-            'player-all-avoid-target':          [],
+
+            'player-all-avoid-players':         ['Training', 'Setup', 'Pause'],
+            'player-all-approach-point':        ['Training', 'Setup', 'Pause'],
         },
 
 

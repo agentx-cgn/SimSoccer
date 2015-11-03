@@ -70,7 +70,7 @@ Team.prototype = H.mixin (
   }, arrangePlayers: function (path, resolve) {
 
     var 
-      targets = BHV.behaviors['player-all-single-move-to-point'].options.targets,
+      targets = BHV.behaviors['player-all-approach-point'].options.targets,
       action  = () => {
         if (this.getDistanceTo(this.team, path) < 1){
           return true;
@@ -111,6 +111,8 @@ Team.prototype = H.mixin (
 
 
   }, updateBehaviors: function (state) {
+
+    // loads bhvs with state from config
 
     H.each(CFG.Behaviors.actors, (bhv, states) => {
 

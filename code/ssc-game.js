@@ -67,6 +67,8 @@ GAM = (function(){
 
     }, updateBehaviors: function (selection) {
 
+      // with marked, selected
+
       H.each(PHY.bodies.all, (index, body) => {
         H.each(BHV.behaviors, (name, behavior) => {
           if(name.split('-')[1] === selection){
