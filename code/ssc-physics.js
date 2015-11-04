@@ -41,6 +41,9 @@ PHY = (function(){
 
       self = this;
 
+      // That's apparently vectors * bodies per tick and behavior, max
+      Physics.scratchpad.maxIndex = 30;
+
       Physics.renderer('soccer', function( parent ){
         return {
           init: function( options ){

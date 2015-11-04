@@ -75,6 +75,24 @@
           .map(s => s.trim())
       );
     
+    }, getDistance : function(path){
+
+      // average distance to another path of same length
+
+      var distance = 0;
+
+      H.each(this.path, (index, pos) => {
+
+        distance += Math.hypot(
+          pos[0] - path.path[index][0],
+          pos[1] - path.path[index][1]
+        );
+
+      });
+
+      return distance / this.path.length;
+
+
     }, getCenter : function(){
 
       var p = this.path;

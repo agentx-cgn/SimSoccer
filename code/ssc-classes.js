@@ -49,45 +49,9 @@ Team.prototype = H.mixin (
   Actor.prototype, {
   constructor: Team,
 
-  getDistanceTo: function (bodies, path){
+  toPath: function () {
 
-    var 
-      distance = 0,
-      posBodies = bodies.map(body => [body.state.pos._[0], body.state.pos._[1]]);
-
-    H.each(posBodies, (index, pos) => {
-
-      distance += Math.hypot(
-        pos[0] - path.path[index][0],
-        pos[1] - path.path[index][1]
-      );
-
-    });
-
-    return distance / bodies.length;
-
-
-  }, arrangePlayers: function (path, resolve) {
-
-    var 
-      targets = BHV.behaviors['player-all-approach-point'].options.targets,
-      action  = () => {
-        if (this.getDistanceTo(this.team, path) < 1){
-          return true;
-        } else {
-          H.each(this.team, (index, player) => {
-            targets[player.uid] = PHY.vector(path.path[index]);
-          });
-        }
-      };
-
-      // task [taskframe, interval, action, resolve];
-
-    SIM.appendTask([null, 60, action, () => {
-      resolve(); 
-      console.log('resolved', this.index, SIM.tasks.length);
-    }]);
-
+    return new T.Path(this.team.map(player => [player.state.pos._[0], player.state.pos._[1]]));
 
   }, updatePaths: function () {
 
@@ -108,6 +72,20 @@ Team.prototype = H.mixin (
       });
 
     }
+
+
+  }, arrangePlayers: function (path, resolve) {
+
+    var 
+      targets = BHV.behaviors['player-all-approach-point'].options.targets,
+      check   = () => this.toPath().getDistance(path) < 1;
+
+    H.each(this.team, (index, player) => {
+      targets[player.uid] = PHY.vector(path.path[index]);
+    });
+
+    // task [taskframe, interval, action, resolve];
+    SIM.appendTask([null, 60, check, resolve]);
 
 
   }, updateBehaviors: function (state) {
@@ -133,7 +111,7 @@ Team.prototype = H.mixin (
 
     var 
       now = this.current,
-      err = 'TRY: %s can\'t "%s" now, but %s';
+      err = 'Promise.failed: %s %s can\'t "%s" now, but %s';
 
     return (
       new Promise((resolve, reject) => {
@@ -146,7 +124,7 @@ Team.prototype = H.mixin (
         }
       })
       .then(() => SIM.msgFromTo(this.nick, now, this.current))
-      .catch(reason => console.log(this.nick + '.promise.failed:', event, reason, data))
+      .catch(reason => console.log(reason))
     );
 
   }, onsetup: function (name, from, to, data, resolve){
@@ -154,18 +132,10 @@ Team.prototype = H.mixin (
     this.updateBehaviors(to);
     this.arrangePlayers(this.paths.setup, resolve);
 
-    // setTimeout(() => {
-    //   resolve();
-    // }, 2000);
-
   }, ontraining: function (name, from, to, data, resolve){
     
     this.updateBehaviors(to);
     this.arrangePlayers(this.paths.training, resolve);
-
-    // setTimeout(() => {
-    //   resolve();
-    // }, 2000);
 
   }, onpause: function (name, from, to, data, resolve){
     
