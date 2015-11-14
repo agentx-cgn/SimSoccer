@@ -231,6 +231,14 @@ PHY = (function(){
 
     }, prepareBodies: function(){
 
+      // add posts
+      H.each(H.range(4), (i, post) => {
+        bodies.posts.push(Physics.body('post', {
+          x: CFG.Posts.xcoords[post], 
+          y: CFG.Posts.ycoords[post], 
+        }));
+      });
+
       // add balls
       H.each(H.range(1), i => {
         bodies.balls.push(Physics.body('ball', {
@@ -238,14 +246,6 @@ PHY = (function(){
           y:   35 + 2*i, 
           vx:   0, 
           vy:   0, 
-        }));
-      });
-
-      // add posts
-      H.each(H.range(4), (i, post) => {
-        bodies.posts.push(Physics.body('post', {
-          x: CFG.Posts.xcoords[post], 
-          y: CFG.Posts.ycoords[post], 
         }));
       });
 
@@ -263,6 +263,12 @@ PHY = (function(){
             styles:  H.extend({}, CFG.Player.styles, CFG.Teams[team].styles, player.styles),
             kine:    function(){
               return this.mass * 0.5 * this.state.vel.normSq();
+            },
+            env: {
+              lookAtPoint: new Physics.vector(),
+              lookAtBody:  null,
+              moveToPoint: new Physics.vector(),
+              moveToBody:  null,
             }
           }));
         });

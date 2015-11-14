@@ -48,7 +48,7 @@ GAM = (function(){
       team0 = self.team0 = new Team(CFG.Teams[0]);
       team1 = self.team1 = new Team(CFG.Teams[1]);
 
-      BHV.behaviors['ball-all-basic'].addBodies(PHY.bodies.balls);
+      // BHV.behaviors['ball-all-basic'].addBodies(PHY.bodies.balls);
 
     }, tick: function () {
 

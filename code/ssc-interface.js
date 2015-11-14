@@ -1,5 +1,5 @@
 /*jslint bitwise: true, browser: true, evil:true, devel: true, todo: true, debug: true, nomen: true, plusplus: true, sloppy: true, vars: true, white: true, indent: 2 */
-/*globals H, T, IFC, REN, GAM, SIM, REN, PHY, Mousetrap, BHV, CFG, TWEEN */
+/*globals H, T, IFC, REN, GAM, SIM, REN, PHY, Mousetrap, BHV, CFG, CTR, TWEEN */
 /*jshint -W030 */
 
 'use strict';
@@ -30,23 +30,23 @@ IFC = (function(){
     $menu, $submenu, 
     $menuList, $submenuList, 
     menuItems = [
-      {label: 'Reload',     active: true,                       action: () => window.location.reload()},
-      {label: 'Back',       active: true,                       action: () => window.history.back()},
-      {label: 'Fullscreen', active: true,                       action: () => self.toggleFullScreen()},
-      {label: 'Screenshot', active: true,                       action: () => self.shootScreen()},
-      {label: 'Reset',      active: true,                       action: () => window.reset()},
+      {label: 'Reload',     enabled: true,                       action: () => window.location.reload()},
+      {label: 'Back',       enabled: true,                       action: () => window.history.back()},
+      {label: 'Fullscreen', enabled: true,                       action: () => self.toggleFullScreen()},
+      {label: 'Screenshot', enabled: true,                       action: () => self.shootScreen()},
+      {label: 'Reset',      enabled: true,                       action: () => window.reset()},
       
-      {label: 'Mark All',   active: true,                       action: () => PHY.bodies.players.forEach(GAM.mark)},
-      {label: 'Mark T0',    active: true,                       action: () => PHY.bodies.team0.forEach(GAM.mark)},
-      {label: 'Mark T1',    active: true,                       action: () => PHY.bodies.team1.forEach(GAM.mark)},
-      {label: 'Mark Ball',  active: true,                       action: () => PHY.bodies.balls.forEach(GAM.mark)},
+      {label: 'Mark All',   enabled: true,                       action: () => PHY.bodies.players.forEach(GAM.mark)},
+      {label: 'Mark T0',    enabled: true,                       action: () => PHY.bodies.team0.forEach(GAM.mark)},
+      {label: 'Mark T1',    enabled: true,                       action: () => PHY.bodies.team1.forEach(GAM.mark)},
+      {label: 'Mark Ball',  enabled: true,                       action: () => PHY.bodies.balls.forEach(GAM.mark)},
 
-      {label: 'Setup',      active: () => SIM.can('setup'),     action: () => SIM.promise('setup',    {test:1})},
-      {label: 'Training',   active: () => SIM.can('training'),  action: () => SIM.promise('training', {test:2})},
-      {label: 'Play',       active: () => SIM.can('play'),      action: () => SIM.promise('play',     {test:3}),      items: [
-        {label: 'Pause',      active: () => GAM.can('pause'),     action: () => GAM.promise('pause',    {test:4})},
-        {label: 'Half1',      active: () => GAM.can('half1'),     action: () => GAM.promise('half1',    {test:5})},
-        {label: 'Half2',      active: () => GAM.can('half2'),     action: () => GAM.promise('half2',    {test:5})},
+      {label: 'Setup',      enabled: () => SIM.can('setup'),     action: () => SIM.promise('setup',    {test:1})},
+      {label: 'Training',   enabled: () => SIM.can('training'),  action: () => SIM.promise('training', {test:2})},
+      {label: 'Play',       enabled: () => SIM.can('play'),      action: () => SIM.promise('play',     {test:3}),      items: [
+        {label: 'Pause',      enabled: () => GAM.can('pause'),     action: () => GAM.promise('pause',    {test:4})},
+        {label: 'Half1',      enabled: () => GAM.can('half1'),     action: () => GAM.promise('half1',    {test:5})},
+        {label: 'Half2',      enabled: () => GAM.can('half2'),     action: () => GAM.promise('half2',    {test:5})},
       ]},
     ],
 
@@ -54,15 +54,15 @@ IFC = (function(){
       
       var 
         header = H.format('%s %s - T%s %s', body.name, body.number || '', body.team !== undefined ? body.team : '', body.sign || ''),
-        items = BHV.forBody(body).map(name => {
-          return {label: name, active: BHV.hasBody(body, name), action: () => BHV.behaviors[name].toggleBodies(body)};
+        items = CTR.ofBody(body).map(name => {
+          return {label: name, active: CTR.hasBody(body, name), action: () => BHV.behaviors[name].toggleBodies(body)};
         });
       
       return [
-        {label: header,       active: false,                      action: null},
-        {label: 'Select',     active: true,                       action: () => GAM.toggleSelect(body)},
-        {label: 'Mark',       active: true,                       action: () => GAM.toggleMark(body)},
-        {label: 'Behaviors',  active: false,                      action: null,                             items: items },
+        {label: header,       enabled: false,                      action: null},
+        {label: 'Select',     enabled: true,                       action: () => GAM.toggleSelect(body)},
+        {label: 'Mark',       enabled: true,                       action: () => GAM.toggleMark(body)},
+        {label: 'Behaviors',  enabled: false,                      action: null,                             items: items },
 
       ];
 
@@ -242,7 +242,7 @@ IFC = (function(){
         msecTick = window.performance.now();
           SIM.tick();
           GAM.tick();
-          PHY.tick();
+          PHY.tick(); // triggers CTR
         self.msecTick = window.performance.now() - msecTick;
 
         msecRend = window.performance.now();
@@ -312,15 +312,25 @@ IFC = (function(){
     }, updateMenuList: function($el, list){
 
       var el, ul, li;
-
+ 
       self.clearMenu($el);
+
+      function getClass (entry, pre) {
+
+        if (entry.enabled !== undefined) {return pre + H.interprete(entry.enabled) ? 'menu-item' : 'menu-item-disabled';}
+        if (entry.active  !== undefined) {return pre + H.interprete(entry.active)  ? 'menu-item' : 'menu-item-inactive';}
+
+      }
 
       H.each(list, (i, entry) => {
 
         el = document.createElement('li');
-        el.className = H.interprete(entry.active) ? ' menu-item' : 'menu-item-disabled';
+        el.className = getClass(entry, '');
         el.innerHTML = entry.label;
-        el.onclick = function(e){entry.action(); self.hideMenu(); return H.eat(e);};
+        el.onclick = entry.action ? 
+          function(e){entry.action(); self.hideMenu(); return H.eat(e);}:
+          function(){}
+        ;
 
         if (entry.items){
 
@@ -330,7 +340,7 @@ IFC = (function(){
 
           H.each(entry.items, (i, subentry) => {
             li = document.createElement('li');
-            li.className = H.interprete(subentry.active) ? ' sub-menu-item' : 'sub-menu-item-disabled';
+            li.className = getClass(subentry, 'sub-');
             li.innerHTML = subentry.label;
             li.onclick = function(e){subentry.action(); self.hideMenu(); return H.eat(e);};
             ul.appendChild(li);

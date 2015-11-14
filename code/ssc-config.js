@@ -116,7 +116,7 @@ CFG = {
 
     },
 
-    Behaviors: {
+    Controllers: {
 
         // apply to world, always active
         world:      [   
@@ -145,6 +145,25 @@ CFG = {
             'player-all-avoid-players':         ['Training', 'Setup', 'Pause'],
             'player-all-approach-point':        ['Training', 'Setup', 'Pause'],
         },
+
+        simulation: {
+            None:       [
+                'all-bodies:have-angular-friction',
+                'some-bodies:can-be-dragged',
+                // 'all-bodies:can-move-to-click',
+                // 'all-bodies:can-follow-mouse',
+            ],
+            Training:   [
+                'body-all-have-angular-friction',
+                'player-all-avoid-players',
+                'player-all-approach-point',
+            ],
+            Setup:      [
+                'body-all-have-angular-friction',
+                'player-all-avoid-players',
+                'player-all-approach-point',
+            ],
+        }
 
 
     },

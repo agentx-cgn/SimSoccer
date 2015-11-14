@@ -18,6 +18,7 @@ var      // globals
   SIM,   // Simulation
   PHY,   // Physics
   BHV,   // Behaviors
+  CTR,   // Controller
   SVC,   // Services
   IFC;   // Interface
 
@@ -68,6 +69,7 @@ window.onload = function(){
     PHY.reset();    // provides world
     SVC.reset();    // needs PHY.world
     BHV.reset();
+    CTR.reset();
     GAM.reset();
     SIM.reset();    // => GAM, PHY, BHV
     

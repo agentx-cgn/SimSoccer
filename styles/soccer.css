@@ -94,29 +94,29 @@ ul.menu-list {
   padding: 0;
 }
 
+ul.sub-menu-list {
+  margin: 4px;
+  padding: 0;
+}
+
 li.menu-item, 
 li.menu-item-disabled, 
 li.sub-menu-item,
-li.sub-menu-item-disabled {
+li.sub-menu-item-disabled,
+li.sub-menu-item-inactive {
   list-style: none;
   margin: 2px;
   padding: 0;
   color: rgba(220, 220, 220, 0.8);
   font: bold 16px Cantarell;
+  line-height: 16px;
   cursor: pointer;
 }
 
-li.sub-menu-item {
-  color: rgba(220, 220, 220, 0.8);
-  font: bold 14px Cantarell;
-}
-
-li.menu-item:hover, li.sub-menu-item:hover {
+li.menu-item:hover,
+li.sub-menu-item:hover,
+li.sub-menu-item-inactive {
   color: rgba(250, 250, 250, 1.0);
-}
-
-li.sub-menu-item {
-  font: bold 14px Cantarell;  
 }
 
 li.menu-item-disabled {
@@ -124,18 +124,27 @@ li.menu-item-disabled {
   cursor: default;
 }
 
-ul.sub-menu-list {
-  margin: 2px;
-  padding: 0;
-}
-
-li.sub-menu-item:hover {
-  color: rgba(250, 250, 250, 1.0);
+li.sub-menu-item {
+  font: 14px Cantarell;  
+  line-height: 14px;
 }
 
 li.sub-menu-item-disabled {
+  font: 14px Cantarell;  
+  line-height: 14px;
   color: rgba(96, 96, 96, 1.0);
   cursor: default;
+}
+
+li.sub-menu-item-inactive {
+  font: 14px Cantarell;  
+  line-height: 14px;
+  color: rgba(128, 128, 128, 1.0);
+  cursor: pointer;
+}
+
+li.sub-menu-item-inactive:hover {
+  color: rgba(250, 250, 250, 1.0);
 }
 
 

@@ -60,6 +60,14 @@ SIM = (function(){
 
       self.listen();
 
+      // this.current = 'None'
+
+      H.each(CFG.Controllers.simulation.None, (index, name) => {
+        CTR.activate(name);
+      });
+
+
+
 
   // F S M
 

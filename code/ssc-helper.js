@@ -152,14 +152,14 @@ H = (function(){
     },  
 
     // functions
-    arrayfy:    function(fn){
+    arrayfy:    function(fn, context){
       return function (param) {
         if (Array.isArray(param)){
           param.forEach(item => fn(item));
         } else {
           fn(param);
         }
-      };
+      }.bind(context || null);
     },
     binda:      function(fn, obj, a){
       // return fn.bind.apply(obj, [obj].concat(args));

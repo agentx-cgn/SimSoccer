@@ -1,5 +1,6 @@
 /*jslint bitwise: true, browser: true, evil:true, devel: true, todo: true, debug: true, nomen: true, plusplus: true, sloppy: true, vars: true, white: true, indent: 2 */
 /*globals CFG, H, T, SIM, PHY, BHV, StateMachine */
+/*jshint -W030 */
 
 'use strict';
 
@@ -7,6 +8,33 @@ function Actor () {}
 
 Actor.prototype = {
   constructor: Actor,
+};
+
+function Controller (config) {
+  this.bodies = [];
+  H.extend(this, config, BHV[config.behavior]);
+} 
+
+Controller.prototype = {
+  constructor:  Controller,
+  hasBody:      function(body){return H.contains(this.bodies, body);},
+  addBody:      function(body){this.bodies.push(body);},
+  addBodies:    function(bodies){bodies.forEach(this.addBody, this);},
+  subBody:      function(body){H.remove(this.bodies, body);}, 
+  subBodies:    function(bodies){bodies.forEach(this.subBody, this);},
+  removeBodies: function(){while (this.bodies.length){this.bodies.shift();}},
+  toggleBody:   function(body){this.hasBody(body) ? this.subBody(body) : this.addBody(body);},
+  toggleBodies: function(bodies){bodies.forEach(this.toggleBody, this);},
+  activate:     function(){
+    H.each(this.listeners, (name, action) => {
+      PHY.world.on(name, action, this);
+    });
+  },
+  deactivate:  function(){
+    H.each(this.listeners, (name, action) => {
+      PHY.world.off(name, action, this);
+    });
+  },  
 };
 
 

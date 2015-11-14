@@ -14,8 +14,6 @@ BHV = (function(){
 
   var 
     self,
-    behaviors = {},
-
     scratches = 0, // Scratchpad Vectors, max
 
     // lifted objects
@@ -39,7 +37,6 @@ BHV = (function(){
   return {
 
     scratches,
-    behaviors,
 
     boot:   function () {return (self = this);
 
@@ -50,96 +47,70 @@ BHV = (function(){
 
     }, cleanup: function(){
 
-      behaviors = self.behaviors = {};
+      // behaviors = self.behaviors = {};
 
-    }, init: function(){
+    }, init: function(){}, 
 
-      self.createBehaviors();
+      // self.createBehaviors();
 
       // for actors
-      H.each(CFG.Behaviors.actors, self.add);
+      // H.each(CFG.Behaviors.actors, self.add);
 
-    }, add:    function(name){
+    // }, add:    function(name){
 
-      behaviors[name] = Physics.behavior(name),
-      PHY.world.add(behaviors[name]);
+    //   if (!behaviors[name]){
+    //     behaviors[name] = Physics.behavior(name);
+    //     PHY.world.add(behaviors[name]);
+    //   }
 
-    }, sub:    function(name){
+    // }, sub:    function(name){
 
-      PHY.world.remove(behaviors[name]);    
-      behaviors[name] = null;  
+    //   PHY.world.remove(behaviors[name]);    
+    //   behaviors[name] = null;  
 
-    }, hasBody: function(body, behavior){
+    // }, hasBody: function(body, behavior){
 
-      return H.contains(behaviors[behavior].bodies(), body);
+    //   return H.contains(behaviors[behavior].bodies(), body);
 
-    }, forBody: function(body){
+    // }, forBody: function(body){
 
-      var 
-        list = [],
-        names = ['body'];
+    //   var 
+    //     list = [],
+    //     names = ['body'];
 
-      names.push(body.name);
+    //   names.push(body.name);
 
-      H.each(behaviors, (name, behavior) => {
-        if (H.contains(names, name.split('-')[0])){
-          list.push(name);
-        }
-      });
+    //   H.each(behaviors, (name) => {
+    //     if (H.contains(names, name.split('-')[0])){
+    //       list.push(name);
+    //     }
+    //   });
 
-      return list;
+    //   return list;
 
-    }, ofBody: function(body){
+    // }, ofBody: function(body){
 
-      var list = [];
+    //   var list = [];
 
-      H.each(behaviors, (name, behavior) => {
-        if (H.contains(behavior.bodies(), body)){
-          list.push(name);
-        }
-      });
+    //   H.each(behaviors, (name, behavior) => {
+    //     if (H.contains(behavior.bodies(), body)){
+    //       list.push(name);
+    //     }
+    //   });
 
-      return list;
+    //   return list;
 
 
   // Behaves
 
-    }, 'player-selected-steered-by-keys': function(body){
+  'have-angular-friction': {
+    behave: function (body) {
+      body.state.angular.vel *= CFG.Physics.angularFriction; 
+    }
+  },
 
-      var 
-        angle = body.state.angular.pos,
-        accel = this.options.accel / 10 * this.options.facAccel,
-        turn  = this.options.turn  / 10 * this.options.facTurn * DEGRAD;
-
-      // REN.info.acce = accel;
-      // REN.info.turn = turn;
-
-      vector = this.scratch.vector()
-        .set(
-          accel * Math.cos( angle ), 
-          accel * Math.sin( angle ) 
-        )
-      ;
-
-      body.accelerate( vector );
-      body.state.angular.vel = turn;
-
-
-    }, 'player-all-focus-ball' : function (body) {
-
-        vector = this.scratch.vector()
-          .set(
-            body.state.pos._[0], 
-            body.state.pos._[1]
-          )
-          .vsub( PHY.bodies.ball.state.pos )
-        ;
-
-        body.state.angular.pos = (vector.angle() + PI) % TAU;
-
-
-    }, 'ball-all-basic': function (body) {
-
+  'can-report-off-field': {
+    behave: function (body) {
       var
         x = body.state.pos._[0], 
         y = body.state.pos._[1], 
@@ -149,116 +120,100 @@ BHV = (function(){
           x - body.radius > CFG.Field.length ||
           y - body.radius > CFG.Field.width
         );
+      isOff && PHY.world.emit('game:body-off-field', body);
+    }
+  },
 
-      if ( isOff && GAM.current === 'Running'){
-        GAM.off({x, y, last: body.player});
-        // PHY.world.emit('game:ball-off-field', );
-        PHY.stopBodies([ body ]);
-      }
-
-      // slowdown rotation
-      body.state.angular.vel *= CFG.Physics.angularFriction; 
-
-
-    }, 'body-marked-attracted-by-mouse': function (body) {
-
-      var 
-        distance, color = 'yellow',
-        options = this.options,
-        range = 10;
-
-      if (options.pos){
-
-        body.sleep(false);
-        
-        // vector from point to position
-        vector = this.scratch.vector()
-          .clone( options.pos )
-          .vsub( body.state.pos )
+  'can-orient-to-point': {
+    targets: {},
+    scratch: true,
+    behave: function (body) {
+      var angle, target;
+      if ((target = this.targets[body.uid])){
+        angle = this.scratch.vector()
+          .clone(body.state.pos)
+          .vsub(target)
+          .angle()
         ;
-
-        distance = vector.norm();  // get the distance
-
-        if (distance > options.min && distance < options.max){
-          body.accelerate( vector.normalize().mult( options.strength / Math.pow(distance, options.order) ) );
-        }
-
-        if (distance < range){
-          color = 'red';
-          speed = this.scratch.vector()
-            .clone( body.state.vel )
-            .mult(distance - range)
-          ;
-          body.state.vel.vadd(speed);
-
-        }
-
-        REN.push(() => REN.strokeLine (
-          options.pos.x, options.pos.y,
-          body.state.pos._[0], body.state.pos._[1],
-          color
-        ));
-
+        body.state.angular.pos = (angle + PI) % TAU;
       }
+    }
+  },
 
-
-    }, 'body-selected-targeting-mouse': function(body){
-
-      if (this.options.active){
-
-        offset = this.scratch.vector()
-          .set(3, 0)
-        ;
-
+  'can-be-forced-to-point': {
+    targets: {},
+    scratch: true,
+    behave: function (body) {
+      const factor = 0.028;
+      var target;
+      if ((target = this.targets[body.uid])){
         force = this.scratch.vector()
-          .clone(this.options.target)
+          .clone(target)
           .vsub(body.state.pos)
-          .mult(0.028)
+          .mult(factor)
         ;
+        body.applyForce(force);
+        this.targets[body.uid] = null; // ??
+      }
+    }
+  },
 
-        force1 = this.scratch.vector()
-          .clone(body.state.vel)
-          .vsub(body.state.pos)
-          .mult(0.028)
-        ;
+  'can-beam-to-point': {
+    targets: {},
+    behave: function (body) {
+      var target;
+      if ((target = this.targets[body.uid])){
+        body.state.pos.clone(target);
+      }
+    }
+  },
 
 
+  'can-avoid-point': {
+    targets: {},
+    scratch: true,
+    behave: function (body) {
 
-        body.applyForce(force, offset);
-        REN.info.force = force.norm().toFixed(1);          
+      const 
+        maxAhead = 8,
+        maxVel = 0.02,
+        maxForce = 0.03;
 
-        this.options.active = false;
+      var factor;
 
-      } else {
+      if ((target = this.targets[body.uid])){
 
-        var distance = this.scratch.vector()
-          .clone(this.options.target)
+        distance = this.scratch.vector()
+          .clone(target)
           .vsub(body.state.pos)
           .norm()
         ;
 
-        REN.info.dist = distance.toFixed(2);          
+        factor = maxForce * ((maxAhead - distance) / maxAhead);
 
-      }
-
-    }, 'player-all-single-move-to-point': function(body){
-
-      var targets = this.options.targets;
-
-      if (targets[body.uid]){
-
-        force = this.scratch.vector()
-          .clone(targets[body.uid])
-          .vsub(body.state.pos)
-          .mult(0.028)
+        forward = this.scratch.vector()
+          .clone(body.state.vel)
+          .normalize()
+          .mult(maxAhead * body.state.vel.norm() / maxVel)
         ;
 
-        body.applyForce(force);
+        ahead = this.scratch.vector()
+          .clone(body.state.pos)
+          .add(forward)
+        ;
 
-        // remove target
-        targets[body.uid] = null;
+        avoidance = this.scratch.vector()
+          .clone(ahead)
+          .vsub(target)           // check
+          .normalize()
+          .mult( factor > 0 ? factor : 0)
+        ;
+
+        body.applyForce(avoidance);
 
       }
+    }
+
 
     }, 'player-all-avoid-players': function (body) {
 
@@ -300,9 +255,9 @@ BHV = (function(){
       body.applyForce(avoidance);
 
       REN.push(REN.strokeCircle.bind(null, target._[0], target._[1], maxAhead, factor > 0 ? 'orange' : 'violet'));
-      REN.push(REN.strokeVector.bind(null, body.state.pos.clone(), forward.clone(), 'yellow'));
-      REN.push(REN.strokeVector.bind(null, body.state.pos.clone(), avoidance.clone().normalize().mult(8), 'red'));
-      REN.push(REN.strokeVector.bind(null, body.state.pos.clone(), ahead.clone().normalize().mult(8), 'blue'));
+      REN.push(REN.strokeVector.bind(null, body.state.pos.clone(), forward.clone().mult(2), 'yellow'));
+      REN.push(REN.strokeVector.bind(null, body.state.pos.clone(), avoidance.clone().mult(2), 'red'));
+      REN.push(REN.strokeVector.bind(null, body.state.pos.clone(), ahead.clone().mult(2), 'blue'));
 
     }, 'player-all-approach-point': function (body) {
 
@@ -310,7 +265,7 @@ BHV = (function(){
         radius = 3,
         maxVel = 0.02;
 
-      var targets = this.options.targets;
+      var targets = this.targets;
 
       if (targets[body.uid]){
 
@@ -330,22 +285,6 @@ BHV = (function(){
 
       }
 
-    }, 'player-all-follow-mouse': function (body) {
-
-      const 
-        radius = 3,
-        maxVel = 0.02;
-
-      desired = this.scratch.vector()
-        .clone(this.options.target)
-        .vsub(body.state.pos)
-      ;
-
-      distance = desired.norm();
-      desired  = desired.normalize();
-      desired.mult(maxVel * (distance <= radius ? distance/radius : 1));
-      force = desired.vsub(body.state.vel);
-      body.applyForce(force);
 
 
   // configure
@@ -356,25 +295,29 @@ BHV = (function(){
         vector.set(pos.x, pos.y);
       }
 
+      H.each(properties, function (name, behavior) {
+        self.create(name, behavior);
+      });
+
       // n bodies  => array
-      self.create('ball-all-basic');
+      // self.create('ball-all-basic');
 
       // n bodies by filter => array
-      self.create('player-all-focus-ball', {
-        scratch: true
-      });
+      // self.create('player-all-focus-ball', {
+      //   scratch: true
+      // });
 
       // n bodies  => array
-      self.create('player-all-single-move-to-point', {
-        scratch: true,
-        targets: {},   // vectors
-        resolve: null, // function
-      });
+      // self.create('player-all-single-move-to-point', {
+      //   scratch: true,
+      //   targets: {},   // vectors
+      //   resolve: null, // function
+      // });
 
-      self.create('player-all-approach-point', {
-        scratch: true,
-        targets: {},   // vectors
-      });
+      // self.create('player-all-approach-point', {
+      //   scratch: true,
+      //   targets: {},   // vectors
+      // });
 
       self.create('player-all-avoid-players', {
         scratch: true,
@@ -388,8 +331,8 @@ BHV = (function(){
         listeners:  {
           'interact:move': function( e ){
             this.bodies().forEach(body => {
-              !this.options.targets[body.uid] && (this.options.targets[body.uid] = Physics.vector());
-              setVector(REN.toField(e), this.options.targets[body.uid]);
+              !this.targets[body.uid] && (this.targets[body.uid] = Physics.vector());
+              setVector(REN.toField(e), this.targets[body.uid]);
             });
           }, 
         }
@@ -521,6 +464,9 @@ BHV = (function(){
           subBodies: H.arrayfy(function(body){
             H.remove(bodies, body);
           }),
+          removeBodies: function(body){
+            H.empty(bodies);
+          },
           toggleBodies: H.arrayfy(function(body){
             if (H.contains(bodies, body)){
               H.remove(bodies, body);
