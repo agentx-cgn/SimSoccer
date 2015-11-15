@@ -148,9 +148,9 @@ CFG = {
 
         simulation: {
             None:       [
-                'all-bodies:have-angular-friction',
+                'all-bodies:has-angular-friction',
                 'some-bodies:can-be-dragged',
-                // 'all-bodies:can-move-to-click',
+                'marked-bodies:can-move-to-click',
                 // 'all-bodies:can-follow-mouse',
             ],
             Training:   [

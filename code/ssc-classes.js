@@ -12,6 +12,7 @@ Actor.prototype = {
 
 function Controller (config) {
   this.bodies = [];
+  this.scratch = null;
   H.extend(this, config, BHV[config.behavior]);
 } 
 

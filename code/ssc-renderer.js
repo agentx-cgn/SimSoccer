@@ -547,7 +547,7 @@ REN = (function(){
       ctx.fillText('team0      :  ' + GAM.team0.current                                          , left, 120);
       ctx.fillText('team1      :  ' + GAM.team1.current                                          , left, 140);
       ctx.fillText('tasks      :  ' + SIM.tasks.length                                           , left, 160);
-      ctx.fillText('scratches  :  ' + BHV.scratches                                              , left, 180);
+      // ctx.fillText('scratches  :  ' + Physics.scratchpad()._vectorStack.length                   , left, 180);
 
    
 

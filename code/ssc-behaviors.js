@@ -14,7 +14,6 @@ BHV = (function(){
 
   var 
     self,
-    scratches = 0, // Scratchpad Vectors, max
 
     // lifted objects
     vector,
@@ -35,8 +34,6 @@ BHV = (function(){
 
 
   return {
-
-    scratches,
 
     boot:   function () {return (self = this);
 
@@ -103,7 +100,7 @@ BHV = (function(){
 
   // Behaves
 
-  'have-angular-friction': {
+  'has-angular-friction': {
     behave: function (body) {
       body.state.angular.vel *= CFG.Physics.angularFriction; 
     }
@@ -142,7 +139,7 @@ BHV = (function(){
 
   'can-be-forced-to-point': {
     targets: {},
-    scratch: true,
+    useScratch: true,
     behave: function (body) {
       const factor = 0.028;
       var target;

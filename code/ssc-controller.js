@@ -43,22 +43,20 @@ CTR = (function(){
 
       PHY.world.on({'integrate:positions': function(data){
 
-        var b, body, scratch;
+        var b, body;
 
-        H.each(controllers, (name, controller) => {
+        H.each(controllers, (name, ctr) => {
 
-          controller.scratch && (scratch = Physics.scratchpad());
+          ctr.useScratch && (ctr.scratch = Physics.scratchpad());
         
-          for (b=0; (body = controller.bodies[b]); b++){
-            controller.behave(body);
+          for (b=0; (body = ctr.bodies[b]); b++){
+            ctr.behave(body);
           }
 
-          controller.scratch && scratch.done();
+          ctr.useScratch && ctr.scratch.done();
 
         });
 
-        scratch && (BHV.scratches = scratch._vectorStack.length);
-        
       }});
 
 
@@ -87,9 +85,9 @@ CTR = (function(){
       controller.deactivate();
       self.controllers[name] = null;
 
-      }, hasBody: function(body, controller){
+    }, hasBody: function(body, controller){
 
-        return H.contains(controllers[controller].bodies, body);
+      return H.contains(controllers[controller].bodies, body);
 
     }, ofBody: function(body){
 
@@ -104,9 +102,9 @@ CTR = (function(){
       return list;
 
 
-    }, 'all-bodies:have-angular-friction': {
+    }, 'all-bodies:has-angular-friction': {
 
-      behavior: 'have-angular-friction',
+      behavior: 'has-angular-friction',
 
 
     }, 'some-bodies:can-be-dragged': {
@@ -130,11 +128,30 @@ CTR = (function(){
         }
       }
 
+
+    }, 'marked-bodies:can-move-to-click': {
+
+      behavior: 'can-be-forced-to-point',
+
+      listeners: {
+        'interact:poke': function( e ){
+          if (e.button === 0 && !IFC.bodyUnderMouse){
+            this.addBodies(PHY.find('marked'));
+            this.bodies.forEach(body => {
+              this.targets[body.uid] = new Physics.vector();
+              setVector(REN.toField(e), this.targets[body.uid]);
+            });
+          }
+        }, 
+        'interact:release': function(){
+          this.removeBodies();
+        }
+      }
+
+
+
     }
 
   };
 
 }()).boot();
-
-
-
