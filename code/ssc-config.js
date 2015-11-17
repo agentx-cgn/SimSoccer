@@ -16,10 +16,11 @@ CFG = {
         draw: {
             fps:           true,   // draw FPS 
             list:          true,   // draw Deb objects
+            back:          true,   // draw background (green)
             info:          true,   // draw Deb info
             speed:         true,   // draw Deb render info
             mouse:         false,  // draw mouse circle
-            sandbox:       true,   // 
+            sandbox:       true,   // draw outer 
             messages:      true,   // draw SIM messages
             collisions:    true,   // draw PHY collisions
         }          
@@ -109,65 +110,6 @@ CFG = {
 
     },
 
-    Rules: {
-        momFoul:          2,   // if sum of momentum (vel * mass) is higher => spotkick
-        momFoulYellow:    4,   // yellow + spotkick
-        momFoulRed:       6,   // red + spotkick
-
-    },
-
-    Controllers: {
-
-        // apply to world, always active
-        world:      [   
-            'sweep-prune', 
-            'body-collision-detection', 
-            'body-impulse-response'
-        ],
-
-        // apply to bodies, 'type-filter-action'
-        actors:      {   
-
-            // used by the interface
-            'body-selected-targeting-mouse':    [],
-            'body-selected-steered-by-keys':    [],
-            'body-marked-attracted-by-mouse':   [],
-            'body-all-grabbed-by-mouse':        [],
-
-            // balls only
-            'ball-all-basic':                   [],
-
-            // players only
-            // 'player-all-single-move-to-point':  ['Training', 'Setup', 'Pause'],
-            'player-all-focus-ball':            ['Play'],
-            'player-all-follow-mouse':          [],
-
-            'player-all-avoid-players':         ['Training', 'Setup', 'Pause'],
-            'player-all-approach-point':        ['Training', 'Setup', 'Pause'],
-        },
-
-        simulation: {
-            None:       [
-                'all-bodies:has-angular-friction',
-                'some-bodies:can-be-dragged',
-                'marked-bodies:can-move-to-click',
-                // 'all-bodies:can-follow-mouse',
-            ],
-            Training:   [
-                'body-all-have-angular-friction',
-                'player-all-avoid-players',
-                'player-all-approach-point',
-            ],
-            Setup:      [
-                'body-all-have-angular-friction',
-                'player-all-avoid-players',
-                'player-all-approach-point',
-            ],
-        }
-
-
-    },
-
     Teams : [
         { 
             index:    0,
@@ -196,6 +138,55 @@ CFG = {
         }
 
     ],
+
+    Rules: {
+        momFoul:          2,   // if sum of momentum (vel * mass) is higher => spotkick
+        momFoulYellow:    4,   // yellow + spotkick
+        momFoulRed:       6,   // red + spotkick
+
+    },
+
+    Controllers: {
+
+        // apply to world, always active
+        world:      [   
+            'sweep-prune', 
+            'body-collision-detection', 
+            'body-impulse-response'
+        ],
+
+        simulation: {
+            None:       [
+                'all-bodies:has-angular-friction',
+                'some-bodies:can-be-dragged',
+                'marked-bodies:can-move-to-click',
+                'selected-bodies:can-follow-mouse',
+            ],
+            Training:   [
+                'all-bodies:has-angular-friction',
+                'some-bodies:can-be-dragged',
+                'all-players:can-avoid-point',
+                'all-players:can-approach-point',
+            ],
+            Setup:      [
+                'all-bodies:has-angular-friction',
+                'some-bodies:can-be-dragged',
+                'all-players:can-avoid-point',
+                'all-players:can-approach-point',
+            ],
+        },
+
+        team: {
+
+            Pause:       [
+            ],
+
+
+
+        }
+
+
+    },
 
     States : {
 
@@ -273,25 +264,5 @@ CFG = {
         ],
 
     },
-
-    stages: {
-        physics:   {
-            training:  {},
-            game:      [
-                {    lineup : {} },
-                {       run : {} },
-                {    lineup : {} },
-                {       run : {} },
-                {    lineup : {} },
-                {       run : {} },
-                {    lineup : {} },
-                {       run : {} },
-                {    lineup : {} },
-                { penalties : {} },
-            ],
-            party:     {},
-        },
-
-    }
 
 };

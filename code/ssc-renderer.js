@@ -24,6 +24,7 @@ REN = (function(){
     infobody = null,
 
     draw = {
+      back:       CFG.Debug.draw.back,
       info:       CFG.Debug.draw.info,
       list:       CFG.Debug.draw.list,
       speed:      CFG.Debug.draw.speed,
@@ -83,8 +84,8 @@ REN = (function(){
 
     }, setMouse : function (mouse) {
 
-      mouse.fx = (mouse.x - transform.field[0]) / transform.scale, 
-      mouse.fy = (mouse.y - transform.field[1]) / transform.scale
+      mouse.fx = (mouse.x - transform.field[0]) / transform.scale;
+      mouse.fy = (mouse.y - transform.field[1]) / transform.scale;
 
 
     }, toField : function (point) {
@@ -142,6 +143,25 @@ REN = (function(){
       );
 
 
+    }, drawPixel: function render (){
+
+      var i, x, y, amount = 300, color;
+
+      for (i=0; i<amount; i++) {
+        color = Math.random() < 0.5 ? 'black' : 'white';
+        ctx.fillStyle = color;
+        x = ~~(Math.random() * cvs.width);
+        y = ~~(Math.random() * cvs.height);
+        ctx.fillRect(x, y, 1, 1);
+      }
+
+
+    }, pixelize: function render (){
+
+      H.each(draw, option => draw[option] = false);
+      draw.pixel = true;
+
+
     }, render: function render (bodies, worldmeta){
 
       var i, body;
@@ -156,7 +176,9 @@ REN = (function(){
       meta.interpolateTime = worldmeta.interpolateTime || 0;
 
       ctx.fillStyle = CFG.Screen.backcolor;
-      ctx.fillRect(0, 0, cvs.width, cvs.height);
+      draw.back && ctx.fillRect(0, 0, cvs.width, cvs.height);
+
+      draw.pixel       && self.drawPixel();
 
       // draw on canvas, no transform
       draw.info        && self.drawDebug();

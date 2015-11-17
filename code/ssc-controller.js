@@ -26,18 +26,12 @@ CTR = (function(){
 
     boot:   function () {return (self = this);
 
+    }, cleanup: function(){ controllers = self.controllers = {};
+    }, init: function(){ self.listen();
     }, reset: function(){
 
       self.cleanup();
       self.init();
-
-    }, cleanup: function(){
-
-      controllers = self.controllers = {};
-
-    }, init: function(){
-
-      self.listen();
 
     }, listen: function (name) {
 
@@ -87,19 +81,30 @@ CTR = (function(){
 
     }, hasBody: function(body, controller){
 
-      return H.contains(controllers[controller].bodies, body);
+      return controllers[controller].hasBody(body);
 
     }, ofBody: function(body){
 
       var list = [];
 
-      H.each(self.controllers, (name, controller) => {
-        if (H.contains(controller.bodies, body)){
-          list.push(name);
-        }
+      H.each(controllers, (name, ctr) => {
+        ctr.hasBody(body) && list.push(name);
       });      
 
       return list;
+
+
+  // Definitions
+
+    }, 'all-players:can-avoid-point': {
+
+      behavior: 'can-avoid-point',
+
+
+    }, 'all-players:can-approach-point': {
+
+      behavior: 'can-approach-point',
+
 
 
     }, 'all-bodies:has-angular-friction': {
@@ -146,6 +151,37 @@ CTR = (function(){
         'interact:release': function(){
           this.removeBodies();
         }
+      }
+
+
+    }, 'selected-bodies:can-follow-mouse': {
+
+      behavior: 'can-approach-point',
+
+      update: function (e){
+        this.bodies.forEach(body => {
+          if (!this.targets[body.uid]){
+            this.targets[body.uid] = new Physics.vector();
+          }
+          setVector(REN.toField(e), this.targets[body.uid]);
+        });
+      },
+
+      listeners: {
+        'interact:poke': function( e ){
+          if (e.button === 0 && !IFC.bodyUnderMouse){
+            this.addBodies(PHY.find('selected'));
+            this.update(e);
+          }
+        }, 
+        'interact:move': function( e ){
+          this.update(e);
+        }, 
+        'interact:release': function(){
+          this.removeBodies();
+        }
+
+
       }
 
 

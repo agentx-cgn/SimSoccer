@@ -37,93 +37,57 @@ BHV = (function(){
 
     boot:   function () {return (self = this);
 
-    }, reset: function(){
+    }, cleanup: function(){
+    }, init:    function(){
+    }, reset:   function(){
 
       self.cleanup();
       self.init();
 
-    }, cleanup: function(){
-
-      // behaviors = self.behaviors = {};
-
-    }, init: function(){}, 
-
-      // self.createBehaviors();
-
-      // for actors
-      // H.each(CFG.Behaviors.actors, self.add);
-
-    // }, add:    function(name){
-
-    //   if (!behaviors[name]){
-    //     behaviors[name] = Physics.behavior(name);
-    //     PHY.world.add(behaviors[name]);
-    //   }
-
-    // }, sub:    function(name){
-
-    //   PHY.world.remove(behaviors[name]);    
-    //   behaviors[name] = null;  
-
-    // }, hasBody: function(body, behavior){
-
-    //   return H.contains(behaviors[behavior].bodies(), body);
-
-    // }, forBody: function(body){
-
-    //   var 
-    //     list = [],
-    //     names = ['body'];
-
-    //   names.push(body.name);
-
-    //   H.each(behaviors, (name) => {
-    //     if (H.contains(names, name.split('-')[0])){
-    //       list.push(name);
-    //     }
-    //   });
-
-    //   return list;
-
-    // }, ofBody: function(body){
-
-    //   var list = [];
-
-    //   H.each(behaviors, (name, behavior) => {
-    //     if (H.contains(behavior.bodies(), body)){
-    //       list.push(name);
-    //     }
-    //   });
-
-    //   return list;
 
 
   // Behaves
 
-  'has-angular-friction': {
+  }, 'has-angular-friction': {
+    
     behave: function (body) {
       body.state.angular.vel *= CFG.Physics.angularFriction; 
     }
-  },
+  
+  }, 'can-report-off-field': {
 
-  'can-report-off-field': {
+    flags: {},
+
     behave: function (body) {
       var
         x = body.state.pos._[0], 
         y = body.state.pos._[1], 
-        isOff = (
+        wasOff = this.flags[body.uid] || false,
+        isOff  = (
           x + body.radius < 0 ||
           y + body.radius < 0 ||
           x - body.radius > CFG.Field.length ||
           y - body.radius > CFG.Field.width
         );
-      isOff && PHY.world.emit('game:body-off-field', body);
-    }
-  },
 
-  'can-orient-to-point': {
+      // got off now
+      if (!wasOff && isOff) {
+        this.flags[body.uid] = true;
+        PHY.world.emit('game:body-off-field', body);
+      
+      // back in game
+      } else if (wasOff  && !isOff) {
+        this.flags[body.uid] = false;
+
+      } 
+
+    }
+
+  }, 'can-orient-to-point': {
+
     targets: {},
-    scratch: true,
+    useScratch: true,
+    
     behave: function (body) {
       var angle, target;
       if ((target = this.targets[body.uid])){
@@ -135,11 +99,12 @@ BHV = (function(){
         body.state.angular.pos = (angle + PI) % TAU;
       }
     }
-  },
 
-  'can-be-forced-to-point': {
+  }, 'can-be-forced-to-point': {
+
     targets: {},
     useScratch: true,
+    
     behave: function (body) {
       const factor = 0.028;
       var target;
@@ -153,22 +118,23 @@ BHV = (function(){
         this.targets[body.uid] = null; // ??
       }
     }
-  },
 
-  'can-beam-to-point': {
+  }, 'can-beam-to-point': {
+
     targets: {},
+    
     behave: function (body) {
       var target;
       if ((target = this.targets[body.uid])){
         body.state.pos.clone(target);
       }
     }
-  },
 
+  }, 'can-avoid-point': {
 
-  'can-avoid-point': {
     targets: {},
     scratch: true,
+    
     behave: function (body) {
 
       const 
@@ -209,6 +175,41 @@ BHV = (function(){
         body.applyForce(avoidance);
 
       }
+    }
+
+  }, 'can-approach-point': {
+
+    targets: {},
+    useScratch: true,
+
+    behave: function (body) {
+
+      const 
+        radius = 3,
+        maxVel = 0.02;
+
+      var targets = this.targets;
+
+      if (targets[body.uid]){
+
+        desired = this.scratch.vector()
+          .clone(targets[body.uid])
+          .vsub(body.state.pos)
+        ;
+
+        distance = desired.norm();
+
+        body.applyForce(
+          desired
+            .normalize()
+            .mult(maxVel * (distance <= radius ? distance/radius : 1))
+            .vsub(body.state.vel)
+        );
+
+      }
+
+
+
     }
 
 

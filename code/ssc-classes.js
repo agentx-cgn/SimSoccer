@@ -106,7 +106,7 @@ Team.prototype = H.mixin (
   }, arrangePlayers: function (path, resolve) {
 
     var 
-      targets = BHV.behaviors['player-all-approach-point'].options.targets,
+      targets = CTR.controllers['all-players:can-approach-point'].targets,
       check   = () => this.toPath().getDistance(path) < 1;
 
     H.each(this.team, (index, player) => {
@@ -121,17 +121,17 @@ Team.prototype = H.mixin (
 
     // loads bhvs with state from config
 
-    H.each(CFG.Behaviors.actors, (bhv, states) => {
+    // H.each(CFG.Behaviors.actors, (bhv, states) => {
 
-      if (H.contains(states, state)){
-        BHV.behaviors[bhv].addBodies(this.team);
+    //   if (H.contains(states, state)){
+    //     BHV.behaviors[bhv].addBodies(this.team);
 
-      } else {
-        BHV.behaviors[bhv].subBodies(this.team);
+    //   } else {
+    //     BHV.behaviors[bhv].subBodies(this.team);
 
-      }
+    //   }
 
-    });
+    // });
 
 
     // F S M - S T A R T
