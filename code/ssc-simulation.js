@@ -33,6 +33,10 @@ SIM = (function(){
         error:   T.logFsmError.bind(this),
       });
 
+      H.extend(this, Actor.prototype);
+
+      this.machine = 'simulation';
+
       return (self = this);
 
     }, cleanup: function () {
@@ -93,7 +97,7 @@ SIM = (function(){
 
     }, onsetup: function(name, from, to, data){
 
-      self.updateBehaviors(to);
+      self.updateControllers(to);
       
       return (
         GAM.promise('pause', data)
@@ -105,7 +109,7 @@ SIM = (function(){
 
     }, ontraining: function(name, from, to, data){
 
-      self.updateBehaviors(to);
+      self.updateControllers(to);
 
       return (
         GAM.promise('pause', data)
@@ -119,17 +123,6 @@ SIM = (function(){
 
       // SIM.msgFromTo('sim', from, to);
       // GAM.can('run') && GAM.run();
-
-
-    }, updateBehaviors: function (state) {
-
-      // loads bhvs with state from config
-
-      H.each(CFG.Controllers.simulation[state], (index, name) => {
-        if (!CTR.controllers[name]){
-          CTR.activate(name);
-        }
-      });
 
 
   // T A S K S 

@@ -165,20 +165,33 @@ CFG = {
             Training:   [
                 'all-bodies:has-angular-friction',
                 'some-bodies:can-be-dragged',
-                'all-players:can-avoid-point',
-                'all-players:can-approach-point',
+                // 'all-players:can-avoid-point',
+                // 'all-players:can-approach-point',
             ],
             Setup:      [
                 'all-bodies:has-angular-friction',
                 'some-bodies:can-be-dragged',
-                'all-players:can-avoid-point',
-                'all-players:can-approach-point',
+                // 'all-players:can-avoid-point',
+                // 'all-players:can-approach-point',
             ],
         },
 
         team: {
 
+            None:       [
+            ],
+
             Pause:       [
+            ],
+
+            Training:       [
+                'all-players:can-avoid-point',
+                'all-players:can-approach-point',
+            ],
+
+            Setup:       [
+                'all-players:can-avoid-point',
+                'all-players:can-approach-point',
             ],
 
 

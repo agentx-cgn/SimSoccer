@@ -54,6 +54,15 @@ CTR = (function(){
       }});
 
 
+    }, loadSet: function (set) {
+
+      H.each(set || [], (index, name) => {
+        if (!CTR.controllers[name]){
+          CTR.activate(name);
+        }
+      });
+
+
     }, activate: function (name) {
 
       var

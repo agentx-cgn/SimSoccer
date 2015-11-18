@@ -8,6 +8,9 @@ function Actor () {}
 
 Actor.prototype = {
   constructor: Actor,
+  updateControllers: function (state) {
+    CTR.loadSet(CFG.Controllers[this.machine][state]);
+  }
 };
 
 function Controller (config) {
@@ -41,6 +44,7 @@ Controller.prototype = {
 
 function Player (options){
   Actor.call(this, options);
+  this.machine = 'player';
   H.extend(this, options);
 }
 
@@ -59,6 +63,7 @@ StateMachine.create({
 function Team (config){
 
   Actor.call(this, config);
+  this.machine = 'team';
   H.extend(this, config);
 
   this.team = PHY.bodies['team' + config.index];
@@ -117,21 +122,21 @@ Team.prototype = H.mixin (
     SIM.appendTask([null, 60, check, resolve]);
 
 
-  }, updateBehaviors: function (state) {
+  // }, updateBehaviors: function (state) {
 
-    // loads bhvs with state from config
+  //   // loads bhvs with state from config
 
-    // H.each(CFG.Behaviors.actors, (bhv, states) => {
+  //   // H.each(CFG.Behaviors.actors, (bhv, states) => {
 
-    //   if (H.contains(states, state)){
-    //     BHV.behaviors[bhv].addBodies(this.team);
+  //   //   if (H.contains(states, state)){
+  //   //     BHV.behaviors[bhv].addBodies(this.team);
 
-    //   } else {
-    //     BHV.behaviors[bhv].subBodies(this.team);
+  //   //   } else {
+  //   //     BHV.behaviors[bhv].subBodies(this.team);
 
-    //   }
+  //   //   }
 
-    // });
+  //   // });
 
 
     // F S M - S T A R T
@@ -158,17 +163,17 @@ Team.prototype = H.mixin (
 
   }, onsetup: function (name, from, to, data, resolve){
 
-    this.updateBehaviors(to);
+    this.updateControllers(to);
     this.arrangePlayers(this.paths.setup, resolve);
 
   }, ontraining: function (name, from, to, data, resolve){
     
-    this.updateBehaviors(to);
+    this.updateControllers(to);
     this.arrangePlayers(this.paths.training, resolve);
 
   }, onpause: function (name, from, to, data, resolve){
     
-    this.updateBehaviors(to);
+    this.updateControllers(to);
 
     setTimeout(() => {
       resolve();
