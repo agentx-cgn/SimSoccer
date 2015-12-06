@@ -9,9 +9,9 @@ A simple JavaScript Soccer Simulation with an Player AI
 ### Status
 
  * *2015-11-23:*  
-   Implemented own behavior factory w/ controllers
-   More steering behaviors (avoid/approach)
-   Imported paths from Hannibal
+   Implemented own behavior factory w/ controllers  
+   More steering behaviors (avoid/approach)  
+   Imported paths from Hannibal  
 
  * *2015-10-14:*  
    Finite State Machine integrated, with promises  
