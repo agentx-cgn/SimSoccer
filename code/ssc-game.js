@@ -10,7 +10,7 @@ GAM = (function(){
     self, 
     fsm,
 
-    team0, team1,
+    team0 = null, team1 = null,
 
     defaults = {
       fsm:       null,
@@ -29,11 +29,13 @@ GAM = (function(){
     name: 'game',
     nick: 'GAM',
 
+    team0, team1, 
+
     boot:   function(){return (self = this);
 
     }, reset: function () {
 
-      H.each(defaults, (key, val) => self[key] = val);
+      H.extend(self, defaults);
       self.init();
 
     }, init: function(){
@@ -47,8 +49,6 @@ GAM = (function(){
 
       team0 = self.team0 = new Team(CFG.Teams[0]);
       team1 = self.team1 = new Team(CFG.Teams[1]);
-
-      // BHV.behaviors['ball-all-basic'].addBodies(PHY.bodies.balls);
 
     }, tick: function () {
 
@@ -65,56 +65,32 @@ GAM = (function(){
       }      
 
 
-    }, updateBehaviors: function (selection) {
+  // M A R K ,  S E L E C T ,  H O V E R 
 
-      // with marked, selected
-
-      H.each(PHY.bodies.all, (index, body) => {
-        H.each(BHV.behaviors, (name, behavior) => {
-          if(name.split('-')[1] === selection){
-            if (body[selection]){
-              behavior.addBodies(body);
-            } else {
-              behavior.subBodies(body);
-            }
-          }
-        });
-      });
-
-    }, unhover: function (body) {body.hover = false;
-    }, hover:   function (body) {
+    }, unhover:  function (body) {body.hover = false;
+    }, mark:     function (body) { body.marked = true;
+    }, unmark:   function (body) {body.marked = false;
+    }, toggleMark: function (body) { body.marked = !body.marked;
+    }, unselect: function (body) {body.selected = false;
+    }, hover:    function (body) {
       
-      PHY.bodies.all.forEach(self.unhover); 
+      H.for(PHY.bodies.all, self.unhover); 
       body && (body.hover = true);
-
-    }, mark:    function (body) {
-
-      body.marked = true;
-      self.updateBehaviors('marked');
 
     }, deMarkSelect: function (body) {
 
-      H.each(PHY.find('selected'), (i, body) => body.selected = false);
-      H.each(PHY.find('marked'),   (i, body) => body.marked   = false);
-
-      self.updateBehaviors('marked');
-      self.updateBehaviors('selected');
-
-    }, toggleMark: function (body) {
-
-      body.marked = !body.marked;
-      self.updateBehaviors('marked');
+      H.for(PHY.find('selected'), self.unselect);
+      H.for(PHY.find('marked'),   self.unmark);
 
     }, toggleSelect: function (body) {
 
       var selected = body.selected;
 
-      H.each(PHY.find('selected'), (i, body) => body.selected = false);
+      H.for(PHY.find('selected'), self.unselect);
       body.selected = !selected;
-      self.updateBehaviors('selected');
 
 
-    // F S M - S T A R T
+  // F S M - S T A R T
 
     }, promise: function(event, data){
 

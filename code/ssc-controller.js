@@ -169,7 +169,7 @@ CTR = (function(){
 
       update: function (e){
         this.bodies.forEach(body => {
-          if (!this.targets[body.uid]){
+          if ( ! this.targets[body.uid] ) {
             this.targets[body.uid] = new Physics.vector();
           }
           setVector(REN.toField(e), this.targets[body.uid]);

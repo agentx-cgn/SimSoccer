@@ -122,23 +122,6 @@ Team.prototype = H.mixin (
     SIM.appendTask([null, 60, check, resolve]);
 
 
-  // }, updateBehaviors: function (state) {
-
-  //   // loads bhvs with state from config
-
-  //   // H.each(CFG.Behaviors.actors, (bhv, states) => {
-
-  //   //   if (H.contains(states, state)){
-  //   //     BHV.behaviors[bhv].addBodies(this.team);
-
-  //   //   } else {
-  //   //     BHV.behaviors[bhv].subBodies(this.team);
-
-  //   //   }
-
-  //   // });
-
-
     // F S M - S T A R T
 
   }, promise: function(event, data){

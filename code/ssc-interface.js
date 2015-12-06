@@ -1,5 +1,5 @@
 /*jslint bitwise: true, browser: true, evil:true, devel: true, todo: true, debug: true, nomen: true, plusplus: true, sloppy: true, vars: true, white: true, indent: 2 */
-/*globals H, T, IFC, REN, GAM, SIM, REN, PHY, Mousetrap, BHV, CFG, CTR, TWEEN */
+/*globals H, T, IFC, REN, MEN, GAM, SIM, REN, PHY, Mousetrap, BHV, CFG, CTR, TWEEN */
 /*jshint -W030 */
 
 'use strict';
@@ -25,48 +25,7 @@ IFC = (function(){
     $messagesList,
 
     cmd, // animation
-    cvsFps, ctxFps, fps = 0, drawFps = CFG.Debug.draw.fps, msecFrame = 0, bufFps, 
-
-    $menu, $submenu, 
-    $menuList, $submenuList, 
-    menuItems = [
-      {label: 'Reload',     enabled: true,                       action: () => window.location.reload()},
-      {label: 'Back',       enabled: true,                       action: () => window.history.back()},
-      {label: 'Fullscreen', enabled: true,                       action: () => self.toggleFullScreen()},
-      {label: 'Screenshot', enabled: true,                       action: () => self.shootScreen()},
-      {label: 'Reset',      enabled: true,                       action: () => window.reset()},
-      
-      {label: 'Mark All',   enabled: true,                       action: () => PHY.bodies.players.forEach(GAM.mark)},
-      {label: 'Mark T0',    enabled: true,                       action: () => PHY.bodies.team0.forEach(GAM.mark)},
-      {label: 'Mark T1',    enabled: true,                       action: () => PHY.bodies.team1.forEach(GAM.mark)},
-      {label: 'Mark Ball',  enabled: true,                       action: () => PHY.bodies.balls.forEach(GAM.mark)},
-
-      {label: 'Setup',      enabled: () => SIM.can('setup'),     action: () => SIM.promise('setup',    {test:1})},
-      {label: 'Training',   enabled: () => SIM.can('training'),  action: () => SIM.promise('training', {test:2})},
-      {label: 'Play',       enabled: () => SIM.can('play'),      action: () => SIM.promise('play',     {test:3}),      items: [
-        {label: 'Pause',      enabled: () => GAM.can('pause'),     action: () => GAM.promise('pause',    {test:4})},
-        {label: 'Half1',      enabled: () => GAM.can('half1'),     action: () => GAM.promise('half1',    {test:5})},
-        {label: 'Half2',      enabled: () => GAM.can('half2'),     action: () => GAM.promise('half2',    {test:5})},
-      ]},
-    ],
-
-    bodyMenuItems = function ( body ){
-      
-      var 
-        header = H.format('%s %s - T%s %s', body.name, body.number || '', body.team !== undefined ? body.team : '', body.sign || ''),
-        items = CTR.ofBody(body).map(name => {
-          return {label: name, active: CTR.hasBody(body, name), action: () => BHV.behaviors[name].toggleBodies(body)};
-        });
-      
-      return [
-        {label: header,       enabled: false,                      action: null},
-        {label: 'Select',     enabled: true,                       action: () => GAM.toggleSelect(body)},
-        {label: 'Mark',       enabled: true,                       action: () => GAM.toggleMark(body)},
-        {label: 'Behaviors',  enabled: false,                      action: null,                             items: items },
-
-      ];
-
-    };
+    cvsFps, ctxFps, fps = 0, drawFps = CFG.Debug.draw.fps, msecFrame = 0, bufFps;
 
 
   return {
@@ -82,7 +41,7 @@ IFC = (function(){
     msecTick,   // to tick
     msecFrame,  // between frame
 
-    menuItems,
+    // menuItems,
 
     bodyUnderMouse,
 
@@ -114,10 +73,7 @@ IFC = (function(){
       $errors       = $('.errors');
       $code         = $('.code');
       $images       = $('.images');
-      $menu         = $('.menu');
-      $menuList     = $('.menu-list');
-      $submenu      = $('.sub-menu');
-      $submenuList  = $('.sub-menu-list');
+
       $messagesList = $('.messages-list');
 
       $('#btnToggle').onclick = function(){self.toggleTab();};
@@ -125,8 +81,6 @@ IFC = (function(){
       $('#btnPause').onclick  = self.pause;
       $('#btnPlay').onclick   = self.play;
       $('#btnStep').onclick   = self.step;
-
-      $menu.onmouseleave = function(){self.hideMenu();};
 
       cvs = self.cvs = document.createElement('canvas');
       // cvs.setAttribute('moz-opaque', 'moz-opaque');
@@ -147,13 +101,18 @@ IFC = (function(){
 
       self.setKeys();
 
+      cvs.addEventListener('mousemove',  onmousemove,  false);
+      cvs.addEventListener('mouseup',    onmouseup,    false);
+      cvs.addEventListener('mousedown',  onmousedown,  false);
+      cvs.addEventListener('touchstart', ontouchstart, false);
+
       function onmousemove (e) {
 
         var yOff = self.isFullScreen() ? 0 : marginTop;
 
         mouse.x = e.clientX - cvs.offsetLeft;
         mouse.y = e.clientY - cvs.offsetTop - yOff;
-        REN.setMouse(mouse);
+        REN.updateMouse(mouse);
         bodyUnderMouse = self.bodyUnderMouse = PHY.findAtMouse(mouse);
         GAM.hover(bodyUnderMouse);
 
@@ -183,13 +142,19 @@ IFC = (function(){
         
         } else if (e.button === 2 && bodyUnderMouse){
           // right with body menu
-          self.updateMenuList($menuList, bodyMenuItems(bodyUnderMouse));
-          self.showMenu();
+          // self.updateMenuList();
+          // self.showMenu();
+          
+          MEN.update(bodyUnderMouse);
+          MEN.show();
         
         } else if (e.button === 2 && !bodyUnderMouse){
           // right with field menu
-          self.updateMenuList($menuList, menuItems);
-          self.showMenu();
+          // self.updateMenuList($menuList, menuItems);
+          // self.showMenu();
+
+          MEN.update();
+          MEN.show();          
 
         }
 
@@ -199,11 +164,6 @@ IFC = (function(){
         SIM.message('touch detected');
         console.log('touchstart', e);
       }
-
-      cvs.addEventListener('mousemove',  onmousemove,  false);
-      cvs.addEventListener('mouseup',    onmouseup,    false);
-      cvs.addEventListener('mousedown',  onmousedown,  false);
-      cvs.addEventListener('touchstart', ontouchstart, false);
 
     }, resize: function(outerWidth, outerHeight){
 
@@ -225,15 +185,15 @@ IFC = (function(){
 
       REN.resize(width, height);
 
-    }, animate: function (command){
+    }, animate: function animate (command){
 
       if (command === 'stop')  { cmd = command; SIM.reset(); return;}
-      if (command === 'play')  { cmd = command; animate(); }
-      if (command === 'pause') { cmd = command; animate(); }
+      if (command === 'play')  { cmd = command; animation(); }
+      if (command === 'pause') { cmd = command; animation(); }
       if (command === 'step' && cmd === 'play' ){ cmd = command; }
-      if (command === 'step' && cmd !== 'play' ){ cmd = command; animate(); }
+      if (command === 'step' && cmd !== 'play' ){ cmd = command; animation(); }
 
-      function animate (newtime){
+      function animation (newtime){
 
         fps = ~~(1000 / (newtime - lasttime));
         bufFps.push(fps);
@@ -253,7 +213,7 @@ IFC = (function(){
         drawFps && self.drawFps(fps);
 
         if (cmd === 'play'){
-          window.requestAnimationFrame(animate);
+          window.requestAnimationFrame(animation);
         }
 
       }
@@ -261,17 +221,17 @@ IFC = (function(){
     }, drawFps: function( fps ){
 
       var h = fps/2;
+
+      // render fps as column
       ctxFps.fillStyle = h > 25 ? 'white' : 'red';
       ctxFps.fillRect(0, 32 - h, 1, h > 25 ? 2 : h);
+
+      // copy blit one pixel right
       ctxFps.drawImage(cvsFps, 1, 0);
+
+      // erase left most column
       ctxFps.fillStyle = '#AAA';
       ctxFps.fillRect(0, 0, 1, 32);
-
-      // if (h <= 25){
-        // ctxFps.font = '16px sans-serif'
-        // ctxFps.fillStyle = '#e44';
-        // ctxFps.fillText(2, 2, bufFps.avg().toFixed(1));
-      // }
 
     }, message: function(message){
 
@@ -285,83 +245,6 @@ IFC = (function(){
         $messagesList.appendChild(el);
 
       }
-
-
-    }, showMenu: function(){
-
-      var yOff = self.isFullScreen() ? marginTop : 0;
-
-      $menu.style.left = (mouse.x -8) + 'px';
-      $menu.style.top  = (mouse.y + yOff -8) + 'px';
-      $menu.style.display = 'block';
-
-    }, hideMenu: function(){
-
-      $menu.style.display = 'none';
-
-    }, clearMenu: function($el){
-
-      while ($el.firstChild) {
-        $el.onclick = undefined;
-        $el.onmouseenter = undefined;
-        $el.onmouseleave = undefined;
-        self.clearMenu($el.firstChild);
-        $el.removeChild($el.firstChild);
-      }
-
-    }, updateMenuList: function($el, list){
-
-      var el, ul, li;
- 
-      self.clearMenu($el);
-
-      function getClass (entry, pre) {
-
-        if (entry.enabled !== undefined) {return pre + H.interprete(entry.enabled) ? 'menu-item' : 'menu-item-disabled';}
-        if (entry.active  !== undefined) {return pre + H.interprete(entry.active)  ? 'menu-item' : 'menu-item-inactive';}
-
-      }
-
-      H.each(list, (i, entry) => {
-
-        el = document.createElement('li');
-        el.className = getClass(entry, '');
-        el.innerHTML = entry.label;
-        el.onclick = entry.action ? 
-          function(e){entry.action(); self.hideMenu(); return H.eat(e);}:
-          function(){}
-        ;
-
-        if (entry.items){
-
-          ul = document.createElement('ul');
-          ul.className = 'sub-menu-list none';
-          el.appendChild(ul);
-
-          H.each(entry.items, (i, subentry) => {
-            li = document.createElement('li');
-            li.className = getClass(subentry, 'sub-');
-            li.innerHTML = subentry.label;
-            li.onclick = function(e){subentry.action(); self.hideMenu(); return H.eat(e);};
-            ul.appendChild(li);
-          });
-
-          el.onmouseenter  = function(){
-            ul.classList.remove('none');
-            ul.classList.add('block');
-          };
-
-          el.onmouseleave = function(){
-            ul.classList.add('none');
-            ul.classList.remove('block');
-          };
-
-        }
-
-        $el.appendChild(el);
-
-      });
-
 
     }, setKeys: function(){
 

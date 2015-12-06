@@ -111,6 +111,18 @@ SIM = (function(){
 
       self.updateControllers(to);
 
+      this.dsl = new DSL.Language(this, "groups");
+      // world = this.dsl.createWorld(instance);
+      // this.dsl.setverbs(world, this.getverbs());
+
+      // // call dsl to run with world, actor, function and params
+      // this.callWorld(instance, "launch", [config]);
+
+      // callWorld: function(instance, scriptname, params){
+      //   this.dsl.runScript(instance.world, instance, instance.scripts[scriptname], params);
+
+
+
       return (
         GAM.promise('pause', data)
           .then(Promise.all([

@@ -9,6 +9,15 @@ T = (function () {
 
     now: performance.now.bind(performance),
 
+    bodyShort: function  (infobody){
+      return ( !infobody ? 'none' :
+        infobody.name === 'player' ? H.format('%s, %s [%s]', infobody.name, infobody.sign, infobody.team) :
+        infobody.name === 'ball'   ? 'ball' :
+        infobody.name === 'post'   ? 'post' :
+          'wtf'
+      );
+    },
+
     fromTo : function(what, from, to){
       return H.format('%s: %s -> %s', what, from, to);
     },

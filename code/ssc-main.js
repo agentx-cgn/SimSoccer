@@ -20,7 +20,10 @@ var      // globals
   BHV,   // Behaviors
   CTR,   // Controller
   SVC,   // Services
-  IFC;   // Interface
+  IFC,   // Interface
+  MEN,   // Menus
+  SEQ,   // Sequences
+  DSL;   // Langauge
 
 window.onload = function(){
 
@@ -28,6 +31,8 @@ window.onload = function(){
     $  = document.querySelector.bind(document),
     errors = 0, 
     bInitializes = true;
+
+  TIM.step("loaded");
 
   window.onerror = function(e, f, l){
 
@@ -65,6 +70,7 @@ window.onload = function(){
     IFC.init();
     IFC.resize(window.innerWidth, window.innerHeight);
     
+    MEN.reset();    // Context mneu
     REN.reset();    // IFC.cvs
     PHY.reset();    // provides world
     SVC.reset();    // needs PHY.world
@@ -76,12 +82,6 @@ window.onload = function(){
     IFC.listen();   // activates events, keys, needs IFC.cvs
     IFC.show();     // go visible
     IFC.play();     // starts animation loop
-
-    // GAM.run();
-
-    // SIM.startup();
-    // PHY.world.emit('game:start');
-
 
   }
 

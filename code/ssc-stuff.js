@@ -145,7 +145,7 @@
 
         }
 
-        REN.push(() => REN.strokeLine (
+        REN.effects.push(() => REN.strokeLine (
           options.pos.x, options.pos.y,
           body.state.pos._[0], body.state.pos._[1],
           color

@@ -17,48 +17,50 @@ REN = (function(){
 
     $ = document.querySelector.bind(document),
     
-    info = {}, meta = {fps: 0, ipf: 0},
+    // Physics Info
+    meta = {fps: 0, ipf: 0},
 
-    point = {},
+    // onscreen text debug info
+    info = {
+      'fps':        '',
+      'fps/ipf':    '',
+      'tick/rend':  '',
 
-    infobody = null,
+      'mouse':      '',
+      'meter':      '',
+      
+      'simulation': '',
+      'game':       '',
+      'team0':      '',
+      'team1':      '',
+      'tasks':      '',
+    }, 
 
-    draw = {
-      back:       CFG.Debug.draw.back,
-      info:       CFG.Debug.draw.info,
-      list:       CFG.Debug.draw.list,
-      speed:      CFG.Debug.draw.speed,
-      mouse:      CFG.Debug.draw.mouse,
-      sandbox:    CFG.Debug.draw.sandbox,
-      messages:   CFG.Debug.draw.messages,
-      collisions: CFG.Debug.draw.collisions,
+
+    // flags enabling render options
+    draw = H.extend({}, CFG.Debug.draw, {
       corner:     false,
       spotkick:   false,
-    },
+    }),
 
-    list = [],
+    // List of draw commands
+    effects = [],
 
     transX, transY, transA,
     transform = {field: [0, 0, 0, 0], scale: 1},
 
+    // Lists of field item
     strokeCircles, strokeRecs, fillRecs,
 
+    // referee
     tweenWhistle = null, imgWhistle;
 
-    function bodyShort (infobody){
-      return ( !infobody ? 'none' :
-        infobody.name === 'player' ? H.format('%s, %s [%s]', infobody.name, infobody.sign, infobody.team) :
-        infobody.name === 'ball'   ? 'ball' :
-        infobody.name === 'post'   ? 'post' :
-          'wtf'
-      );
-    }
 
   return {
 
     info,
     draw,
-    // list,
+    effects,
 
     boot: function(){return (self = this);
 
@@ -67,7 +69,7 @@ REN = (function(){
       cvs = IFC.cvs; 
       ctx = IFC.ctx;
 
-      list = [];
+      effects = [];
 
       imgWhistle = $('.img-whistle');
 
@@ -82,10 +84,12 @@ REN = (function(){
       PHY.resize(transform);
 
 
-    }, setMouse : function (mouse) {
+    }, updateMouse : function (mouse) {
 
-      mouse.fx = (mouse.x - transform.field[0]) / transform.scale;
-      mouse.fy = (mouse.y - transform.field[1]) / transform.scale;
+      mouse.fx  = (mouse.x - transform.field[0]) / transform.scale;
+      mouse.fy  = (mouse.y - transform.field[1]) / transform.scale;
+      mouse.ifx = ~~mouse.fx;
+      mouse.ify = ~~mouse.fy;
 
 
     }, toField : function (point) {
@@ -94,18 +98,6 @@ REN = (function(){
         x: (point.x - transform.field[0]) / transform.scale, 
         y: (point.y - transform.field[1]) / transform.scale
       };
-
-
-    }, toFieldInt : function (p) {
-
-      point.x = ~~((p.x - transform.field[0]) / transform.scale);
-      point.y = ~~((p.y - transform.field[1]) / transform.scale);
-
-      return point;
-
-    }, push: function(task){
-
-      list.push(task);
 
 
     }, whistle:  function(data){
@@ -143,7 +135,7 @@ REN = (function(){
       );
 
 
-    }, drawPixel: function render (){
+    }, drawPixel: function (){
 
       var i, x, y, amount = 300, color;
 
@@ -156,7 +148,7 @@ REN = (function(){
       }
 
 
-    }, pixelize: function render (){
+    }, pixelize: function (){
 
       H.each(draw, option => draw[option] = false);
       draw.pixel = true;
@@ -181,8 +173,8 @@ REN = (function(){
       draw.pixel       && self.drawPixel();
 
       // draw on canvas, no transform
-      draw.info        && self.drawDebug();
-      draw.speed       && self.drawSpeed();
+      draw.info        && self.drawInfo();
+      // draw.speed       && self.drawSpeed();
       draw.mouse       && self.drawMouse(IFC.mouse);
       draw.messages    && self.drawMessages(GAM.messages);
 
@@ -198,7 +190,7 @@ REN = (function(){
       draw.collisions  && self.drawCollisions(PHY.collisions);
 
       TWEEN.update();  // whistle
-      draw.list        && H.consume(list, task => task());
+      draw.effects        && H.consume(effects, task => task());
 
       self.drawTeamsResult(0.4);
       self.drawSimState(0.3);
@@ -211,6 +203,8 @@ REN = (function(){
 
       ctx.restore();
 
+  
+  // C A L C U L A T I O N S 
 
     }, translate: function translate (x, y, angle){
 
@@ -334,6 +328,8 @@ REN = (function(){
         ];
 
 
+  // G R A F I C S
+
     }, strokeVector:  function(v1, v2, color, linewidth){
 
       self.translate(v1._[0], v1._[1]);
@@ -374,6 +370,8 @@ REN = (function(){
       ctx.arc(x, y, radius, start, end, false);
       ctx.stroke();
 
+
+  // G A M E  E L E M E N T S 
 
     }, drawWhistle: function(alpha, team){
 
@@ -445,6 +443,8 @@ REN = (function(){
       self.strokeCircle(x, y, 9.15, 'rgba(220, 220, 220, 0.8)', start, end);
       ctx.setLineDash([]);
       
+  
+  // T E X T  O V E R L A Y 
 
     }, drawSimState: function(alpha){
 
@@ -548,44 +548,40 @@ REN = (function(){
       }
 
 
-    }, drawMouse: function(mouse){
+    }, drawInfo: function(){
 
-      self.strokeCircle(mouse.x, mouse.y, 20, 'rgba(0, 0, 0, 0.5)');
-    
+      var
+        lh   = 19,
+        top  = 20, 
+        left = cvs.width -260;
 
-    }, drawSpeed: function(){
+      info['fps/ipf']     = ~~(meta.fps) + '/' + meta.ipf;
+      info['tick/rend']   = IFC.msecTick.toFixed(2)   + '/' + IFC.msecRend.toFixed(2);
 
-      var left = cvs.width -260;
+      info.mouse        = IFC.mouse.x + '/' + IFC.mouse.y;
+      info.meter        = IFC.mouse.ifx + '/' + IFC.mouse.ify;
+      info.body         = T.bodyShort(IFC.bodyUnderMouse);
+
+      info.simulation   = SIM.current;
+      info.game         = GAM.current;
+      info.team0        = GAM.team0.current;
+      info.team1        = GAM.team1.current;
+      info.tasks        = SIM.tasks.length;
+
 
       ctx.font      = '16px Courier New';
       ctx.fillStyle = 'rgba(240, 240, 240, 0.8)';
       ctx.textAlign = 'left';
 
-      ctx.fillText('fps/ipf    :  ' + ~~(meta.fps)              + '/' + meta.ipf                 , left,  20);
-      ctx.fillText('frame/secs :  ' + GAM.frame                 + '/' + GAM.time.toFixed(1)      , left,  40);
-      ctx.fillText('tick/rend  :  ' + IFC.msecTick.toFixed(2)   + '/' + IFC.msecRend.toFixed(2)  , left,  60);
-      ctx.fillText('simulation :  ' + SIM.current                                                , left,  80);
-      ctx.fillText('game       :  ' + GAM.current                                                , left, 100);
-      ctx.fillText('team0      :  ' + GAM.team0.current                                          , left, 120);
-      ctx.fillText('team1      :  ' + GAM.team1.current                                          , left, 140);
-      ctx.fillText('tasks      :  ' + SIM.tasks.length                                           , left, 160);
-      // ctx.fillText('scratches  :  ' + Physics.scratchpad()._vectorStack.length                   , left, 180);
+      H.each(info, function (title, value){
+        ctx.fillText(title, left, top);
+        ctx.fillText(':',   left + 100, top);
+        ctx.fillText(value, left + 120, top);
+        top += lh;
+      });
 
-   
 
-    }, drawDebug: function(){
-
-      infobody = PHY.findAt(self.toField(IFC.mouse));
-
-      ctx.font      = '24px Courier New';
-      ctx.fillStyle = 'rgba(33, 33, 33, 0.2)';
-      ctx.textAlign = 'left';
-
-      ctx.fillText('meter :  ' + JSON.stringify(self.toFieldInt(IFC.mouse)) , 30,  40);
-      ctx.fillText('mouse :  ' + JSON.stringify(IFC.mouse)                  , 30,  70);
-      ctx.fillText('body  :  ' + bodyShort(infobody)                        , 30, 100);
-      ctx.fillText('info  :  ' + JSON.stringify(info)                       , 30, 210);
-    
+  // F I E L D + D E C O 
 
     }, drawCollisions: function(colls){
 
@@ -624,7 +620,15 @@ REN = (function(){
         ctx.fillRect(r[0], r[1], r[2], r[3]);
       }
 
- 
+
+  // B O D I E S 
+
+
+    }, drawMouse: function(mouse){
+
+      self.strokeCircle(mouse.x, mouse.y, 20, 'rgba(0, 0, 0, 0.5)');
+
+
     }, drawPlayer:  function(body){
 
       var
@@ -705,6 +709,8 @@ REN = (function(){
       ctx.lineTo(r + r, 0);
       ctx.stroke();
 
+
+  // C L O C K
 
     }, drawClock: function(){
 

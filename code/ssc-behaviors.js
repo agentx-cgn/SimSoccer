@@ -137,6 +137,8 @@ BHV = (function(){
     
     behave: function (body) {
 
+      // http://gamedevelopment.tutsplus.com/tutorials/understanding-steering-behaviors-collision-avoidance--gamedev-7777
+
       const 
         maxAhead = 8,
         maxVel = 0.02,
@@ -252,10 +254,10 @@ BHV = (function(){
 
       body.applyForce(avoidance);
 
-      REN.push(REN.strokeCircle.bind(null, target._[0], target._[1], maxAhead, factor > 0 ? 'orange' : 'violet'));
-      REN.push(REN.strokeVector.bind(null, body.state.pos.clone(), forward.clone().mult(2), 'yellow'));
-      REN.push(REN.strokeVector.bind(null, body.state.pos.clone(), avoidance.clone().mult(2), 'red'));
-      REN.push(REN.strokeVector.bind(null, body.state.pos.clone(), ahead.clone().mult(2), 'blue'));
+      REN.effects.push(REN.strokeCircle.bind(null, target._[0], target._[1], maxAhead, factor > 0 ? 'orange' : 'violet'));
+      REN.effects.push(REN.strokeVector.bind(null, body.state.pos.clone(), forward.clone().mult(2), 'yellow'));
+      REN.effects.push(REN.strokeVector.bind(null, body.state.pos.clone(), avoidance.clone().mult(2), 'red'));
+      REN.effects.push(REN.strokeVector.bind(null, body.state.pos.clone(), ahead.clone().mult(2), 'blue'));
 
     }, 'player-all-approach-point': function (body) {
 

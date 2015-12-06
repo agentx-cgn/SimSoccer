@@ -20,6 +20,7 @@ CFG = {
             info:          true,   // draw Deb info
             speed:         true,   // draw Deb render info
             mouse:         false,  // draw mouse circle
+            effects:       true,   // draw former tasks
             sandbox:       true,   // draw outer 
             messages:      true,   // draw SIM messages
             collisions:    true,   // draw PHY collisions
@@ -204,8 +205,9 @@ CFG = {
         simulation: [
 
             ['setup',        ['None', 'Training', 'Play'],         'Setup'     ],
-            ['training',     ['None', 'Setup',    'Play'],         'Training'  ],
+            ['training',     ['None', 'Setup',    'Play', 'Excercise'],         'Training'  ],
             ['play',         ['None', 'Setup',    'Training'],     'Play'      ],
+            ['excercise',    ['Training'],                         'Excercise' ],
         
         ],
 
@@ -266,9 +268,11 @@ CFG = {
         player:     [
 
             // Initial and sim states
-            ['setup',        ['None', 'Pause', 'Training'],          'Setup'       ],
-            ['training',     ['None', 'Pause', 'Setup'],             'Training'    ],
-            ['pause',        ['None', 'Play'],                       'Pause'       ],
+            ['stay',        ['None', 'Walk', 'Run',  'Kick', 'Grab'], 'Stay' ],
+            ['walk',        ['None', 'Stay', 'Run',  'Kick', 'Grab'], 'Walk' ],
+            ['run',         ['None', 'Stay', 'Walk', 'Kick', 'Grab'], 'Run'  ],
+            ['kick',        ['None', 'Stay', 'Walk', 'Run',  'Grab'], 'Kick' ],
+            ['grab',        ['None', 'Stay', 'Walk', 'Run',  'Kick'], 'Grab' ],
 
         ],
 

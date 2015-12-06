@@ -179,6 +179,7 @@ H = (function(){
     unique:     function (a){return [...Set(a)];},
     attribs:    function (o){return Object.keys(o);},
     each:       function (o,fn){Object.keys(o || {}).forEach(a => fn(a, o[a]));},
+    for:        function (o,fn){H.each(o, (key, val) => fn(val,key));},
     count:      function (o){return Object.keys(o).length;},
     values:     function (o){return Object.keys(o).map(function(k){return o[k];});}
 
