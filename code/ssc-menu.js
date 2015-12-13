@@ -13,29 +13,36 @@ MEN = (function(){
 
     $ = document.querySelector.bind(document),
 
-    $menu, $submenu, 
-    $menuList, $submenuList, 
+    $menu, $submenu, $menuList, $submenuList, 
 
-    menuItems = [
-      {label: 'Reload',     enabled: true,                       action: () => window.location.reload()},
-      {label: 'Back',       enabled: true,                       action: () => window.history.back()},
-      {label: 'Fullscreen', enabled: true,                       action: () => IFC.toggleFullScreen()},
-      {label: 'Screenshot', enabled: true,                       action: () => IFC.shootScreen()},
-      {label: 'Reset',      enabled: true,                       action: () => window.reset()},
-      
-      {label: 'Mark All',   enabled: true,                       action: () => PHY.bodies.players.forEach(GAM.mark)},
-      {label: 'Mark T0',    enabled: true,                       action: () => PHY.bodies.team0.forEach(GAM.mark)},
-      {label: 'Mark T1',    enabled: true,                       action: () => PHY.bodies.team1.forEach(GAM.mark)},
-      {label: 'Mark Ball',  enabled: true,                       action: () => PHY.bodies.balls.forEach(GAM.mark)},
+    fieldMenuItems = function ( body ){
 
-      {label: 'Setup',      enabled: () => SIM.can('setup'),     action: () => SIM.promise('setup',    {test:1})},
-      {label: 'Training',   enabled: () => SIM.can('training'),  action: () => SIM.promise('training', {test:2})},
-      {label: 'Play',       enabled: () => SIM.can('play'),      action: () => SIM.promise('play',     {test:3}),      items: [
-        {label: 'Pause',      enabled: () => GAM.can('pause'),     action: () => GAM.promise('pause',    {test:4})},
-        {label: 'Half1',      enabled: () => GAM.can('half1'),     action: () => GAM.promise('half1',    {test:5})},
-        {label: 'Half2',      enabled: () => GAM.can('half2'),     action: () => GAM.promise('half2',    {test:5})},
-      ]},
-    ],
+      return [
+        {label: 'Reload',     enabled: true,                       action: () => window.location.reload()},
+        {label: 'Back',       enabled: true,                       action: () => window.history.back()},
+        {label: 'Fullscreen', enabled: true,                       action: () => IFC.toggleFullScreen()},
+        {label: 'Screenshot', enabled: true,                       action: () => IFC.shootScreen()},
+        {label: 'Reset',      enabled: true,                       action: () => window.reset()},
+        
+        {label: 'Mark All',   enabled: true,                       action: () => PHY.bodies.players.forEach(GAM.mark)},
+        {label: 'Mark T0',    enabled: true,                       action: () => PHY.bodies.team0.forEach(GAM.mark)},
+        {label: 'Mark T1',    enabled: true,                       action: () => PHY.bodies.team1.forEach(GAM.mark)},
+        {label: 'Mark Ball',  enabled: true,                       action: () => PHY.bodies.balls.forEach(GAM.mark)},
+
+        {label: 'Setup',      enabled: () => SIM.can('setup'),     action: () => SIM.promise('setup',    {test:1})},
+    
+        {label: 'Training',   enabled: () => SIM.can('training'),  action: () => SIM.promise('training', {test:2}),      items: [
+          {label: 'Excercise',   enabled: SIM.can('excercise'),      action: () => SIM.promise('excercise',    {test:4})},
+        ]},
+
+        {label: 'Play',       enabled: () => SIM.can('play'),      action: () => SIM.promise('play',     {test:3}),      items: [
+          {label: 'Pause',      enabled: () => GAM.can('pause'),     action: () => GAM.promise('pause',    {test:4})},
+          {label: 'Half1',      enabled: () => GAM.can('half1'),     action: () => GAM.promise('half1',    {test:5})},
+          {label: 'Half2',      enabled: () => GAM.can('half2'),     action: () => GAM.promise('half2',    {test:5})},
+        ]},
+      ]
+
+    },
 
     bodyMenuItems = function ( body ){
       
@@ -60,18 +67,14 @@ MEN = (function(){
 
     boot:   function(){return (self = this);
 
-    }, reset: function () {
-
-      // self.cleanup();
-      self.init();
-
-    }, init: function(){
+    }, reset: function () { self.init();
+    }, hide:  function () { $menu.style.display = 'none';
+    }, init:  function () {
 
      $menu         = $('.menu');
      $menuList     = $('.menu-list');
      $submenu      = $('.sub-menu');
      $submenuList  = $('.sub-menu-list');
-
      $menu.onmouseleave = self.hide;
 
     }, show: function(){
@@ -81,10 +84,6 @@ MEN = (function(){
       $menu.style.left = (IFC.mouse.x -8) + 'px';
       $menu.style.top  = (IFC.mouse.y + yOff -8) + 'px';
       $menu.style.display = 'block';
-
-    }, hide: function(){
-
-      $menu.style.display = 'none';
 
     }, clear: function($el){
 
@@ -96,24 +95,25 @@ MEN = (function(){
         $el.removeChild($el.firstChild);
       }
 
-    // }, update: function($el, list){
     }, update: function(body){
 
-      var el, ul, li, list = !body ? menuItems : bodyMenuItems(body);
+      var list = body ? bodyMenuItems(body) : fieldMenuItems();
     
-      self.clear($menuList);
+      function makeClass (entry, pre) {
 
-      function getClass (entry, pre) {
-
-        if (entry.enabled !== undefined) {return pre + H.interprete(entry.enabled) ? 'menu-item' : 'menu-item-disabled';}
-        if (entry.active  !== undefined) {return pre + H.interprete(entry.active)  ? 'menu-item' : 'menu-item-inactive';}
+        if (entry.enabled !== undefined) {return pre + (H.interprete(entry.enabled) ? 'menu-item' : 'menu-item-disabled');}
+        if (entry.active  !== undefined) {return pre + (H.interprete(entry.active)  ? 'menu-item' : 'menu-item-inactive');}
 
       }
 
-      H.each(list, (i, entry) => {
+      self.clear($menuList);
+
+      H.for(list, entry => {
+
+        var li, el, ul;
 
         el = document.createElement('li');
-        el.className = getClass(entry, '');
+        el.className = makeClass(entry, '');
         el.innerHTML = entry.label;
         el.onclick = entry.action ? 
           function(e){entry.action(); self.hide(); return H.eat(e);}:
@@ -126,15 +126,15 @@ MEN = (function(){
           ul.className = 'sub-menu-list none';
           el.appendChild(ul);
 
-          H.each(entry.items, (i, subentry) => {
+          H.for(entry.items, subentry => {
             li = document.createElement('li');
-            li.className = getClass(subentry, 'sub-');
+            li.className = makeClass(subentry, 'sub-');
             li.innerHTML = subentry.label;
             li.onclick = function(e){subentry.action(); self.hide(); return H.eat(e);};
             ul.appendChild(li);
           });
 
-          el.onmouseenter  = function(){
+          el.onmouseenter = function(){
             ul.classList.remove('none');
             ul.classList.add('block');
           };
@@ -149,8 +149,6 @@ MEN = (function(){
         $menuList.appendChild(el);
 
       });
-
-
 
   }}; // method end/return
 

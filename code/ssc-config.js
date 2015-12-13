@@ -200,14 +200,14 @@ CFG = {
 
     States : {
 
-        //    event,        // froms                           // to
+        //    event,        // froms                                          // to
 
         simulation: [
 
-            ['setup',        ['None', 'Training', 'Play'],         'Setup'     ],
-            ['training',     ['None', 'Setup',    'Play', 'Excercise'],         'Training'  ],
-            ['play',         ['None', 'Setup',    'Training'],     'Play'      ],
-            ['excercise',    ['Training'],                         'Excercise' ],
+            ['setup',        ['None', 'Training', 'Play'],                   'Setup'     ],
+            ['training',     ['None', 'Setup', 'Play', 'Excercise'],         'Training'  ],
+            ['play',         ['None', 'Setup',    'Training'],               'Play'      ],
+            ['excercise',    ['Training'],                                   'Excercise' ],
         
         ],
 

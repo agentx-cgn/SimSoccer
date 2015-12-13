@@ -50,7 +50,7 @@ SIM = (function(){
       self.init();
 
       [SIM, GAM, GAM.team0, GAM.team1].forEach(fsm => {
-        H.format('%s = %s', fsm.nick, fsm.current);
+        console.log(H.format('%s = %s', fsm.nick, fsm.current));
       });
 
     }, tick: function () {
@@ -64,13 +64,7 @@ SIM = (function(){
 
       self.listen();
 
-      // this.current = 'None'
-
-      H.each(CFG.Controllers.simulation.None, (index, name) => {
-        CTR.activate(name);
-      });
-
-
+      H.for(CFG.Controllers.simulation.None, CTR.activate);
 
 
   // F S M
@@ -78,7 +72,7 @@ SIM = (function(){
     }, promise: function(event, data){
 
       var 
-        now = this.current,
+        before = this.current,
         err = 'TRY: %s can\'t "%s" now, but %s';
 
       return (
@@ -91,8 +85,8 @@ SIM = (function(){
             reject(H.format(err, self.nick, event, self.transitions()));
           }
         })
-        .then(() => SIM.msgFromTo(self.nick, now, this.current))
-        .catch(reason => console.log(this.nick + '.promise.failed:', event, reason, data))
+        .then(() => SIM.msgFromTo(self.nick, before, this.current))
+        .catch(reason => console.log(this.nick + '.promise.failed:', event, reason, now))
       );
 
     }, onsetup: function(name, from, to, data){
@@ -111,7 +105,29 @@ SIM = (function(){
 
       self.updateControllers(to);
 
+      return (
+        GAM.promise('pause', data)
+          .then(Promise.all([
+            GAM.team0.promise('training', data),
+            GAM.team1.promise('training', data)
+          ]))
+      );
+
+    }, onexcercise: function(name, from, to, data){
+
+      console.log('onexcercise');
+
+      self.updateControllers(to);
+
+      var group = new Group([]);
+
       this.dsl = new DSL.Language(this, "groups");
+
+      var world = this.dsl.createWorld(group);
+
+      return new Promise(function () {});
+
+
       // world = this.dsl.createWorld(instance);
       // this.dsl.setverbs(world, this.getverbs());
 
@@ -123,13 +139,13 @@ SIM = (function(){
 
 
 
-      return (
-        GAM.promise('pause', data)
-          .then(Promise.all([
-            GAM.team0.promise('training', data),
-            GAM.team1.promise('training', data)
-          ]))
-      );
+      // return (
+      //   GAM.promise('pause', data)
+      //     .then(Promise.all([
+      //       GAM.team0.promise('training', data),
+      //       GAM.team1.promise('training', data)
+      //     ]))
+      // );
 
     }, onplay:  function(name, from, to, data){
 

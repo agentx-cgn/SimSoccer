@@ -60,6 +60,15 @@ StateMachine.create({
   error:   T.logFsmError,
 });
 
+function Group (bodies){
+  this.bodies = bodies;
+}
+
+Group.prototype = H.mixin (
+  Actor.prototype, {
+  constructor: Group,
+});
+
 function Team (config){
 
   Actor.call(this, config);

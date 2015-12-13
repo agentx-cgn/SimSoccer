@@ -115,11 +115,10 @@ GAM = (function(){
     }, onpause: function(name, from, to, data, resolve){
       
       return (
-        SIM.promise('play', data)
-          .then(Promise.all([
-            GAM.team0.promise('pause', data),
-            GAM.team1.promise('pause', data)
-        ]))
+        Promise.all([
+          GAM.team0.promise('pause', data),
+          GAM.team1.promise('pause', data)
+        ])
       );
       
     }, onhalf1:   function(name, from, to, data, resolve){

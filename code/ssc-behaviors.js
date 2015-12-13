@@ -141,7 +141,7 @@ BHV = (function(){
 
       const 
         maxAhead = 8,
-        maxVel = 0.02,
+        maxVel   = 0.02,
         maxForce = 0.03;
 
       var factor;

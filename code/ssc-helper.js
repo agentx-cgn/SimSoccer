@@ -112,7 +112,9 @@ H = (function(){
     
 
     // Arrays
-    empty:      function (a){while(a.length){a.shift();}},
+    // empty:      function (a){while(a.length){a.shift();}},
+    empty:      function (a){a.splice(0, a.length);},
+    last:       function (a){return a[a.length -1];},
     // check: http://stackoverflow.com/a/18885102/515069
     delete:     function (a, fn){var i=0,o=0;while(a[i]!==undefined){if(fn(a[i])){a.splice(i,1);o++;}else{i++;}}return o;  },
     toArray:    function (a){return Array.prototype.slice.call(a);},
@@ -178,10 +180,41 @@ H = (function(){
     // ES6 Suite
     unique:     function (a){return [...Set(a)];},
     attribs:    function (o){return Object.keys(o);},
-    each:       function (o,fn){Object.keys(o || {}).forEach(a => fn(a, o[a]));},
+    // each:       function (o,fn){Object.keys(o || {}).forEach(a => fn(a, o[a]));},
     for:        function (o,fn){H.each(o, (key, val) => fn(val,key));},
     count:      function (o){return Object.keys(o).length;},
-    values:     function (o){return Object.keys(o).map(function(k){return o[k];});}
+    values:     function (o){return Object.keys(o).map(function(k){return o[k];});},
+
+    each:       function (){
+      
+      var 
+        i, k, a, al, args = H.toArray(arguments),
+        items = args.slice(0, -1),
+        fn    = args.slice(-1)[0];
+
+        items.forEach(item => {
+
+          if (item !== undefined){
+
+            if (Array.isArray(item)){
+              item.forEach( (value, key) => {
+                fn(key, value);
+              });
+
+            } else if (item instanceof Map || item instanceof Set){
+              item.forEach( (value, key) => {
+                fn(key, value);
+              });
+
+            } else {
+              a = Object.keys(item); al= a.length;
+              for(i=0;i<al;i++){k=a[i];fn(k, item[k]);}
+            }
+
+          }
+
+        });
+    }    
 
   });
 
